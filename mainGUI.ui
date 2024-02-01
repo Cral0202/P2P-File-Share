@@ -26,7 +26,7 @@
    <widget class="QProgressBar" name="progressBar">
     <property name="geometry">
      <rect>
-      <x>40</x>
+      <x>30</x>
       <y>650</y>
       <width>341</width>
       <height>23</height>
@@ -42,17 +42,32 @@
    <widget class="QLabel" name="fileLabel">
     <property name="geometry">
      <rect>
-      <x>40</x>
-      <y>400</y>
-      <width>341</width>
-      <height>24</height>
+      <x>31</x>
+      <y>391</y>
+      <width>521</width>
+      <height>241</height>
      </rect>
+    </property>
+    <property name="sizePolicy">
+     <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+      <horstretch>0</horstretch>
+      <verstretch>0</verstretch>
+     </sizepolicy>
     </property>
     <property name="styleSheet">
      <string notr="true">color: rgb(255, 255, 255);</string>
     </property>
     <property name="text">
      <string>Chosen file:</string>
+    </property>
+    <property name="scaledContents">
+     <bool>false</bool>
+    </property>
+    <property name="alignment">
+     <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignTop</set>
+    </property>
+    <property name="wordWrap">
+     <bool>true</bool>
     </property>
    </widget>
    <widget class="QScrollArea" name="scrollArea">
@@ -129,7 +144,7 @@ color: rgb(255, 255, 255);</string>
       <x>30</x>
       <y>190</y>
       <width>261</width>
-      <height>51</height>
+      <height>72</height>
      </rect>
     </property>
     <layout class="QVBoxLayout" name="receiverIPVBox">
@@ -175,13 +190,29 @@ color: rgb(255, 255, 255);</string>
        </item>
       </layout>
      </item>
+     <item>
+      <widget class="QLabel" name="ipToSendLabel">
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
+       <property name="styleSheet">
+        <string notr="true">color: rgb(255, 255, 255);</string>
+       </property>
+       <property name="text">
+        <string>Chosen IP:</string>
+       </property>
+      </widget>
+     </item>
     </layout>
    </widget>
    <widget class="QWidget" name="layoutWidget">
     <property name="geometry">
      <rect>
-      <x>40</x>
-      <y>440</y>
+      <x>30</x>
+      <y>360</y>
       <width>192</width>
       <height>26</height>
      </rect>
