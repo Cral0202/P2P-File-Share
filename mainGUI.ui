@@ -143,7 +143,7 @@ color: rgb(255, 255, 255);</string>
      <rect>
       <x>30</x>
       <y>190</y>
-      <width>261</width>
+      <width>391</width>
       <height>72</height>
      </rect>
     </property>
@@ -188,6 +188,17 @@ color: rgb(255, 255, 255);</string>
          </property>
         </widget>
        </item>
+       <item>
+        <widget class="QPushButton" name="breakConnectionButton">
+         <property name="styleSheet">
+          <string notr="true">background-color: rgb(94, 94, 94);
+color: rgb(255, 255, 255);</string>
+         </property>
+         <property name="text">
+          <string>Break Connection</string>
+         </property>
+        </widget>
+       </item>
       </layout>
      </item>
      <item>
@@ -213,7 +224,7 @@ color: rgb(255, 255, 255);</string>
      <rect>
       <x>30</x>
       <y>360</y>
-      <width>192</width>
+      <width>307</width>
       <height>26</height>
      </rect>
     </property>
@@ -243,6 +254,17 @@ color: rgb(255, 255, 255);</string>
        </property>
       </widget>
      </item>
+     <item>
+      <widget class="QPushButton" name="stopButton">
+       <property name="styleSheet">
+        <string notr="true">background-color: rgb(94, 94, 94);
+color: rgb(255, 255, 255);</string>
+       </property>
+       <property name="text">
+        <string>Stop</string>
+       </property>
+      </widget>
+     </item>
     </layout>
    </widget>
   </widget>
@@ -267,7 +289,8 @@ color: rgb(255, 255, 255);</string>
   </widget>
   <widget class="QStatusBar" name="statusbar">
    <property name="styleSheet">
-    <string notr="true">background-color: rgb(59, 59, 59);</string>
+    <string notr="true">background-color: rgb(59, 59, 59);
+color: rgb(255, 255, 255);</string>
    </property>
   </widget>
  </widget>

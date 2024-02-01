@@ -43,6 +43,8 @@ class Main:
         self.ui.fileButton.clicked.connect(self.choose_file_to_send)
         self.ui.ipConfirmButton.clicked.connect(self.choose_ip_to_send)
 
+        self.ui.statusbar.showMessage("No connection")
+
     # Gets the public ip of the user
     def get_user_public_ip(self):
         try:

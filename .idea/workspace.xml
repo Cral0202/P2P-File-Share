@@ -4,7 +4,7 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="6230f7af-df35-4497-9404-b5f7052afc44" name="Changes" comment="- Shows public ip-address&#10;- Copy button works">
+    <list default="true" id="6230f7af-df35-4497-9404-b5f7052afc44" name="Changes" comment="Additions">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/main.py" beforeDir="false" afterPath="$PROJECT_DIR$/main.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/mainGUI.py" beforeDir="false" afterPath="$PROJECT_DIR$/mainGUI.py" afterDir="false" />
@@ -96,12 +96,20 @@
       <option name="presentableId" value="LOCAL−00004" />
       <updated>1706803219368</updated>
     </task>
-    <option name="localTasksCounter" value="5" />
+    <task id="LOCAL−00005" summary="Additions">
+      <option name="closed" value="true" />
+      <created>1706815457083</created>
+      <option name="number" value="LOCAL−00005" />
+      <option name="presentableId" value="LOCAL−00005" />
+      <updated>1706815457083</updated>
+    </task>
+    <option name="localTasksCounter" value="6" />
     <servers />
   </component>
   <component name="VcsManagerConfiguration">
     <MESSAGE value="Initial setup" />
     <MESSAGE value="- Shows public ip-address&#10;- Copy button works" />
-    <option name="LAST_COMMIT_MESSAGE" value="- Shows public ip-address&#10;- Copy button works" />
+    <MESSAGE value="Additions" />
+    <option name="LAST_COMMIT_MESSAGE" value="Additions" />
   </component>
 </project>
