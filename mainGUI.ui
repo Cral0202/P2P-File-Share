@@ -81,12 +81,12 @@
      </property>
     </widget>
    </widget>
-   <widget class="QWidget" name="">
+   <widget class="QWidget" name="layoutWidget">
     <property name="geometry">
      <rect>
       <x>30</x>
       <y>70</y>
-      <width>157</width>
+      <width>261</width>
       <height>26</height>
      </rect>
     </property>
@@ -96,6 +96,12 @@
      </property>
      <item>
       <widget class="QLabel" name="ipLabel">
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
        <property name="styleSheet">
         <string notr="true">color: rgb(255, 255, 255);</string>
        </property>
@@ -117,12 +123,12 @@ color: rgb(255, 255, 255);</string>
      </item>
     </layout>
    </widget>
-   <widget class="QWidget" name="">
+   <widget class="QWidget" name="layoutWidget">
     <property name="geometry">
      <rect>
       <x>30</x>
       <y>190</y>
-      <width>257</width>
+      <width>261</width>
       <height>51</height>
      </rect>
     </property>
@@ -131,7 +137,7 @@ color: rgb(255, 255, 255);</string>
       <widget class="QLabel" name="ipSendLabel">
        <property name="styleSheet">
         <string notr="true">color: rgb(255, 255, 255);
-padding-left: 45px;</string>
+padding-left: 65px;</string>
        </property>
        <property name="text">
         <string>Send to ip</string>
@@ -171,7 +177,7 @@ color: rgb(255, 255, 255);</string>
      </item>
     </layout>
    </widget>
-   <widget class="QWidget" name="">
+   <widget class="QWidget" name="layoutWidget">
     <property name="geometry">
      <rect>
       <x>40</x>
@@ -180,7 +186,7 @@ color: rgb(255, 255, 255);</string>
       <height>26</height>
      </rect>
     </property>
-    <layout class="QHBoxLayout" name="horizontalLayout">
+    <layout class="QHBoxLayout" name="chooseFileHBox">
      <property name="spacing">
       <number>40</number>
      </property>
