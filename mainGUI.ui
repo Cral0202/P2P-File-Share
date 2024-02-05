@@ -11,7 +11,7 @@
    </rect>
   </property>
   <property name="windowTitle">
-   <string>MainWindow</string>
+   <string>File Share</string>
   </property>
   <property name="autoFillBackground">
    <bool>false</bool>
@@ -101,7 +101,7 @@
      <rect>
       <x>30</x>
       <y>70</y>
-      <width>261</width>
+      <width>541</width>
       <height>26</height>
      </rect>
     </property>
@@ -136,15 +136,37 @@ color: rgb(255, 255, 255);</string>
        </property>
       </widget>
      </item>
+     <item>
+      <widget class="QPushButton" name="enableNetworkingButton">
+       <property name="styleSheet">
+        <string notr="true">background-color: rgb(94, 94, 94);
+color: rgb(255, 255, 255);</string>
+       </property>
+       <property name="text">
+        <string>Enable Networking</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QPushButton" name="disableNetworkingButton">
+       <property name="styleSheet">
+        <string notr="true">background-color: rgb(94, 94, 94);
+color: rgb(255, 255, 255);</string>
+       </property>
+       <property name="text">
+        <string>Disable Networking</string>
+       </property>
+      </widget>
+     </item>
     </layout>
    </widget>
    <widget class="QWidget" name="layoutWidget">
     <property name="geometry">
      <rect>
       <x>30</x>
-      <y>190</y>
+      <y>201</y>
       <width>391</width>
-      <height>72</height>
+      <height>61</height>
      </rect>
     </property>
     <layout class="QVBoxLayout" name="receiverIPVBox">
@@ -201,22 +223,6 @@ color: rgb(255, 255, 255);</string>
        </item>
       </layout>
      </item>
-     <item>
-      <widget class="QLabel" name="ipToSendLabel">
-       <property name="sizePolicy">
-        <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
-         <horstretch>0</horstretch>
-         <verstretch>0</verstretch>
-        </sizepolicy>
-       </property>
-       <property name="styleSheet">
-        <string notr="true">color: rgb(255, 255, 255);</string>
-       </property>
-       <property name="text">
-        <string>Chosen IP:</string>
-       </property>
-      </widget>
-     </item>
     </layout>
    </widget>
    <widget class="QWidget" name="layoutWidget">
@@ -266,6 +272,50 @@ color: rgb(255, 255, 255);</string>
       </widget>
      </item>
     </layout>
+   </widget>
+   <widget class="QLabel" name="networkingLabel">
+    <property name="geometry">
+     <rect>
+      <x>10</x>
+      <y>0</y>
+      <width>501</width>
+      <height>16</height>
+     </rect>
+    </property>
+    <property name="sizePolicy">
+     <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
+      <horstretch>0</horstretch>
+      <verstretch>0</verstretch>
+     </sizepolicy>
+    </property>
+    <property name="styleSheet">
+     <string notr="true">color: rgb(255, 255, 255);</string>
+    </property>
+    <property name="text">
+     <string>Networking disabled</string>
+    </property>
+   </widget>
+   <widget class="QLabel" name="connectionLabel">
+    <property name="geometry">
+     <rect>
+      <x>10</x>
+      <y>20</y>
+      <width>501</width>
+      <height>16</height>
+     </rect>
+    </property>
+    <property name="sizePolicy">
+     <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
+      <horstretch>0</horstretch>
+      <verstretch>0</verstretch>
+     </sizepolicy>
+    </property>
+    <property name="styleSheet">
+     <string notr="true">color: rgb(255, 255, 255);</string>
+    </property>
+    <property name="text">
+     <string>No connection</string>
+    </property>
    </widget>
   </widget>
   <widget class="QMenuBar" name="menubar">
