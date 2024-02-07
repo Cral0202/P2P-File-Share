@@ -1,74 +1,97 @@
+import json
+import os
 import socket
 import threading
+
+import requests
 import upnpy
-import re
+
+from file_metadata import FileMetadata
 
 
 class Network:
     def __init__(self):
+        self.exceptionMessage = None
         self.host_socket = None
         self.client_socket = None
         self.host_thread = None
+        self.host_socket_gateway = None
 
         self.upnp = upnpy.UPnP()
-        self.wan_ip_service = self.get_wan_ip_service()  # The wan ip service object of the igd
+        self.wan_ip_service = None  # The WAN IP service object of the igd (for UPNP)
+        self.upnp_enabled = self.is_upnp_enabled()  # True if UPNP is enabled on host network
 
         self.host_port = 12345  # Port which is opened and used
-        self.client_port = 23456
         self.host_internal_ip = socket.gethostbyname(socket.gethostname())  # The internal ip of host
-        self.host_public_ip = self.get_host_public_ip()  # The public ip of host
+        self.host_external_ip = self.get_host_external_ip()  # The external ip of host
         self.client_public_ip = None  # The public ip of the client
 
-        self.networking_enabled = False  # True if networking is enabled
+        self.receiving_enabled = False  # True if receiving is enabled
         self.should_stop_threads = False  # True if threads should be stopped
         self.connected = False  # True if connected to a client
+        self.upnp_ports_open = False  # True if UPNP ports are open
 
-        self.exceptionMessage = None
+    # Checks if UPNP is enabled on network, and if so sets it up for use
+    def is_upnp_enabled(self):
+        try:
+            self.wan_ip_service = self.get_wan_ip_service()
+            return True
+        except Exception as e:
+            self.exceptionMessage = ("UPNP is not enabled on network. Manual port mapping must be done for receiving "
+                                     "to work.")
+            return False
 
     # Gets the service to use for WAN IP connections
     def get_wan_ip_service(self):
-        try:
-            self.upnp.discover()  # Discover UPnP devices on the network, returns a list of devices
-            igd = self.upnp.get_igd()  # Select the IGD
+        self.upnp.discover()  # Discover UPnP devices on the network, returns a list of devices
+        igd = self.upnp.get_igd()  # Select the IGD
 
-            # Gets the services of the igd and selects the correct one
-            for option in igd.get_services():
-                if re.search(r"(?i)(?=.*WAN.*)(?=.*Conn.*)", option.id):  # True if any instance of wan and conn
-                                                                          # exists in the string, no matter the pattern
-                    service = igd[option.id.split(':')[-1]]  # Extract the ID part of the string
-                    return service
+        # Check for services supporting port forwarding
+        for service in igd.get_services():
+            if self.supports_port_forwarding(service):
+                service = igd[service.id.split(':')[-1]]  # Extract the ID part of the string
+                return service
 
-            self.exceptionMessage = "No compatible IGD service found for WANIPConnection."
-        except Exception as e:
-            self.exceptionMessage = f"An error occurred: {e}"
+    # Checks if the service supports port forwarding by examining its actions
+    def supports_port_forwarding(self, service):
+        for action in service.get_actions():
+            if action.name == "AddPortMapping":
+                return True
+        return False
 
     # Enables networking
     def enable_networking(self):
-        if not self.networking_enabled:
+        if not self.receiving_enabled:
             try:
+                if self.upnp_enabled and not self.upnp_ports_open:
+                    self.open_ports()
+
                 self.should_stop_threads = False
-                self.open_ports()
 
                 self.host_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-                self.host_socket.bind(('0.0.0.0', self.host_port))
+                self.host_socket.bind(("", self.host_port))
                 self.host_socket.listen(1)
 
                 self.host_thread = threading.Thread(target=self.accept_connections)
                 self.host_thread.start()
-                self.networking_enabled = True
+
+                self.receiving_enabled = True
             except Exception as e:
                 self.exceptionMessage = f"An error occurred: {e}"
 
     # Disables networking
     def disable_networking(self):
-        if self.networking_enabled:
+        if self.receiving_enabled:
             try:
+                if self.upnp_enabled and self.upnp_ports_open:
+                    self.close_ports()
+
                 self.should_stop_threads = True
+
                 self.host_socket.close()
                 self.host_thread.join()
-                self.close_ports()
 
-                self.networking_enabled = False
+                self.receiving_enabled = False
             except Exception as e:
                 self.exceptionMessage = f"An error occurred: {e}"
 
@@ -76,27 +99,19 @@ class Network:
     def open_ports(self):
         # Opens the ports
         try:
-            for option in self.wan_ip_service.get_actions():
-                if re.search(r"(?i)(?=.*add.*)(?=.*port.*)", option.name):  # True if any instance of add and
-                                                                          # port exists in the string, no matter
-                                                                          # the pattern
-                    add_port_map = getattr(self.wan_ip_service, option.name)  # Combine the function name
-                                                                              # into a function
-                    add_port_map(
-                        NewRemoteHost="",
-                        NewExternalPort=self.host_port,
-                        NewProtocol="TCP",
-                        NewInternalPort=self.host_port,
-                        NewInternalClient=self.host_internal_ip,
-                        NewEnabled=1,
-                        NewPortMappingDescription="File Share",
-                        NewLeaseDuration=0
-                    )
-                    return
-
-            self.exceptionMessage = "No compatible IGD service found for AddPortMapping."
+            self.wan_ip_service.AddPortMapping(
+                NewRemoteHost="",
+                NewExternalPort=self.host_port,
+                NewProtocol="TCP",
+                NewInternalPort=self.host_port,
+                NewInternalClient=self.host_internal_ip,
+                NewEnabled=1,
+                NewPortMappingDescription="File Share",
+                NewLeaseDuration=0
+            )
+            self.upnp_ports_open = True
         except Exception as e:
-            self.exceptionMessage = f"Error adding port mapping: {e}"
+            self.exceptionMessage = f"Error adding port mapping: {e} | Ports are not open"
 
     # Closes the ports on the network
     def close_ports(self):
@@ -107,8 +122,9 @@ class Network:
                 NewExternalPort=self.host_port,
                 NewProtocol="TCP"
             )
+            self.upnp_ports_open = False
         except Exception as e:
-            self.exceptionMessage = f"An error occurred: {e}"
+            self.exceptionMessage = f"An error occurred: {e} | Ports are not closed"
 
     # Accept connections from clients
     def accept_connections(self):
@@ -116,6 +132,8 @@ class Network:
         while not self.should_stop_threads:
             try:
                 client, address = self.host_socket.accept()
+                self.host_socket_gateway = client
+                print(f"HOST SOCKET: Connected to {client} from {address}")
             except socket.timeout:
                 # Check if the threads should be stopped
                 if self.should_stop_threads:
@@ -145,28 +163,100 @@ class Network:
             try:
                 self.client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
                 self.client_socket.connect((ip, self.host_port))  # Connect to the specified IP and port
+
                 self.client_public_ip = ip
                 self.connected = True
+                print(f"CLIENT SOCKET: {self.client_socket.getpeername()}")
             except ConnectionRefusedError:
                 self.exceptionMessage = f"Connection to {ip} refused."
             except Exception as e:
                 self.exceptionMessage = f"An error occurred: {e}"
 
-    # Gets the public IP of the host
-    def get_host_public_ip(self):
-        try:
-            for option in self.wan_ip_service.get_actions():
-                if re.search(r"(?i)(?=.*IP.*)(?=.*ext.*)", option.name):  # True if any instance of IP and
-                                                                          # ext exists in the string, no matter
-                                                                          # the pattern
-                    ip_function = getattr(self.wan_ip_service, option.name)  # Combine the function name into a function
-                    ip = ip_function()
-                    ip_formatted = ip["NewExternalIPAddress"]  # Get the IP-address part
-                    return ip_formatted
+    # Gets the external IP of the host
+    def get_host_external_ip(self):
+        if self.upnp_enabled:
+            try:
+                ip_unformatted = self.wan_ip_service.GetExternalIPAddress()
+                ip = ip_unformatted["NewExternalIPAddress"]  # Get the IP-address part
+                return ip
+            except Exception as e:
+                self.exceptionMessage = f"An error occurred: {e}"
+        else:
+            try:
+                # Use a public API to get the external IP address
+                response = requests.get("https://api64.ipify.org?format=json")
+                ip = response.json()["ip"]
+                return ip
+            except requests.RequestException as e:
+                self.exceptionMessage = f"An error occurred: {e}"
 
-            self.exceptionMessage = "No compatible IGD service found for GetExternalIPAddress."
+    # Sends the metadata of a file
+    def send_file_metadata(self, file_name, file_size):
+        try:
+            metadata = FileMetadata(file_name, file_size)
+            metadata_json = json.dumps(metadata.__dict__)  # Serialize metadata to JSON
+            self.client_socket.send(metadata_json.encode())  # Encode and send JSON data
+            self.client_socket.recv(1024)  # Wait for conformation that metadata has been received
+            print("File metadata sent")
         except Exception as e:
             self.exceptionMessage = f"An error occurred: {e}"
+
+    # Receives the metadata of a file
+    def receive_file_metadata(self):
+        try:
+            metadata_json = self.host_socket_gateway.recv(1024).decode()  # Receive and decode metadata
+            metadata_dict = json.loads(metadata_json)  # Convert JSON string to dictionary
+            metadata = FileMetadata(**metadata_dict)  # Unpack metadata_dict and create an object from it
+            self.host_socket_gateway.send("Metadata received".encode())  # Send conformation that metadata has been
+                                                                         # received
+            return metadata.file_name, metadata.file_size
+        except Exception as e:
+            self.exceptionMessage = f"An error occurred: {e}"
+
+    # Sends the data of a file
+    def send_file_data(self, file_path):
+        try:
+            chunk_size = 1024
+            with open(file_path, "rb") as file:
+                # Keep sending chunks until end of file
+                while True:
+                    chunk = file.read(chunk_size)
+                    if not chunk:
+                        break  # End of file
+                    self.client_socket.send(chunk)  # Send the chunk
+        except Exception as e:
+            self.exceptionMessage = f"An error occurred: {e}"
+
+    # Receives the data of a file
+    def receive_file_data(self, file_name, file_size):
+        try:
+            file_path = os.path.join(os.path.expanduser("~"), "Downloads", file_name)  # Get the download folder
+            chunk_size = 1024
+            received_data = 0
+            with open(file_path, "wb") as file:
+                while received_data < file_size:
+                    chunk = self.host_socket_gateway.recv(min(chunk_size, file_size - received_data))
+                    if not chunk:
+                        break  # No more data to get
+                    file.write(chunk)
+                    received_data += len(chunk)
+        except Exception as e:
+            self.exceptionMessage = f"An error occurred: {e}"
+
+    # Starts the thread for sending files
+    def start_send_file_thread(self, file_name, file_size, file_path):
+        send_thread = threading.Thread(target=self.send_file, args=(file_name, file_size, file_path))
+        send_thread.start()
+
+    # Sends a file to the client
+    def send_file(self, file_name, file_size, file_path):
+        self.send_file_metadata(file_name, file_size)
+        self.send_file_data(file_path)
+
+    # Receives a file
+    def receive_file(self):
+        name, size = self.receive_file_metadata()
+        self.receive_file_data(name, size)
 
     # Prepares the program for an exit
     def exit(self):

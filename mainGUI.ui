@@ -137,24 +137,24 @@ color: rgb(255, 255, 255);</string>
       </widget>
      </item>
      <item>
-      <widget class="QPushButton" name="enableNetworkingButton">
+      <widget class="QPushButton" name="enableReceivingButton">
        <property name="styleSheet">
         <string notr="true">background-color: rgb(94, 94, 94);
 color: rgb(255, 255, 255);</string>
        </property>
        <property name="text">
-        <string>Enable Networking</string>
+        <string>Enable Receiving</string>
        </property>
       </widget>
      </item>
      <item>
-      <widget class="QPushButton" name="disableNetworkingButton">
+      <widget class="QPushButton" name="disableReceivingButton">
        <property name="styleSheet">
         <string notr="true">background-color: rgb(94, 94, 94);
 color: rgb(255, 255, 255);</string>
        </property>
        <property name="text">
-        <string>Disable Networking</string>
+        <string>Disable Receiving</string>
        </property>
       </widget>
      </item>
@@ -230,7 +230,7 @@ color: rgb(255, 255, 255);</string>
      <rect>
       <x>30</x>
       <y>360</y>
-      <width>307</width>
+      <width>422</width>
       <height>26</height>
      </rect>
     </property>
@@ -271,9 +271,20 @@ color: rgb(255, 255, 255);</string>
        </property>
       </widget>
      </item>
+     <item>
+      <widget class="QPushButton" name="receiveButton">
+       <property name="styleSheet">
+        <string notr="true">background-color: rgb(94, 94, 94);
+color: rgb(255, 255, 255);</string>
+       </property>
+       <property name="text">
+        <string>Receive</string>
+       </property>
+      </widget>
+     </item>
     </layout>
    </widget>
-   <widget class="QLabel" name="networkingLabel">
+   <widget class="QLabel" name="receivingLabel">
     <property name="geometry">
      <rect>
       <x>10</x>
@@ -289,10 +300,10 @@ color: rgb(255, 255, 255);</string>
      </sizepolicy>
     </property>
     <property name="styleSheet">
-     <string notr="true">color: rgb(255, 255, 255);</string>
+     <string notr="true">color: red;</string>
     </property>
     <property name="text">
-     <string>Networking disabled</string>
+     <string>Receiving disabled</string>
     </property>
    </widget>
    <widget class="QLabel" name="connectionLabel">
@@ -311,7 +322,7 @@ color: rgb(255, 255, 255);</string>
      </sizepolicy>
     </property>
     <property name="styleSheet">
-     <string notr="true">color: rgb(255, 255, 255);</string>
+     <string notr="true">color: red;</string>
     </property>
     <property name="text">
      <string>No connection</string>

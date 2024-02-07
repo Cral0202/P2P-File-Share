@@ -35,10 +35,9 @@ class Main:
 
     # Sets up the widgets for the main window
     def setup_window_widgets(self):
-        # Set up the clipboard for use
         self.clipboard = QtWidgets.QApplication.clipboard()
 
-        self.ui.ipLabel.setText(f"Your IP: {self.network.host_public_ip}")
+        self.ui.ipLabel.setText(f"Your IP: {self.network.host_external_ip}")
 
         self.ui.copyButton.clicked.connect(self.copy_user_ip_to_clipboard)
         self.ui.fileButton.clicked.connect(self.determine_file_to_transfer)
@@ -49,42 +48,66 @@ class Main:
         self.ui.breakConnectionButton.clicked.connect(lambda: self.network.break_connection())
         self.ui.breakConnectionButton.clicked.connect(self.check_network_status_and_update_labels)
 
-        self.ui.enableNetworkingButton.clicked.connect(lambda: self.network.enable_networking())
-        self.ui.enableNetworkingButton.clicked.connect(self.check_network_status_and_update_labels)
+        self.ui.enableReceivingButton.clicked.connect(lambda: self.network.enable_networking())
+        self.ui.enableReceivingButton.clicked.connect(self.check_network_status_and_update_labels)
 
-        self.ui.disableNetworkingButton.clicked.connect(lambda: self.network.disable_networking())
-        self.ui.disableNetworkingButton.clicked.connect(self.check_network_status_and_update_labels)
+        self.ui.disableReceivingButton.clicked.connect(lambda: self.network.disable_networking())
+        self.ui.disableReceivingButton.clicked.connect(self.check_network_status_and_update_labels)
+
+        self.ui.sendButton.clicked.connect(lambda: self.network.start_send_file_thread(self.file_to_transfer["name"],
+                                                                                       self.file_to_transfer["size"],
+                                                                                       self.file_to_transfer["path"]))
+        self.ui.sendButton.clicked.connect(self.check_network_status_and_update_labels)
+
+        self.ui.receiveButton.clicked.connect(lambda: self.network.receive_file())
+        self.ui.receiveButton.clicked.connect(self.check_network_status_and_update_labels)
+
+        self.ui.statusbar.showMessage(self.network.exceptionMessage)
 
     # Used when program is about to exit
     def exit(self):
         self.network.exit()
 
-    # Checks the network status, e.g. if networking is enabled, and updates labels
+    # Checks the network status, e.g. if receiving is enabled, and updates labels
     def check_network_status_and_update_labels(self):
         if self.network.connected:
-            self.ui.connectionLabel.setText(f"Connected to {self.network.client_public_ip}")
+            self.ui.connectionLabel.setText(f"Connected to: {self.network.client_public_ip}")
+            self.ui.connectionLabel.setStyleSheet("color: green")
         else:
             self.ui.connectionLabel.setText("No connection")
+            self.ui.connectionLabel.setStyleSheet("color: red")
 
-        if self.network.networking_enabled:
-            self.ui.networkingLabel.setText("Networking enabled")
+        if self.network.receiving_enabled:
+            self.ui.receivingLabel.setText("Receiving enabled")
+            self.ui.receivingLabel.setStyleSheet("color: green")
         else:
-            self.ui.networkingLabel.setText("Networking disabled")
+            self.ui.receivingLabel.setText("Receiving disabled")
+            self.ui.receivingLabel.setStyleSheet("color: red")
 
         self.ui.statusbar.showMessage(self.network.exceptionMessage)
         self.network.exceptionMessage = ""
 
     # Copies the users IP to the clipboard
     def copy_user_ip_to_clipboard(self):
-        self.clipboard.setText(self.network.host_public_ip)
+        self.clipboard.setText(self.network.host_external_ip)
 
     # Determines which file to transfer
     def determine_file_to_transfer(self):
         initial_dir = os.getcwd()
 
-        # Returns a tuple where first element is path
-        self.file_to_transfer = QFileDialog.getOpenFileName(self.window, "Choose file", initial_dir)
-        self.ui.fileLabel.setText(f"Chosen file: {self.file_to_transfer[0]}")
+        file_path_unformatted = QFileDialog.getOpenFileName(self.window, "Choose file", initial_dir)  # Returns a tuple
+        file_path = file_path_unformatted[0]  # First element in tuple is path
+        self.ui.fileLabel.setText(f"Chosen file: {file_path}")
+
+        if file_path:
+            file_name = os.path.basename(file_path)
+            file_size = os.path.getsize(file_path)
+
+            self.file_to_transfer = {
+                "path": file_path,
+                "name": file_name,
+                "size": file_size
+            }
 
     # Confirms the IP of the client
     def confirm_client_ip(self):
