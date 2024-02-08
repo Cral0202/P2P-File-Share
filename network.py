@@ -2,20 +2,23 @@ import json
 import os
 import socket
 import threading
-
 import requests
 import upnpy
-
 from file_metadata import FileMetadata
+from PyQt6.QtCore import QObject, pyqtSignal
 
 
-class Network:
+class Network(QObject):
+    progress_bar_signal = pyqtSignal(float)  # The signal for the progress bar
+
     def __init__(self):
-        self.exceptionMessage = None
-        self.host_socket = None
-        self.client_socket = None
-        self.host_thread = None
-        self.host_socket_gateway = None
+        super().__init__()
+
+        self.exceptionMessage = None  # Exception messages go here
+        self.host_socket = None  # The socket that clients connect to
+        self.host_socket_gateway = None  # Used for communication when receiving files
+        self.client_socket = None  # Used for communication when sending files
+        self.host_thread = None  # Used for accepting connections
 
         self.upnp = upnpy.UPnP()
         self.wan_ip_service = None  # The WAN IP service object of the igd (for UPNP)
@@ -30,6 +33,8 @@ class Network:
         self.should_stop_threads = False  # True if threads should be stopped
         self.connected = False  # True if connected to a client
         self.upnp_ports_open = False  # True if UPNP ports are open
+        self.sending_files = False  # True if files are currently being sent
+        self.receiving_files = False  # True if files are currently being received
 
     # Checks if UPNP is enabled on network, and if so sets it up for use
     def is_upnp_enabled(self):
@@ -133,7 +138,6 @@ class Network:
             try:
                 client, address = self.host_socket.accept()
                 self.host_socket_gateway = client
-                print(f"HOST SOCKET: Connected to {client} from {address}")
             except socket.timeout:
                 # Check if the threads should be stopped
                 if self.should_stop_threads:
@@ -166,7 +170,6 @@ class Network:
 
                 self.client_public_ip = ip
                 self.connected = True
-                print(f"CLIENT SOCKET: {self.client_socket.getpeername()}")
             except ConnectionRefusedError:
                 self.exceptionMessage = f"Connection to {ip} refused."
             except Exception as e:
@@ -190,26 +193,26 @@ class Network:
             except requests.RequestException as e:
                 self.exceptionMessage = f"An error occurred: {e}"
 
+    # Starts the thread for sending files
+    def start_send_file_thread(self, file_name, file_size, file_path):
+        if not self.sending_files:
+            self.sending_files = True
+            send_thread = threading.Thread(target=self.send_file, args=(file_name, file_size, file_path))
+            send_thread.start()
+
+    # Sends a file to the client
+    def send_file(self, file_name, file_size, file_path):
+        self.send_file_metadata(file_name, file_size)
+        self.send_file_data(file_path)
+        self.sending_files = False
+
     # Sends the metadata of a file
     def send_file_metadata(self, file_name, file_size):
         try:
             metadata = FileMetadata(file_name, file_size)
             metadata_json = json.dumps(metadata.__dict__)  # Serialize metadata to JSON
             self.client_socket.send(metadata_json.encode())  # Encode and send JSON data
-            self.client_socket.recv(1024)  # Wait for conformation that metadata has been received
-            print("File metadata sent")
-        except Exception as e:
-            self.exceptionMessage = f"An error occurred: {e}"
-
-    # Receives the metadata of a file
-    def receive_file_metadata(self):
-        try:
-            metadata_json = self.host_socket_gateway.recv(1024).decode()  # Receive and decode metadata
-            metadata_dict = json.loads(metadata_json)  # Convert JSON string to dictionary
-            metadata = FileMetadata(**metadata_dict)  # Unpack metadata_dict and create an object from it
-            self.host_socket_gateway.send("Metadata received".encode())  # Send conformation that metadata has been
-                                                                         # received
-            return metadata.file_name, metadata.file_size
+            self.client_socket.recv(1024)  # Wait for confirmation that metadata has been received
         except Exception as e:
             self.exceptionMessage = f"An error occurred: {e}"
 
@@ -227,6 +230,31 @@ class Network:
         except Exception as e:
             self.exceptionMessage = f"An error occurred: {e}"
 
+    # Starts the thread for sending files
+    def start_receive_file_thread(self):
+        if not self.receiving_files:
+            self.receiving_files = True
+            send_thread = threading.Thread(target=self.receive_file)
+            send_thread.start()
+
+    # Receives a file
+    def receive_file(self):
+        name, size = self.receive_file_metadata()
+        self.receive_file_data(name, size)
+        self.receiving_files = False
+
+    # Receives the metadata of a file
+    def receive_file_metadata(self):
+        try:
+            metadata_json = self.host_socket_gateway.recv(1024).decode()  # Receive and decode metadata
+            metadata_dict = json.loads(metadata_json)  # Convert JSON string to dictionary
+            metadata = FileMetadata(**metadata_dict)  # Unpack metadata_dict and create an object from it
+            self.host_socket_gateway.send("Metadata received".encode())  # Send conformation that metadata has been
+            # received
+            return metadata.file_name, metadata.file_size
+        except Exception as e:
+            self.exceptionMessage = f"An error occurred: {e}"
+
     # Receives the data of a file
     def receive_file_data(self, file_name, file_size):
         try:
@@ -240,23 +268,13 @@ class Network:
                         break  # No more data to get
                     file.write(chunk)
                     received_data += len(chunk)
+
+                    # Update the progress bar
+                    progress_percentage = (received_data / file_size) * 100
+                    self.progress_bar_signal.emit(progress_percentage)
         except Exception as e:
             self.exceptionMessage = f"An error occurred: {e}"
-
-    # Starts the thread for sending files
-    def start_send_file_thread(self, file_name, file_size, file_path):
-        send_thread = threading.Thread(target=self.send_file, args=(file_name, file_size, file_path))
-        send_thread.start()
-
-    # Sends a file to the client
-    def send_file(self, file_name, file_size, file_path):
-        self.send_file_metadata(file_name, file_size)
-        self.send_file_data(file_path)
-
-    # Receives a file
-    def receive_file(self):
-        name, size = self.receive_file_metadata()
-        self.receive_file_data(name, size)
+            print(self.exceptionMessage)
 
     # Prepares the program for an exit
     def exit(self):

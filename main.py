@@ -2,7 +2,6 @@ import os
 import sys
 from PyQt6 import QtWidgets
 from PyQt6.QtWidgets import QFileDialog
-
 from mainGUI import Ui_MainWindow
 from network import Network
 
@@ -59,8 +58,11 @@ class Main:
                                                                                        self.file_to_transfer["path"]))
         self.ui.sendButton.clicked.connect(self.check_network_status_and_update_labels)
 
-        self.ui.receiveButton.clicked.connect(lambda: self.network.receive_file())
+        self.ui.receiveButton.clicked.connect(lambda: self.network.start_receive_file_thread())
         self.ui.receiveButton.clicked.connect(self.check_network_status_and_update_labels)
+
+        self.network.progress_bar_signal.connect(self.update_progress_bar)
+        self.ui.progressBar.setValue(0)
 
         self.ui.statusbar.showMessage(self.network.exceptionMessage)
 
@@ -99,6 +101,7 @@ class Main:
         file_path = file_path_unformatted[0]  # First element in tuple is path
         self.ui.fileLabel.setText(f"Chosen file: {file_path}")
 
+        # Set metadata for the file
         if file_path:
             file_name = os.path.basename(file_path)
             file_size = os.path.getsize(file_path)
@@ -113,6 +116,10 @@ class Main:
     def confirm_client_ip(self):
         ip = self.ui.ipLine.text()
         self.network.request_connection(ip)
+
+    # Updates the progress bar
+    def update_progress_bar(self, progress):
+        self.ui.progressBar.setValue(int(progress))
 
 
 if __name__ == "__main__":
