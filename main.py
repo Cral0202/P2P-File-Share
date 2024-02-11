@@ -1,7 +1,7 @@
 import os
 import sys
 from PyQt6 import QtWidgets
-from PyQt6.QtWidgets import QFileDialog
+from PyQt6.QtWidgets import QFileDialog, QSizePolicy
 from mainGUI import Ui_MainWindow
 from network import Network
 
@@ -37,57 +37,100 @@ class Main:
         self.clipboard = QtWidgets.QApplication.clipboard()
 
         self.ui.ipLabel.setText(f"Your IP: {self.network.host_external_ip}")
+        self.ui.ipLine.returnPressed.connect(self.confirm_client_ip)  # Allow user to press enter
 
         self.ui.copyButton.clicked.connect(self.copy_user_ip_to_clipboard)
-        self.ui.fileButton.clicked.connect(self.determine_file_to_transfer)
+        self.ui.chooseFileButton.clicked.connect(self.determine_file_to_transfer)
 
-        self.ui.ipConfirmButton.clicked.connect(self.confirm_client_ip)
-        self.ui.ipConfirmButton.clicked.connect(self.check_network_status_and_update_labels)
+        self.ui.connectButton.clicked.connect(self.confirm_client_ip)
 
-        self.ui.breakConnectionButton.clicked.connect(lambda: self.network.break_connection())
-        self.ui.breakConnectionButton.clicked.connect(self.check_network_status_and_update_labels)
+        self.ui.disconnectButton.clicked.connect(lambda: self.network.break_connection())
 
-        self.ui.enableReceivingButton.clicked.connect(lambda: self.network.enable_networking())
-        self.ui.enableReceivingButton.clicked.connect(self.check_network_status_and_update_labels)
+        self.ui.enableReceivingButton.clicked.connect(lambda: self.network.enable_receiving())
 
-        self.ui.disableReceivingButton.clicked.connect(lambda: self.network.disable_networking())
-        self.ui.disableReceivingButton.clicked.connect(self.check_network_status_and_update_labels)
+        self.ui.disableReceivingButton.clicked.connect(lambda: self.network.disable_receiving())
 
         self.ui.sendButton.clicked.connect(lambda: self.network.start_send_file_thread(self.file_to_transfer["name"],
                                                                                        self.file_to_transfer["size"],
                                                                                        self.file_to_transfer["path"]))
-        self.ui.sendButton.clicked.connect(self.check_network_status_and_update_labels)
 
         self.ui.receiveButton.clicked.connect(lambda: self.network.start_receive_file_thread())
-        self.ui.receiveButton.clicked.connect(self.check_network_status_and_update_labels)
 
-        self.network.progress_bar_signal.connect(self.update_progress_bar)
-        self.ui.progressBar.setValue(0)
+        # Connect the signals
+        self.network.receive_progress_bar_signal.connect(self.update_receive_progress_bar)
+        self.network.send_progress_bar_signal.connect(self.update_send_progress_bar)
+        self.network.connection_indicator_signal.connect(self.update_connection_indicators)
+        self.network.receiving_allowed_indicator_signal.connect(self.update_receiving_allowed_label)
+        self.network.file_sent_indicator_signal.connect(self.update_file_sent_label)
+        self.network.file_ready_to_receive_signal.connect(self.update_receive_label)
+        self.network.sent_file_has_been_downloaded_signal.connect(self.update_sent_file_has_been_downloaded_label)
+        self.network.exception_signal.connect(self.show_exception_message)
 
-        self.ui.statusbar.showMessage(self.network.exceptionMessage)
+        # Display warning if upnp is not enabled on network
+        if not self.network.upnp_enabled:
+            self.show_exception_message("UPNP is not enabled on network. Manual port mapping must be done for receiving"
+                                        " to work.")
 
     # Used when program is about to exit
     def exit(self):
         self.network.exit()
 
-    # Checks the network status, e.g. if receiving is enabled, and updates labels
-    def check_network_status_and_update_labels(self):
-        if self.network.connected:
-            self.ui.connectionLabel.setText(f"Connected to: {self.network.client_public_ip}")
-            self.ui.connectionLabel.setStyleSheet("color: green")
-        else:
-            self.ui.connectionLabel.setText("No connection")
-            self.ui.connectionLabel.setStyleSheet("color: red")
+    # Shows an exception message
+    def show_exception_message(self, message):
+        self.ui.statusbar.showMessage(message, 5000)  # Show the message for a specific amount of time
 
-        if self.network.receiving_enabled:
+    # Updates the receiving label to the relevant status
+    def update_receiving_allowed_label(self, status):
+        if status:
             self.ui.receivingLabel.setText("Receiving enabled")
-            self.ui.receivingLabel.setStyleSheet("color: green")
+            self.ui.receivingLabel.setStyleSheet("color: #4CAF50")
         else:
             self.ui.receivingLabel.setText("Receiving disabled")
             self.ui.receivingLabel.setStyleSheet("color: red")
 
-        self.ui.statusbar.showMessage(self.network.exceptionMessage)
-        self.network.exceptionMessage = ""
+    # Updates the connection indicators to the relevant status
+    def update_connection_indicators(self, status):
+        if status:
+            self.ui.connectionLabel.setText(f"Connected to: {self.network.client_public_ip}")
+            self.ui.connectionLabel.setStyleSheet("color: #4CAF50")
+            self.set_ip_line_edit_border_color("#4CAF50")
+        else:
+            self.ui.connectionLabel.setText("No connection")
+            self.ui.connectionLabel.setStyleSheet("color: red")
+            self.set_ip_line_edit_border_color("red")
+
+    # Sets the border color of the ip line edit
+    def set_ip_line_edit_border_color(self, color):
+        style_sheet = ("QLineEdit {{border: 2px solid #ccc; border-radius: 5px; "
+                       "padding: 5px; color: white; border-color: {}}}".format(color))
+        self.ui.ipLine.setStyleSheet(style_sheet)
+
+    # Updates the file sent label
+    def update_file_sent_label(self):
+        self.ui.fileSentLabel.setSizePolicy(QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Fixed)
+
+    def update_receive_label(self, file_name):
+        self.ui.readyToReceiveLabel.setText(f"Ready to receive: {file_name}")
+
+    # Updates the sent file has been downloaded label
+    def update_sent_file_has_been_downloaded_label(self, file_name):
+        self.ui.receiverDownloadedFileLabel.setText(f"The sent file \"{file_name}\" has been downloaded by the "
+                                                    f"receiver.")
+        self.ui.receiverDownloadedFileLabel.setSizePolicy(QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Fixed)
+
+    # Updates the receive progress bar
+    def update_receive_progress_bar(self, progress):
+        self.ui.receiveProgressBar.setValue(int(progress))
+
+    # Updates the send progress bar
+    def update_send_progress_bar(self, progress):
+        self.ui.sendProgressBar.setValue(int(progress))
+
+    # Resets the file indicators, e.g. the file sent label
+    def reset_file_indicators(self):
+        self.ui.fileSentLabel.setSizePolicy(QSizePolicy.Policy.Ignored, QSizePolicy.Policy.Ignored)
+        self.ui.receiverDownloadedFileLabel.setSizePolicy(QSizePolicy.Policy.Ignored, QSizePolicy.Policy.Ignored)
+        self.ui.sendProgressBar.setValue(0)
 
     # Copies the users IP to the clipboard
     def copy_user_ip_to_clipboard(self):
@@ -99,10 +142,10 @@ class Main:
 
         file_path_unformatted = QFileDialog.getOpenFileName(self.window, "Choose file", initial_dir)  # Returns a tuple
         file_path = file_path_unformatted[0]  # First element in tuple is path
-        self.ui.fileLabel.setText(f"Chosen file: {file_path}")
 
         # Set metadata for the file
         if file_path:
+            self.reset_file_indicators()
             file_name = os.path.basename(file_path)
             file_size = os.path.getsize(file_path)
 
@@ -112,14 +155,12 @@ class Main:
                 "size": file_size
             }
 
+            self.ui.chosenFileLabel.setText(f"Chosen file: {file_name}")
+
     # Confirms the IP of the client
     def confirm_client_ip(self):
         ip = self.ui.ipLine.text()
         self.network.request_connection(ip)
-
-    # Updates the progress bar
-    def update_progress_bar(self, progress):
-        self.ui.progressBar.setValue(int(progress))
 
 
 if __name__ == "__main__":

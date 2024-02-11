@@ -12,155 +12,587 @@ from PyQt6 import QtCore, QtGui, QtWidgets
 class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
         MainWindow.setObjectName("MainWindow")
-        MainWindow.resize(1051, 746)
-        MainWindow.setAutoFillBackground(False)
-        MainWindow.setStyleSheet("")
+        MainWindow.resize(730, 785)
+        MainWindow.setStyleSheet("background-color: rgb(34,35,37)")
         self.centralwidget = QtWidgets.QWidget(parent=MainWindow)
-        self.centralwidget.setStyleSheet("background-color: rgb(59, 59, 59)")
         self.centralwidget.setObjectName("centralwidget")
-        self.progressBar = QtWidgets.QProgressBar(parent=self.centralwidget)
-        self.progressBar.setGeometry(QtCore.QRect(30, 650, 341, 23))
-        self.progressBar.setStyleSheet("color: rgb(255, 255, 255);")
-        self.progressBar.setProperty("value", 24)
-        self.progressBar.setObjectName("progressBar")
-        self.fileLabel = QtWidgets.QLabel(parent=self.centralwidget)
-        self.fileLabel.setGeometry(QtCore.QRect(31, 391, 521, 241))
-        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Policy.Preferred, QtWidgets.QSizePolicy.Policy.Preferred)
-        sizePolicy.setHorizontalStretch(0)
-        sizePolicy.setVerticalStretch(0)
-        sizePolicy.setHeightForWidth(self.fileLabel.sizePolicy().hasHeightForWidth())
-        self.fileLabel.setSizePolicy(sizePolicy)
-        self.fileLabel.setStyleSheet("color: rgb(255, 255, 255);")
-        self.fileLabel.setScaledContents(False)
-        self.fileLabel.setAlignment(QtCore.Qt.AlignmentFlag.AlignLeading|QtCore.Qt.AlignmentFlag.AlignLeft|QtCore.Qt.AlignmentFlag.AlignTop)
-        self.fileLabel.setWordWrap(True)
-        self.fileLabel.setObjectName("fileLabel")
-        self.scrollArea = QtWidgets.QScrollArea(parent=self.centralwidget)
-        self.scrollArea.setGeometry(QtCore.QRect(580, 30, 441, 651))
-        self.scrollArea.setStyleSheet("background-color: rgb(94, 94, 94);")
-        self.scrollArea.setWidgetResizable(True)
-        self.scrollArea.setObjectName("scrollArea")
-        self.scrollAreaWidgetContents = QtWidgets.QWidget()
-        self.scrollAreaWidgetContents.setGeometry(QtCore.QRect(0, 0, 439, 649))
-        self.scrollAreaWidgetContents.setObjectName("scrollAreaWidgetContents")
-        self.scrollArea.setWidget(self.scrollAreaWidgetContents)
-        self.layoutWidget = QtWidgets.QWidget(parent=self.centralwidget)
-        self.layoutWidget.setGeometry(QtCore.QRect(30, 70, 541, 26))
-        self.layoutWidget.setObjectName("layoutWidget")
-        self.userIPHBox = QtWidgets.QHBoxLayout(self.layoutWidget)
-        self.userIPHBox.setContentsMargins(0, 0, 0, 0)
-        self.userIPHBox.setSpacing(40)
-        self.userIPHBox.setObjectName("userIPHBox")
-        self.ipLabel = QtWidgets.QLabel(parent=self.layoutWidget)
-        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Policy.Expanding, QtWidgets.QSizePolicy.Policy.Preferred)
+        self.verticalLayout = QtWidgets.QVBoxLayout(self.centralwidget)
+        self.verticalLayout.setObjectName("verticalLayout")
+        self.horizontalLayout_6 = QtWidgets.QHBoxLayout()
+        self.horizontalLayout_6.setObjectName("horizontalLayout_6")
+        self.verticalLayout_5 = QtWidgets.QVBoxLayout()
+        self.verticalLayout_5.setObjectName("verticalLayout_5")
+        self.horizontalLayout_5 = QtWidgets.QHBoxLayout()
+        self.horizontalLayout_5.setObjectName("horizontalLayout_5")
+        self.ipLabel = QtWidgets.QLabel(parent=self.centralwidget)
+        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Policy.Preferred, QtWidgets.QSizePolicy.Policy.Fixed)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
         sizePolicy.setHeightForWidth(self.ipLabel.sizePolicy().hasHeightForWidth())
         self.ipLabel.setSizePolicy(sizePolicy)
+        font = QtGui.QFont()
+        font.setFamily("Gadugi")
+        font.setPointSize(10)
+        font.setBold(True)
+        font.setItalic(False)
+        self.ipLabel.setFont(font)
         self.ipLabel.setStyleSheet("color: rgb(255, 255, 255);")
         self.ipLabel.setObjectName("ipLabel")
-        self.userIPHBox.addWidget(self.ipLabel)
-        self.copyButton = QtWidgets.QPushButton(parent=self.layoutWidget)
-        self.copyButton.setStyleSheet("background-color: rgb(94, 94, 94);\n"
-"color: rgb(255, 255, 255);")
+        self.horizontalLayout_5.addWidget(self.ipLabel)
+        self.verticalLayout_5.addLayout(self.horizontalLayout_5)
+        self.horizontalLayout_13 = QtWidgets.QHBoxLayout()
+        self.horizontalLayout_13.setObjectName("horizontalLayout_13")
+        self.copyButton = QtWidgets.QPushButton(parent=self.centralwidget)
+        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Policy.Fixed, QtWidgets.QSizePolicy.Policy.Fixed)
+        sizePolicy.setHorizontalStretch(0)
+        sizePolicy.setVerticalStretch(0)
+        sizePolicy.setHeightForWidth(self.copyButton.sizePolicy().hasHeightForWidth())
+        self.copyButton.setSizePolicy(sizePolicy)
+        font = QtGui.QFont()
+        font.setFamily("Gadugi")
+        font.setBold(True)
+        self.copyButton.setFont(font)
+        self.copyButton.setStyleSheet("QPushButton {\n"
+"    background-color: rgba(169, 169, 169, 0.2); /* Slightly transparent gray */\n"
+"    border-radius: 7px; /* Rounded edges */\n"
+"    color: white; /* Text color */\n"
+"    padding: 5px 15px; /* Add padding to create space around         the text */\n"
+"}\n"
+"\n"
+"QPushButton:hover {\n"
+"    background-color: rgba(169, 169, 169, 0.7); /* Lighten the color on hover */\n"
+"}\n"
+"\n"
+"QPushButton:pressed {\n"
+"    background-color: rgba(105, 105, 105, 0.9); /* Darken the color when pressed */\n"
+"}")
         self.copyButton.setObjectName("copyButton")
-        self.userIPHBox.addWidget(self.copyButton)
-        self.enableReceivingButton = QtWidgets.QPushButton(parent=self.layoutWidget)
-        self.enableReceivingButton.setStyleSheet("background-color: rgb(94, 94, 94);\n"
-"color: rgb(255, 255, 255);")
+        self.horizontalLayout_13.addWidget(self.copyButton)
+        spacerItem = QtWidgets.QSpacerItem(40, 20, QtWidgets.QSizePolicy.Policy.Expanding, QtWidgets.QSizePolicy.Policy.Minimum)
+        self.horizontalLayout_13.addItem(spacerItem)
+        self.verticalLayout_5.addLayout(self.horizontalLayout_13)
+        self.horizontalLayout_4 = QtWidgets.QHBoxLayout()
+        self.horizontalLayout_4.setObjectName("horizontalLayout_4")
+        self.enableReceivingButton = QtWidgets.QPushButton(parent=self.centralwidget)
+        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Policy.Fixed, QtWidgets.QSizePolicy.Policy.Fixed)
+        sizePolicy.setHorizontalStretch(0)
+        sizePolicy.setVerticalStretch(0)
+        sizePolicy.setHeightForWidth(self.enableReceivingButton.sizePolicy().hasHeightForWidth())
+        self.enableReceivingButton.setSizePolicy(sizePolicy)
+        font = QtGui.QFont()
+        font.setFamily("Gadugi")
+        self.enableReceivingButton.setFont(font)
+        self.enableReceivingButton.setStyleSheet("QPushButton {\n"
+"    background-color: rgba(169, 169, 169, 0.2); /* Slightly transparent gray */\n"
+"    border-radius: 7px; /* Rounded edges */\n"
+"    color: white; /* Text color */\n"
+"    padding: 5px 15px; /* Add padding to create space around         the text */\n"
+"}\n"
+"\n"
+"QPushButton:hover {\n"
+"    background-color: rgba(169, 169, 169, 0.7); /* Lighten the color on hover */\n"
+"}\n"
+"\n"
+"QPushButton:pressed {\n"
+"    background-color: rgba(105, 105, 105, 0.9); /* Darken the color when pressed */\n"
+"}")
         self.enableReceivingButton.setObjectName("enableReceivingButton")
-        self.userIPHBox.addWidget(self.enableReceivingButton)
-        self.disableReceivingButton = QtWidgets.QPushButton(parent=self.layoutWidget)
-        self.disableReceivingButton.setStyleSheet("background-color: rgb(94, 94, 94);\n"
-"color: rgb(255, 255, 255);")
+        self.horizontalLayout_4.addWidget(self.enableReceivingButton)
+        self.disableReceivingButton = QtWidgets.QPushButton(parent=self.centralwidget)
+        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Policy.Fixed, QtWidgets.QSizePolicy.Policy.Fixed)
+        sizePolicy.setHorizontalStretch(0)
+        sizePolicy.setVerticalStretch(0)
+        sizePolicy.setHeightForWidth(self.disableReceivingButton.sizePolicy().hasHeightForWidth())
+        self.disableReceivingButton.setSizePolicy(sizePolicy)
+        font = QtGui.QFont()
+        font.setFamily("Gadugi")
+        self.disableReceivingButton.setFont(font)
+        self.disableReceivingButton.setStyleSheet("QPushButton {\n"
+"    background-color: rgba(169, 169, 169, 0.2); /* Slightly transparent gray */\n"
+"    border-radius: 7px; /* Rounded edges */\n"
+"    color: white; /* Text color */\n"
+"    padding: 5px 15px; /* Add padding to create space around         the text */\n"
+"}\n"
+"\n"
+"QPushButton:hover {\n"
+"    background-color: rgba(169, 169, 169, 0.7); /* Lighten the color on hover */\n"
+"}\n"
+"\n"
+"QPushButton:pressed {\n"
+"    background-color: rgba(105, 105, 105, 0.9); /* Darken the color when pressed */\n"
+"}")
         self.disableReceivingButton.setObjectName("disableReceivingButton")
-        self.userIPHBox.addWidget(self.disableReceivingButton)
-        self.layoutWidget1 = QtWidgets.QWidget(parent=self.centralwidget)
-        self.layoutWidget1.setGeometry(QtCore.QRect(30, 201, 391, 61))
-        self.layoutWidget1.setObjectName("layoutWidget1")
-        self.receiverIPVBox = QtWidgets.QVBoxLayout(self.layoutWidget1)
-        self.receiverIPVBox.setContentsMargins(0, 0, 0, 0)
-        self.receiverIPVBox.setObjectName("receiverIPVBox")
-        self.ipSendLabel = QtWidgets.QLabel(parent=self.layoutWidget1)
-        self.ipSendLabel.setStyleSheet("color: rgb(255, 255, 255);\n"
-"padding-left: 65px;")
-        self.ipSendLabel.setAlignment(QtCore.Qt.AlignmentFlag.AlignLeading|QtCore.Qt.AlignmentFlag.AlignLeft|QtCore.Qt.AlignmentFlag.AlignVCenter)
+        self.horizontalLayout_4.addWidget(self.disableReceivingButton)
+        spacerItem1 = QtWidgets.QSpacerItem(40, 20, QtWidgets.QSizePolicy.Policy.Expanding, QtWidgets.QSizePolicy.Policy.Minimum)
+        self.horizontalLayout_4.addItem(spacerItem1)
+        self.verticalLayout_5.addLayout(self.horizontalLayout_4)
+        self.horizontalLayout_6.addLayout(self.verticalLayout_5)
+        self.verticalLayout.addLayout(self.horizontalLayout_6)
+        self.line_7 = QtWidgets.QFrame(parent=self.centralwidget)
+        self.line_7.setStyleSheet("")
+        self.line_7.setFrameShadow(QtWidgets.QFrame.Shadow.Sunken)
+        self.line_7.setLineWidth(2)
+        self.line_7.setMidLineWidth(0)
+        self.line_7.setFrameShape(QtWidgets.QFrame.Shape.HLine)
+        self.line_7.setObjectName("line_7")
+        self.verticalLayout.addWidget(self.line_7)
+        spacerItem2 = QtWidgets.QSpacerItem(20, 20, QtWidgets.QSizePolicy.Policy.Minimum, QtWidgets.QSizePolicy.Policy.Expanding)
+        self.verticalLayout.addItem(spacerItem2)
+        self.verticalLayout_10 = QtWidgets.QVBoxLayout()
+        self.verticalLayout_10.setObjectName("verticalLayout_10")
+        self.horizontalLayout_16 = QtWidgets.QHBoxLayout()
+        self.horizontalLayout_16.setObjectName("horizontalLayout_16")
+        spacerItem3 = QtWidgets.QSpacerItem(32, 20, QtWidgets.QSizePolicy.Policy.Preferred, QtWidgets.QSizePolicy.Policy.Minimum)
+        self.horizontalLayout_16.addItem(spacerItem3)
+        self.ipSendLabel = QtWidgets.QLabel(parent=self.centralwidget)
+        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Policy.Fixed, QtWidgets.QSizePolicy.Policy.Fixed)
+        sizePolicy.setHorizontalStretch(0)
+        sizePolicy.setVerticalStretch(0)
+        sizePolicy.setHeightForWidth(self.ipSendLabel.sizePolicy().hasHeightForWidth())
+        self.ipSendLabel.setSizePolicy(sizePolicy)
+        font = QtGui.QFont()
+        font.setFamily("Gadugi")
+        font.setPointSize(10)
+        font.setBold(True)
+        self.ipSendLabel.setFont(font)
+        self.ipSendLabel.setStyleSheet("color: rgb(255, 255, 255);")
         self.ipSendLabel.setObjectName("ipSendLabel")
-        self.receiverIPVBox.addWidget(self.ipSendLabel)
-        self.receiverIPHBox = QtWidgets.QHBoxLayout()
-        self.receiverIPHBox.setObjectName("receiverIPHBox")
-        self.ipLine = QtWidgets.QLineEdit(parent=self.layoutWidget1)
-        self.ipLine.setStyleSheet("color: rgb(255, 255, 255);")
-        self.ipLine.setText("")
+        self.horizontalLayout_16.addWidget(self.ipSendLabel)
+        spacerItem4 = QtWidgets.QSpacerItem(40, 20, QtWidgets.QSizePolicy.Policy.Expanding, QtWidgets.QSizePolicy.Policy.Minimum)
+        self.horizontalLayout_16.addItem(spacerItem4)
+        self.verticalLayout_10.addLayout(self.horizontalLayout_16)
+        self.horizontalLayout_15 = QtWidgets.QHBoxLayout()
+        self.horizontalLayout_15.setObjectName("horizontalLayout_15")
+        self.ipLine = QtWidgets.QLineEdit(parent=self.centralwidget)
+        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Policy.Fixed, QtWidgets.QSizePolicy.Policy.Fixed)
+        sizePolicy.setHorizontalStretch(0)
+        sizePolicy.setVerticalStretch(0)
+        sizePolicy.setHeightForWidth(self.ipLine.sizePolicy().hasHeightForWidth())
+        self.ipLine.setSizePolicy(sizePolicy)
+        self.ipLine.setMinimumSize(QtCore.QSize(155, 0))
+        font = QtGui.QFont()
+        font.setFamily("Gadugi")
+        self.ipLine.setFont(font)
+        self.ipLine.setStyleSheet("QLineEdit {\n"
+"    border: 2px solid #ccc; /* Border color */\n"
+"    border-radius: 5px; /* Rounded corners */\n"
+"    padding: 5px; /* Padding */\n"
+"    color: white;\n"
+"}")
         self.ipLine.setObjectName("ipLine")
-        self.receiverIPHBox.addWidget(self.ipLine)
-        self.ipConfirmButton = QtWidgets.QPushButton(parent=self.layoutWidget1)
-        self.ipConfirmButton.setStyleSheet("background-color: rgb(94, 94, 94);\n"
-"color: rgb(255, 255, 255);")
-        self.ipConfirmButton.setObjectName("ipConfirmButton")
-        self.receiverIPHBox.addWidget(self.ipConfirmButton)
-        self.breakConnectionButton = QtWidgets.QPushButton(parent=self.layoutWidget1)
-        self.breakConnectionButton.setStyleSheet("background-color: rgb(94, 94, 94);\n"
-"color: rgb(255, 255, 255);")
-        self.breakConnectionButton.setObjectName("breakConnectionButton")
-        self.receiverIPHBox.addWidget(self.breakConnectionButton)
-        self.receiverIPVBox.addLayout(self.receiverIPHBox)
-        self.layoutWidget2 = QtWidgets.QWidget(parent=self.centralwidget)
-        self.layoutWidget2.setGeometry(QtCore.QRect(30, 360, 422, 26))
-        self.layoutWidget2.setObjectName("layoutWidget2")
-        self.chooseFileHBox = QtWidgets.QHBoxLayout(self.layoutWidget2)
-        self.chooseFileHBox.setContentsMargins(0, 0, 0, 0)
-        self.chooseFileHBox.setSpacing(40)
-        self.chooseFileHBox.setObjectName("chooseFileHBox")
-        self.fileButton = QtWidgets.QPushButton(parent=self.layoutWidget2)
-        self.fileButton.setStyleSheet("background-color: rgb(94, 94, 94);\n"
-"color: rgb(255, 255, 255);")
-        self.fileButton.setObjectName("fileButton")
-        self.chooseFileHBox.addWidget(self.fileButton)
-        self.sendButton = QtWidgets.QPushButton(parent=self.layoutWidget2)
-        self.sendButton.setStyleSheet("background-color: rgb(94, 94, 94);\n"
-"color: rgb(255, 255, 255);")
+        self.horizontalLayout_15.addWidget(self.ipLine)
+        spacerItem5 = QtWidgets.QSpacerItem(40, 20, QtWidgets.QSizePolicy.Policy.Expanding, QtWidgets.QSizePolicy.Policy.Minimum)
+        self.horizontalLayout_15.addItem(spacerItem5)
+        self.verticalLayout_10.addLayout(self.horizontalLayout_15)
+        self.horizontalLayout_12 = QtWidgets.QHBoxLayout()
+        self.horizontalLayout_12.setObjectName("horizontalLayout_12")
+        self.connectButton = QtWidgets.QPushButton(parent=self.centralwidget)
+        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Policy.Fixed, QtWidgets.QSizePolicy.Policy.Fixed)
+        sizePolicy.setHorizontalStretch(0)
+        sizePolicy.setVerticalStretch(0)
+        sizePolicy.setHeightForWidth(self.connectButton.sizePolicy().hasHeightForWidth())
+        self.connectButton.setSizePolicy(sizePolicy)
+        font = QtGui.QFont()
+        font.setFamily("Gadugi")
+        self.connectButton.setFont(font)
+        self.connectButton.setStyleSheet("QPushButton {\n"
+"    background-color: rgba(169, 169, 169, 0.2); /* Slightly transparent gray */\n"
+"    border-radius: 7px; /* Rounded edges */\n"
+"    color: white; /* Text color */\n"
+"    padding: 5px 15px; /* Add padding to create space around         the text */\n"
+"}\n"
+"\n"
+"QPushButton:hover {\n"
+"    background-color: rgba(169, 169, 169, 0.7); /* Lighten the color on hover */\n"
+"}\n"
+"\n"
+"QPushButton:pressed {\n"
+"    background-color: rgba(105, 105, 105, 0.9); /* Darken the color when pressed */\n"
+"}")
+        self.connectButton.setObjectName("connectButton")
+        self.horizontalLayout_12.addWidget(self.connectButton)
+        self.disconnectButton = QtWidgets.QPushButton(parent=self.centralwidget)
+        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Policy.Fixed, QtWidgets.QSizePolicy.Policy.Fixed)
+        sizePolicy.setHorizontalStretch(0)
+        sizePolicy.setVerticalStretch(0)
+        sizePolicy.setHeightForWidth(self.disconnectButton.sizePolicy().hasHeightForWidth())
+        self.disconnectButton.setSizePolicy(sizePolicy)
+        font = QtGui.QFont()
+        font.setFamily("Gadugi")
+        self.disconnectButton.setFont(font)
+        self.disconnectButton.setStyleSheet("QPushButton {\n"
+"    background-color: rgba(169, 169, 169, 0.2); /* Slightly transparent gray */\n"
+"    border-radius: 7px; /* Rounded edges */\n"
+"    color: white; /* Text color */\n"
+"    padding: 5px 15px; /* Add padding to create space around         the text */\n"
+"}\n"
+"\n"
+"QPushButton:hover {\n"
+"    background-color: rgba(169, 169, 169, 0.7); /* Lighten the color on hover */\n"
+"}\n"
+"\n"
+"QPushButton:pressed {\n"
+"    background-color: rgba(105, 105, 105, 0.9); /* Darken the color when pressed */\n"
+"}")
+        self.disconnectButton.setObjectName("disconnectButton")
+        self.horizontalLayout_12.addWidget(self.disconnectButton)
+        spacerItem6 = QtWidgets.QSpacerItem(40, 20, QtWidgets.QSizePolicy.Policy.Expanding, QtWidgets.QSizePolicy.Policy.Minimum)
+        self.horizontalLayout_12.addItem(spacerItem6)
+        self.verticalLayout_10.addLayout(self.horizontalLayout_12)
+        self.verticalLayout.addLayout(self.verticalLayout_10)
+        spacerItem7 = QtWidgets.QSpacerItem(20, 20, QtWidgets.QSizePolicy.Policy.Minimum, QtWidgets.QSizePolicy.Policy.Expanding)
+        self.verticalLayout.addItem(spacerItem7)
+        self.line_5 = QtWidgets.QFrame(parent=self.centralwidget)
+        self.line_5.setLineWidth(2)
+        self.line_5.setFrameShape(QtWidgets.QFrame.Shape.HLine)
+        self.line_5.setFrameShadow(QtWidgets.QFrame.Shadow.Sunken)
+        self.line_5.setObjectName("line_5")
+        self.verticalLayout.addWidget(self.line_5)
+        spacerItem8 = QtWidgets.QSpacerItem(20, 20, QtWidgets.QSizePolicy.Policy.Minimum, QtWidgets.QSizePolicy.Policy.Expanding)
+        self.verticalLayout.addItem(spacerItem8)
+        self.horizontalLayout_3 = QtWidgets.QHBoxLayout()
+        self.horizontalLayout_3.setObjectName("horizontalLayout_3")
+        self.verticalLayout_3 = QtWidgets.QVBoxLayout()
+        self.verticalLayout_3.setObjectName("verticalLayout_3")
+        self.horizontalLayout_8 = QtWidgets.QHBoxLayout()
+        self.horizontalLayout_8.setObjectName("horizontalLayout_8")
+        self.chosenFileLabel = QtWidgets.QLabel(parent=self.centralwidget)
+        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Policy.Preferred, QtWidgets.QSizePolicy.Policy.Fixed)
+        sizePolicy.setHorizontalStretch(0)
+        sizePolicy.setVerticalStretch(0)
+        sizePolicy.setHeightForWidth(self.chosenFileLabel.sizePolicy().hasHeightForWidth())
+        self.chosenFileLabel.setSizePolicy(sizePolicy)
+        font = QtGui.QFont()
+        font.setFamily("Gadugi")
+        font.setPointSize(10)
+        font.setBold(True)
+        self.chosenFileLabel.setFont(font)
+        self.chosenFileLabel.setStyleSheet("color: rgb(255, 255, 255);")
+        self.chosenFileLabel.setObjectName("chosenFileLabel")
+        self.horizontalLayout_8.addWidget(self.chosenFileLabel)
+        spacerItem9 = QtWidgets.QSpacerItem(40, 20, QtWidgets.QSizePolicy.Policy.Expanding, QtWidgets.QSizePolicy.Policy.Minimum)
+        self.horizontalLayout_8.addItem(spacerItem9)
+        self.verticalLayout_3.addLayout(self.horizontalLayout_8)
+        self.horizontalLayout_7 = QtWidgets.QHBoxLayout()
+        self.horizontalLayout_7.setObjectName("horizontalLayout_7")
+        self.chooseFileButton = QtWidgets.QPushButton(parent=self.centralwidget)
+        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Policy.Fixed, QtWidgets.QSizePolicy.Policy.Fixed)
+        sizePolicy.setHorizontalStretch(0)
+        sizePolicy.setVerticalStretch(0)
+        sizePolicy.setHeightForWidth(self.chooseFileButton.sizePolicy().hasHeightForWidth())
+        self.chooseFileButton.setSizePolicy(sizePolicy)
+        font = QtGui.QFont()
+        font.setFamily("Gadugi")
+        self.chooseFileButton.setFont(font)
+        self.chooseFileButton.setStyleSheet("QPushButton {\n"
+"    background-color: rgba(169, 169, 169, 0.2); /* Slightly transparent gray */\n"
+"    border-radius: 7px; /* Rounded edges */\n"
+"    color: white; /* Text color */\n"
+"    padding: 5px 15px; /* Add padding to create space around         the text */\n"
+"}\n"
+"\n"
+"QPushButton:hover {\n"
+"    background-color: rgba(169, 169, 169, 0.7); /* Lighten the color on hover */\n"
+"}\n"
+"\n"
+"QPushButton:pressed {\n"
+"    background-color: rgba(105, 105, 105, 0.9); /* Darken the color when pressed */\n"
+"}")
+        self.chooseFileButton.setObjectName("chooseFileButton")
+        self.horizontalLayout_7.addWidget(self.chooseFileButton)
+        spacerItem10 = QtWidgets.QSpacerItem(40, 20, QtWidgets.QSizePolicy.Policy.Expanding, QtWidgets.QSizePolicy.Policy.Minimum)
+        self.horizontalLayout_7.addItem(spacerItem10)
+        self.verticalLayout_3.addLayout(self.horizontalLayout_7)
+        self.horizontalLayout_11 = QtWidgets.QHBoxLayout()
+        self.horizontalLayout_11.setObjectName("horizontalLayout_11")
+        self.sendButton = QtWidgets.QPushButton(parent=self.centralwidget)
+        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Policy.Fixed, QtWidgets.QSizePolicy.Policy.Fixed)
+        sizePolicy.setHorizontalStretch(0)
+        sizePolicy.setVerticalStretch(0)
+        sizePolicy.setHeightForWidth(self.sendButton.sizePolicy().hasHeightForWidth())
+        self.sendButton.setSizePolicy(sizePolicy)
+        font = QtGui.QFont()
+        font.setFamily("Gadugi")
+        self.sendButton.setFont(font)
+        self.sendButton.setStyleSheet("QPushButton {\n"
+"    background-color: rgba(169, 169, 169, 0.2); /* Slightly transparent gray */\n"
+"    border-radius: 7px; /* Rounded edges */\n"
+"    color: white; /* Text color */\n"
+"    padding: 5px 15px; /* Add padding to create space around         the text */\n"
+"}\n"
+"\n"
+"QPushButton:hover {\n"
+"    background-color: rgba(169, 169, 169, 0.7); /* Lighten the color on hover */\n"
+"}\n"
+"\n"
+"QPushButton:pressed {\n"
+"    background-color: rgba(105, 105, 105, 0.9); /* Darken the color when pressed */\n"
+"}")
         self.sendButton.setObjectName("sendButton")
-        self.chooseFileHBox.addWidget(self.sendButton)
-        self.stopButton = QtWidgets.QPushButton(parent=self.layoutWidget2)
-        self.stopButton.setStyleSheet("background-color: rgb(94, 94, 94);\n"
-"color: rgb(255, 255, 255);")
-        self.stopButton.setObjectName("stopButton")
-        self.chooseFileHBox.addWidget(self.stopButton)
-        self.receiveButton = QtWidgets.QPushButton(parent=self.layoutWidget2)
-        self.receiveButton.setStyleSheet("background-color: rgb(94, 94, 94);\n"
-"color: rgb(255, 255, 255);")
+        self.horizontalLayout_11.addWidget(self.sendButton)
+        self.stopSendButton = QtWidgets.QPushButton(parent=self.centralwidget)
+        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Policy.Fixed, QtWidgets.QSizePolicy.Policy.Fixed)
+        sizePolicy.setHorizontalStretch(0)
+        sizePolicy.setVerticalStretch(0)
+        sizePolicy.setHeightForWidth(self.stopSendButton.sizePolicy().hasHeightForWidth())
+        self.stopSendButton.setSizePolicy(sizePolicy)
+        font = QtGui.QFont()
+        font.setFamily("Gadugi")
+        self.stopSendButton.setFont(font)
+        self.stopSendButton.setStyleSheet("QPushButton {\n"
+"    background-color: rgba(169, 169, 169, 0.2); /* Slightly transparent gray */\n"
+"    border-radius: 7px; /* Rounded edges */\n"
+"    color: white; /* Text color */\n"
+"    padding: 5px 15px; /* Add padding to create space around         the text */\n"
+"}\n"
+"\n"
+"QPushButton:hover {\n"
+"    background-color: rgba(169, 169, 169, 0.7); /* Lighten the color on hover */\n"
+"}\n"
+"\n"
+"QPushButton:pressed {\n"
+"    background-color: rgba(105, 105, 105, 0.9); /* Darken the color when pressed */\n"
+"}")
+        self.stopSendButton.setObjectName("stopSendButton")
+        self.horizontalLayout_11.addWidget(self.stopSendButton)
+        self.fileSentLabel = QtWidgets.QLabel(parent=self.centralwidget)
+        self.fileSentLabel.setEnabled(True)
+        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Policy.Ignored, QtWidgets.QSizePolicy.Policy.Ignored)
+        sizePolicy.setHorizontalStretch(0)
+        sizePolicy.setVerticalStretch(0)
+        sizePolicy.setHeightForWidth(self.fileSentLabel.sizePolicy().hasHeightForWidth())
+        self.fileSentLabel.setSizePolicy(sizePolicy)
+        font = QtGui.QFont()
+        font.setFamily("Gadugi")
+        font.setPointSize(10)
+        font.setBold(True)
+        self.fileSentLabel.setFont(font)
+        self.fileSentLabel.setStyleSheet("color: #4CAF50;")
+        self.fileSentLabel.setObjectName("fileSentLabel")
+        self.horizontalLayout_11.addWidget(self.fileSentLabel)
+        spacerItem11 = QtWidgets.QSpacerItem(40, 20, QtWidgets.QSizePolicy.Policy.Expanding, QtWidgets.QSizePolicy.Policy.Minimum)
+        self.horizontalLayout_11.addItem(spacerItem11)
+        self.verticalLayout_3.addLayout(self.horizontalLayout_11)
+        self.horizontalLayout_10 = QtWidgets.QHBoxLayout()
+        self.horizontalLayout_10.setObjectName("horizontalLayout_10")
+        self.sendProgressBar = QtWidgets.QProgressBar(parent=self.centralwidget)
+        self.sendProgressBar.setEnabled(True)
+        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Policy.Fixed, QtWidgets.QSizePolicy.Policy.Fixed)
+        sizePolicy.setHorizontalStretch(0)
+        sizePolicy.setVerticalStretch(0)
+        sizePolicy.setHeightForWidth(self.sendProgressBar.sizePolicy().hasHeightForWidth())
+        self.sendProgressBar.setSizePolicy(sizePolicy)
+        self.sendProgressBar.setMinimumSize(QtCore.QSize(190, 0))
+        self.sendProgressBar.setSizeIncrement(QtCore.QSize(0, 0))
+        font = QtGui.QFont()
+        font.setFamily("Gadugi")
+        self.sendProgressBar.setFont(font)
+        self.sendProgressBar.setStyleSheet("QProgressBar {\n"
+"    border-radius: 5px; /* Rounded corners */\n"
+"    background-color: rgba(169, 169, 169, 0.2); /* Slightly transparent gray */\n"
+"    text-align: center; /* Center-align the text */\n"
+"    color: white\n"
+"}\n"
+"\n"
+"QProgressBar::chunk {\n"
+"    background-color: #4CAF50; /* Progress color */\n"
+"    border-radius: 5px; /* Maintain rounded corners for progress chunk */\n"
+"}")
+        self.sendProgressBar.setProperty("value", 0)
+        self.sendProgressBar.setTextVisible(True)
+        self.sendProgressBar.setInvertedAppearance(False)
+        self.sendProgressBar.setObjectName("sendProgressBar")
+        self.horizontalLayout_10.addWidget(self.sendProgressBar)
+        spacerItem12 = QtWidgets.QSpacerItem(40, 20, QtWidgets.QSizePolicy.Policy.Expanding, QtWidgets.QSizePolicy.Policy.Minimum)
+        self.horizontalLayout_10.addItem(spacerItem12)
+        self.verticalLayout_3.addLayout(self.horizontalLayout_10)
+        self.horizontalLayout = QtWidgets.QHBoxLayout()
+        self.horizontalLayout.setObjectName("horizontalLayout")
+        self.receiverDownloadedFileLabel = QtWidgets.QLabel(parent=self.centralwidget)
+        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Policy.Ignored, QtWidgets.QSizePolicy.Policy.Ignored)
+        sizePolicy.setHorizontalStretch(0)
+        sizePolicy.setVerticalStretch(0)
+        sizePolicy.setHeightForWidth(self.receiverDownloadedFileLabel.sizePolicy().hasHeightForWidth())
+        self.receiverDownloadedFileLabel.setSizePolicy(sizePolicy)
+        font = QtGui.QFont()
+        font.setFamily("Gadugi")
+        font.setPointSize(10)
+        font.setBold(True)
+        self.receiverDownloadedFileLabel.setFont(font)
+        self.receiverDownloadedFileLabel.setStyleSheet("color: rgb(255, 255, 255);")
+        self.receiverDownloadedFileLabel.setObjectName("receiverDownloadedFileLabel")
+        self.horizontalLayout.addWidget(self.receiverDownloadedFileLabel)
+        spacerItem13 = QtWidgets.QSpacerItem(40, 20, QtWidgets.QSizePolicy.Policy.Expanding, QtWidgets.QSizePolicy.Policy.Minimum)
+        self.horizontalLayout.addItem(spacerItem13)
+        self.verticalLayout_3.addLayout(self.horizontalLayout)
+        self.horizontalLayout_3.addLayout(self.verticalLayout_3)
+        self.verticalLayout.addLayout(self.horizontalLayout_3)
+        spacerItem14 = QtWidgets.QSpacerItem(20, 20, QtWidgets.QSizePolicy.Policy.Minimum, QtWidgets.QSizePolicy.Policy.Expanding)
+        self.verticalLayout.addItem(spacerItem14)
+        self.line_3 = QtWidgets.QFrame(parent=self.centralwidget)
+        self.line_3.setLineWidth(2)
+        self.line_3.setFrameShape(QtWidgets.QFrame.Shape.HLine)
+        self.line_3.setFrameShadow(QtWidgets.QFrame.Shadow.Sunken)
+        self.line_3.setObjectName("line_3")
+        self.verticalLayout.addWidget(self.line_3)
+        spacerItem15 = QtWidgets.QSpacerItem(20, 20, QtWidgets.QSizePolicy.Policy.Minimum, QtWidgets.QSizePolicy.Policy.Expanding)
+        self.verticalLayout.addItem(spacerItem15)
+        self.verticalLayout_2 = QtWidgets.QVBoxLayout()
+        self.verticalLayout_2.setObjectName("verticalLayout_2")
+        self.readyToReceiveLabel = QtWidgets.QLabel(parent=self.centralwidget)
+        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Policy.Preferred, QtWidgets.QSizePolicy.Policy.Fixed)
+        sizePolicy.setHorizontalStretch(0)
+        sizePolicy.setVerticalStretch(0)
+        sizePolicy.setHeightForWidth(self.readyToReceiveLabel.sizePolicy().hasHeightForWidth())
+        self.readyToReceiveLabel.setSizePolicy(sizePolicy)
+        font = QtGui.QFont()
+        font.setFamily("Gadugi")
+        font.setPointSize(10)
+        font.setBold(True)
+        self.readyToReceiveLabel.setFont(font)
+        self.readyToReceiveLabel.setStyleSheet("color: rgb(255, 255, 255);")
+        self.readyToReceiveLabel.setObjectName("readyToReceiveLabel")
+        self.verticalLayout_2.addWidget(self.readyToReceiveLabel)
+        self.horizontalLayout_2 = QtWidgets.QHBoxLayout()
+        self.horizontalLayout_2.setObjectName("horizontalLayout_2")
+        self.receiveButton = QtWidgets.QPushButton(parent=self.centralwidget)
+        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Policy.Fixed, QtWidgets.QSizePolicy.Policy.Fixed)
+        sizePolicy.setHorizontalStretch(0)
+        sizePolicy.setVerticalStretch(0)
+        sizePolicy.setHeightForWidth(self.receiveButton.sizePolicy().hasHeightForWidth())
+        self.receiveButton.setSizePolicy(sizePolicy)
+        font = QtGui.QFont()
+        font.setFamily("Gadugi")
+        self.receiveButton.setFont(font)
+        self.receiveButton.setStyleSheet("QPushButton {\n"
+"    background-color: rgba(169, 169, 169, 0.2); /* Slightly transparent gray */\n"
+"    border-radius: 7px; /* Rounded edges */\n"
+"    color: white; /* Text color */\n"
+"    padding: 5px 15px; /* Add padding to create space around         the text */\n"
+"}\n"
+"\n"
+"QPushButton:hover {\n"
+"    background-color: rgba(169, 169, 169, 0.7); /* Lighten the color on hover */\n"
+"}\n"
+"\n"
+"QPushButton:pressed {\n"
+"    background-color: rgba(105, 105, 105, 0.9); /* Darken the color when pressed */\n"
+"}")
         self.receiveButton.setObjectName("receiveButton")
-        self.chooseFileHBox.addWidget(self.receiveButton)
+        self.horizontalLayout_2.addWidget(self.receiveButton)
+        self.stopReceiveButton = QtWidgets.QPushButton(parent=self.centralwidget)
+        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Policy.Fixed, QtWidgets.QSizePolicy.Policy.Fixed)
+        sizePolicy.setHorizontalStretch(0)
+        sizePolicy.setVerticalStretch(0)
+        sizePolicy.setHeightForWidth(self.stopReceiveButton.sizePolicy().hasHeightForWidth())
+        self.stopReceiveButton.setSizePolicy(sizePolicy)
+        font = QtGui.QFont()
+        font.setFamily("Gadugi")
+        self.stopReceiveButton.setFont(font)
+        self.stopReceiveButton.setStyleSheet("QPushButton {\n"
+"    background-color: rgba(169, 169, 169, 0.2); /* Slightly transparent gray */\n"
+"    border-radius: 7px; /* Rounded edges */\n"
+"    color: white; /* Text color */\n"
+"    padding: 5px 15px; /* Add padding to create space around         the text */\n"
+"}\n"
+"\n"
+"QPushButton:hover {\n"
+"    background-color: rgba(169, 169, 169, 0.7); /* Lighten the color on hover */\n"
+"}\n"
+"\n"
+"QPushButton:pressed {\n"
+"    background-color: rgba(105, 105, 105, 0.9); /* Darken the color when pressed */\n"
+"}")
+        self.stopReceiveButton.setObjectName("stopReceiveButton")
+        self.horizontalLayout_2.addWidget(self.stopReceiveButton)
+        spacerItem16 = QtWidgets.QSpacerItem(40, 20, QtWidgets.QSizePolicy.Policy.Expanding, QtWidgets.QSizePolicy.Policy.Minimum)
+        self.horizontalLayout_2.addItem(spacerItem16)
+        self.verticalLayout_2.addLayout(self.horizontalLayout_2)
+        self.horizontalLayout_20 = QtWidgets.QHBoxLayout()
+        self.horizontalLayout_20.setSpacing(6)
+        self.horizontalLayout_20.setObjectName("horizontalLayout_20")
+        self.receiveProgressBar = QtWidgets.QProgressBar(parent=self.centralwidget)
+        self.receiveProgressBar.setEnabled(True)
+        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Policy.Fixed, QtWidgets.QSizePolicy.Policy.Fixed)
+        sizePolicy.setHorizontalStretch(0)
+        sizePolicy.setVerticalStretch(0)
+        sizePolicy.setHeightForWidth(self.receiveProgressBar.sizePolicy().hasHeightForWidth())
+        self.receiveProgressBar.setSizePolicy(sizePolicy)
+        self.receiveProgressBar.setMinimumSize(QtCore.QSize(190, 0))
+        self.receiveProgressBar.setSizeIncrement(QtCore.QSize(0, 0))
+        font = QtGui.QFont()
+        font.setFamily("Gadugi")
+        self.receiveProgressBar.setFont(font)
+        self.receiveProgressBar.setStyleSheet("QProgressBar {\n"
+"    border-radius: 5px; /* Rounded corners */\n"
+"    background-color: rgba(169, 169, 169, 0.2); /* Slightly transparent gray */\n"
+"    text-align: center; /* Center-align the text */\n"
+"    color: white\n"
+"}\n"
+"\n"
+"QProgressBar::chunk {\n"
+"    background-color: #4CAF50; /* Progress color */\n"
+"    border-radius: 5px; /* Maintain rounded corners for progress chunk */\n"
+"}")
+        self.receiveProgressBar.setProperty("value", 0)
+        self.receiveProgressBar.setTextVisible(True)
+        self.receiveProgressBar.setInvertedAppearance(False)
+        self.receiveProgressBar.setObjectName("receiveProgressBar")
+        self.horizontalLayout_20.addWidget(self.receiveProgressBar)
+        spacerItem17 = QtWidgets.QSpacerItem(40, 20, QtWidgets.QSizePolicy.Policy.Expanding, QtWidgets.QSizePolicy.Policy.Minimum)
+        self.horizontalLayout_20.addItem(spacerItem17)
+        self.verticalLayout_2.addLayout(self.horizontalLayout_20)
+        self.verticalLayout.addLayout(self.verticalLayout_2)
+        spacerItem18 = QtWidgets.QSpacerItem(20, 20, QtWidgets.QSizePolicy.Policy.Minimum, QtWidgets.QSizePolicy.Policy.Expanding)
+        self.verticalLayout.addItem(spacerItem18)
+        self.line_2 = QtWidgets.QFrame(parent=self.centralwidget)
+        self.line_2.setLineWidth(2)
+        self.line_2.setFrameShape(QtWidgets.QFrame.Shape.HLine)
+        self.line_2.setFrameShadow(QtWidgets.QFrame.Shadow.Sunken)
+        self.line_2.setObjectName("line_2")
+        self.verticalLayout.addWidget(self.line_2)
+        self.verticalLayout_11 = QtWidgets.QVBoxLayout()
+        self.verticalLayout_11.setObjectName("verticalLayout_11")
         self.receivingLabel = QtWidgets.QLabel(parent=self.centralwidget)
-        self.receivingLabel.setGeometry(QtCore.QRect(10, 0, 501, 16))
-        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Policy.Expanding, QtWidgets.QSizePolicy.Policy.Preferred)
+        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Policy.Preferred, QtWidgets.QSizePolicy.Policy.Fixed)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
         sizePolicy.setHeightForWidth(self.receivingLabel.sizePolicy().hasHeightForWidth())
         self.receivingLabel.setSizePolicy(sizePolicy)
+        font = QtGui.QFont()
+        font.setFamily("Gadugi")
+        font.setPointSize(9)
+        font.setBold(True)
+        self.receivingLabel.setFont(font)
         self.receivingLabel.setStyleSheet("color: red;")
+        self.receivingLabel.setAlignment(QtCore.Qt.AlignmentFlag.AlignLeading|QtCore.Qt.AlignmentFlag.AlignLeft|QtCore.Qt.AlignmentFlag.AlignVCenter)
         self.receivingLabel.setObjectName("receivingLabel")
+        self.verticalLayout_11.addWidget(self.receivingLabel)
         self.connectionLabel = QtWidgets.QLabel(parent=self.centralwidget)
-        self.connectionLabel.setGeometry(QtCore.QRect(10, 20, 501, 16))
-        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Policy.Expanding, QtWidgets.QSizePolicy.Policy.Preferred)
+        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Policy.Preferred, QtWidgets.QSizePolicy.Policy.Fixed)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
         sizePolicy.setHeightForWidth(self.connectionLabel.sizePolicy().hasHeightForWidth())
         self.connectionLabel.setSizePolicy(sizePolicy)
+        font = QtGui.QFont()
+        font.setFamily("Gadugi")
+        font.setBold(True)
+        self.connectionLabel.setFont(font)
         self.connectionLabel.setStyleSheet("color: red;")
         self.connectionLabel.setObjectName("connectionLabel")
+        self.verticalLayout_11.addWidget(self.connectionLabel)
+        self.verticalLayout.addLayout(self.verticalLayout_11)
         MainWindow.setCentralWidget(self.centralwidget)
         self.menubar = QtWidgets.QMenuBar(parent=MainWindow)
-        self.menubar.setGeometry(QtCore.QRect(0, 0, 1051, 22))
-        self.menubar.setStyleSheet("")
-        self.menubar.setDefaultUp(False)
-        self.menubar.setNativeMenuBar(True)
+        self.menubar.setGeometry(QtCore.QRect(0, 0, 730, 22))
         self.menubar.setObjectName("menubar")
         MainWindow.setMenuBar(self.menubar)
         self.statusbar = QtWidgets.QStatusBar(parent=MainWindow)
-        self.statusbar.setStyleSheet("background-color: rgb(59, 59, 59);\n"
-"color: rgb(255, 255, 255);")
+        font = QtGui.QFont()
+        font.setFamily("Gadugi")
+        font.setBold(True)
+        self.statusbar.setFont(font)
+        self.statusbar.setStyleSheet("color: rgb(255, 255, 255);")
         self.statusbar.setObjectName("statusbar")
         MainWindow.setStatusBar(self.statusbar)
 
@@ -170,17 +602,21 @@ class Ui_MainWindow(object):
     def retranslateUi(self, MainWindow):
         _translate = QtCore.QCoreApplication.translate
         MainWindow.setWindowTitle(_translate("MainWindow", "File Share"))
-        self.fileLabel.setText(_translate("MainWindow", "Chosen file:"))
         self.ipLabel.setText(_translate("MainWindow", "Your IP:"))
-        self.copyButton.setText(_translate("MainWindow", "Copy"))
+        self.copyButton.setText(_translate("MainWindow", "Copy IP"))
         self.enableReceivingButton.setText(_translate("MainWindow", "Enable Receiving"))
         self.disableReceivingButton.setText(_translate("MainWindow", "Disable Receiving"))
-        self.ipSendLabel.setText(_translate("MainWindow", "Send to ip"))
-        self.ipConfirmButton.setText(_translate("MainWindow", "Confirm"))
-        self.breakConnectionButton.setText(_translate("MainWindow", "Break Connection"))
-        self.fileButton.setText(_translate("MainWindow", "Choose File"))
+        self.ipSendLabel.setText(_translate("MainWindow", "Connect to IP"))
+        self.connectButton.setText(_translate("MainWindow", "Connect"))
+        self.disconnectButton.setText(_translate("MainWindow", "Disconnect"))
+        self.chosenFileLabel.setText(_translate("MainWindow", "Chosen file:"))
+        self.chooseFileButton.setText(_translate("MainWindow", "Choose File"))
         self.sendButton.setText(_translate("MainWindow", "Send"))
-        self.stopButton.setText(_translate("MainWindow", "Stop"))
+        self.stopSendButton.setText(_translate("MainWindow", "Stop"))
+        self.fileSentLabel.setText(_translate("MainWindow", "File sent"))
+        self.receiverDownloadedFileLabel.setText(_translate("MainWindow", "The sent file has not yet been downloaded by the receiver"))
+        self.readyToReceiveLabel.setText(_translate("MainWindow", "Ready to receive:"))
         self.receiveButton.setText(_translate("MainWindow", "Receive"))
+        self.stopReceiveButton.setText(_translate("MainWindow", "Stop"))
         self.receivingLabel.setText(_translate("MainWindow", "Receiving disabled"))
         self.connectionLabel.setText(_translate("MainWindow", "No connection"))
