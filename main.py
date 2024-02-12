@@ -13,7 +13,7 @@ class Main:
         self.app = None
         self.clipboard = None  # The host's clipboard
 
-        self.file_to_transfer = None  # The file to transfer
+        self.file_to_transfer = {"name": "None", "size": "None", "path": "None"}  # The file to transfer
 
         self.network = Network()
 
@@ -38,6 +38,9 @@ class Main:
 
         self.ui.ipLabel.setText(f"Your IP: {self.network.host_external_ip}")
         self.ui.ipLine.returnPressed.connect(self.confirm_client_ip)  # Allow user to press enter
+
+        self.ui.portSpinBox.setValue(self.network.host_port)
+        self.ui.portSpinBox.valueChanged.connect(self.update_host_port)
 
         self.ui.copyButton.clicked.connect(self.copy_user_ip_to_clipboard)
         self.ui.chooseFileButton.clicked.connect(self.determine_file_to_transfer)
@@ -77,7 +80,12 @@ class Main:
 
     # Shows an exception message
     def show_exception_message(self, message):
-        self.ui.statusbar.showMessage(message, 5000)  # Show the message for a specific amount of time
+        self.ui.statusbar.showMessage(message, 10000)  # Show the message for a specific amount of time
+
+    # Updates the host port
+    def update_host_port(self):
+        new_port = self.ui.portSpinBox.value()
+        self.network.host_port = new_port
 
     # Updates the receiving label to the relevant status
     def update_receiving_allowed_label(self, status):
@@ -94,7 +102,7 @@ class Main:
             self.ui.connectionLabel.setText(f"Connected to: {self.network.client_public_ip}")
             self.ui.connectionLabel.setStyleSheet("color: #4CAF50")
             self.set_ip_line_edit_border_color("#4CAF50")
-        else:
+        elif not status and not self.network.connected:
             self.ui.connectionLabel.setText("No connection")
             self.ui.connectionLabel.setStyleSheet("color: red")
             self.set_ip_line_edit_border_color("red")
@@ -109,8 +117,14 @@ class Main:
     def update_file_sent_label(self):
         self.ui.fileSentLabel.setSizePolicy(QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Fixed)
 
-    def update_receive_label(self, file_name):
-        self.ui.readyToReceiveLabel.setText(f"Ready to receive: {file_name}")
+    def update_receive_label(self, status, file_name):
+        if status and not file_name:
+            self.ui.readyToReceiveLabel.setText(f"Ready to receive: {file_name}")
+        elif status:
+            self.ui.readyToReceiveLabel.setText(f"Ready to receive: {file_name}")
+            self.update_receive_progress_bar(0)
+        else:
+            self.ui.readyToReceiveLabel.setText(f"Ready to receive:")
 
     # Updates the sent file has been downloaded label
     def update_sent_file_has_been_downloaded_label(self, file_name):
@@ -138,29 +152,37 @@ class Main:
 
     # Determines which file to transfer
     def determine_file_to_transfer(self):
-        initial_dir = os.getcwd()
+        try:
+            initial_dir = os.getcwd()
 
-        file_path_unformatted = QFileDialog.getOpenFileName(self.window, "Choose file", initial_dir)  # Returns a tuple
-        file_path = file_path_unformatted[0]  # First element in tuple is path
+            file_path_unformatted = QFileDialog.getOpenFileName(self.window, "Choose file", initial_dir)  # Returns a tuple
+            file_path = file_path_unformatted[0]  # First element in tuple is path
 
-        # Set metadata for the file
-        if file_path:
-            self.reset_file_indicators()
-            file_name = os.path.basename(file_path)
-            file_size = os.path.getsize(file_path)
+            # Set metadata for the file
+            if file_path:
+                self.reset_file_indicators()
+                file_name = os.path.basename(file_path)
+                file_size = os.path.getsize(file_path)
 
-            self.file_to_transfer = {
-                "path": file_path,
-                "name": file_name,
-                "size": file_size
-            }
+                self.file_to_transfer = {
+                    "path": file_path,
+                    "name": file_name,
+                    "size": file_size
+                }
 
-            self.ui.chosenFileLabel.setText(f"Chosen file: {file_name}")
+                self.ui.chosenFileLabel.setText(f"Chosen file: {file_name}")
+        except Exception as e:
+            self.show_exception_message(f"An error occurred: {e}")
 
     # Confirms the IP of the client
     def confirm_client_ip(self):
-        ip = self.ui.ipLine.text()
-        self.network.request_connection(ip)
+        try:
+            user_input = self.ui.ipLine.text()  # Get the user input
+            ip, port = user_input.split(":")  # Extract the IP and port
+            port = int(port)
+            self.network.request_connection(ip, port)
+        except Exception:
+            self.show_exception_message("IP-address input is invalid.")
 
 
 if __name__ == "__main__":

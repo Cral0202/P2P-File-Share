@@ -25,6 +25,22 @@
         <item>
          <layout class="QHBoxLayout" name="horizontalLayout_5">
           <item>
+           <spacer name="horizontalSpacer_15">
+            <property name="orientation">
+             <enum>Qt::Horizontal</enum>
+            </property>
+            <property name="sizeType">
+             <enum>QSizePolicy::Fixed</enum>
+            </property>
+            <property name="sizeHint" stdset="0">
+             <size>
+              <width>3</width>
+              <height>20</height>
+             </size>
+            </property>
+           </spacer>
+          </item>
+          <item>
            <widget class="QLabel" name="ipLabel">
             <property name="sizePolicy">
              <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
@@ -84,6 +100,70 @@ QPushButton:pressed {
             </property>
             <property name="text">
              <string>Copy IP</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <spacer name="horizontalSpacer_14">
+            <property name="orientation">
+             <enum>Qt::Horizontal</enum>
+            </property>
+            <property name="sizeType">
+             <enum>QSizePolicy::Fixed</enum>
+            </property>
+            <property name="sizeHint" stdset="0">
+             <size>
+              <width>50</width>
+              <height>20</height>
+             </size>
+            </property>
+           </spacer>
+          </item>
+          <item>
+           <widget class="QLabel" name="usePortLabel">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+            <property name="font">
+             <font>
+              <family>Gadugi</family>
+              <pointsize>10</pointsize>
+              <bold>true</bold>
+             </font>
+            </property>
+            <property name="styleSheet">
+             <string notr="true">color: rgb(255, 255, 255);</string>
+            </property>
+            <property name="text">
+             <string>Use port:</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QSpinBox" name="portSpinBox">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+            <property name="styleSheet">
+             <string notr="true">QSpinBox {
+    background-color: rgba(169, 169, 169, 0.2); /* Slightly transparent gray */
+    border: 1px solid #4d4d4d; /* Light gray border */
+    border-radius: 4px; /* Rounded corners */
+    padding: 2px; /* Padding around the text */
+	color: rgb(255, 255, 255);
+}</string>
+            </property>
+            <property name="maximum">
+             <number>65535</number>
+            </property>
+            <property name="value">
+             <number>0</number>
             </property>
            </widget>
           </item>
@@ -246,7 +326,7 @@ QPushButton:pressed {
           </property>
           <property name="sizeHint" stdset="0">
            <size>
-            <width>32</width>
+            <width>8</width>
             <height>20</height>
            </size>
           </property>
@@ -271,7 +351,7 @@ QPushButton:pressed {
            <string notr="true">color: rgb(255, 255, 255);</string>
           </property>
           <property name="text">
-           <string>Connect to IP</string>
+           <string>Connect to IP and port</string>
           </property>
          </widget>
         </item>
@@ -313,7 +393,7 @@ QPushButton:pressed {
           </property>
           <property name="styleSheet">
            <string notr="true">QLineEdit {
-    border: 2px solid #ccc; /* Border color */
+    border: 2px solid #4d4d4d; /* Light gray border */
     border-radius: 5px; /* Rounded corners */
     padding: 5px; /* Padding */
 	color: white;
@@ -468,6 +548,22 @@ QPushButton:pressed {
        <layout class="QVBoxLayout" name="verticalLayout_3">
         <item>
          <layout class="QHBoxLayout" name="horizontalLayout_8">
+          <item>
+           <spacer name="horizontalSpacer_16">
+            <property name="orientation">
+             <enum>Qt::Horizontal</enum>
+            </property>
+            <property name="sizeType">
+             <enum>QSizePolicy::Fixed</enum>
+            </property>
+            <property name="sizeHint" stdset="0">
+             <size>
+              <width>3</width>
+              <height>20</height>
+             </size>
+            </property>
+           </spacer>
+          </item>
           <item>
            <widget class="QLabel" name="chosenFileLabel">
             <property name="sizePolicy">
@@ -826,27 +922,47 @@ QProgressBar::chunk {
     <item>
      <layout class="QVBoxLayout" name="verticalLayout_2">
       <item>
-       <widget class="QLabel" name="readyToReceiveLabel">
-        <property name="sizePolicy">
-         <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
-          <horstretch>0</horstretch>
-          <verstretch>0</verstretch>
-         </sizepolicy>
-        </property>
-        <property name="font">
-         <font>
-          <family>Gadugi</family>
-          <pointsize>10</pointsize>
-          <bold>true</bold>
-         </font>
-        </property>
-        <property name="styleSheet">
-         <string notr="true">color: rgb(255, 255, 255);</string>
-        </property>
-        <property name="text">
-         <string>Ready to receive:</string>
-        </property>
-       </widget>
+       <layout class="QHBoxLayout" name="horizontalLayout_17">
+        <item>
+         <spacer name="horizontalSpacer_17">
+          <property name="orientation">
+           <enum>Qt::Horizontal</enum>
+          </property>
+          <property name="sizeType">
+           <enum>QSizePolicy::Fixed</enum>
+          </property>
+          <property name="sizeHint" stdset="0">
+           <size>
+            <width>3</width>
+            <height>20</height>
+           </size>
+          </property>
+         </spacer>
+        </item>
+        <item>
+         <widget class="QLabel" name="readyToReceiveLabel">
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
+          <property name="font">
+           <font>
+            <family>Gadugi</family>
+            <pointsize>10</pointsize>
+            <bold>true</bold>
+           </font>
+          </property>
+          <property name="styleSheet">
+           <string notr="true">color: rgb(255, 255, 255);</string>
+          </property>
+          <property name="text">
+           <string>Ready to receive:</string>
+          </property>
+         </widget>
+        </item>
+       </layout>
       </item>
       <item>
        <layout class="QHBoxLayout" name="horizontalLayout_2">
