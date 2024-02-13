@@ -4,6 +4,7 @@ import socket
 import threading
 import requests
 import upnpy
+import logging
 from file_metadata import FileMetadata
 from PyQt6.QtCore import QObject, pyqtSignal
 
@@ -16,6 +17,7 @@ class Network(QObject):
     receiving_allowed_indicator_signal = pyqtSignal(bool)  # The signal for enabled/disabled receiving indicators
     sent_file_has_been_downloaded_signal = pyqtSignal(str)  # The signal for if sent file has been downloaded
     file_ready_to_receive_signal = pyqtSignal(bool, str)  # The signal for files ready to be received
+    reset_file_indicators_signal = pyqtSignal()  # The signal for resetting file indicators
     exception_signal = pyqtSignal(str)  # The signal for exceptions
 
     def __init__(self):
@@ -36,12 +38,14 @@ class Network(QObject):
         self.client_public_ip = None  # The public ip of the client
 
         self.receiving_enabled = False  # True if receiving is enabled
-        self.should_stop_threads = False  # True if threads should be stopped
+        self.should_stop_receiving = False  # True if receiving should be stopped
         self.connected = False  # True if connected to a client
         self.upnp_ports_open = False  # True if UPNP ports are open
         self.sending_files = False  # True if files are currently being sent
         self.receiving_files = False  # True if files are currently being received
         self.file_to_receive_exists = False  # True if there exists a file to receive
+        self.trying_to_connect = False  # True if trying to connect to IP
+        self.program_about_to_exit = False  # True if program is about to exit
 
         self.file_to_be_received_name = None  # The name of the file ready to be received
         self.file_to_be_received_size = None  # The size of the file ready to be received
@@ -82,7 +86,7 @@ class Network(QObject):
                     if not self.open_ports():
                         return
 
-                self.should_stop_threads = False
+                self.should_stop_receiving = False
 
                 self.host_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
                 self.host_socket.bind(("", self.host_port))
@@ -95,20 +99,21 @@ class Network(QObject):
                 self.receiving_allowed_indicator_signal.emit(True)
             except Exception as e:
                 self.exception_signal.emit(f"An error occurred: {e}")
+                logging.debug(f"An error occurred: {e}")
 
     # Disables receiving
     def disable_receiving(self):
         if self.receiving_enabled:
             try:
-                if self.sending_files:
+                if self.sending_files and not self.program_about_to_exit:
                     raise RuntimeError("Cannot disable receiving when currently sending files")
-                if self.receiving_files:
+                if self.receiving_files and not self.program_about_to_exit:
                     raise RuntimeError("Cannot disable receiving when currently receiving files")
 
                 if self.upnp_ports_open:
                     self.close_ports()
 
-                self.should_stop_threads = True
+                self.should_stop_receiving = True
 
                 self.host_socket.close()
                 self.host_thread.join()
@@ -117,6 +122,7 @@ class Network(QObject):
                 self.receiving_allowed_indicator_signal.emit(False)
             except Exception as e:
                 self.exception_signal.emit(f"An error occurred: {e}")
+                logging.debug(f"An error occurred: {e}")
 
     # Opens ports on the network
     def open_ports(self):
@@ -136,9 +142,10 @@ class Network(QObject):
             return True
         except Exception as e:
             if "ConflictInMappingEntry" in str(e):
-                self.exception_signal.emit(f"Error adding port mapping: Port already in use. Ports are not open")
+                self.exception_signal.emit(f"Error adding port mapping: Port may already be in use. Ports are not open")
             else:
                 self.exception_signal.emit(f"Error adding port mapping: {e}. Ports are not open")
+            logging.debug(f"An error occurred: {e}")
             return False
 
     # Closes the ports on the network
@@ -153,11 +160,12 @@ class Network(QObject):
             self.upnp_ports_open = False
         except Exception as e:
             self.exception_signal.emit(f"An error occurred: {e} | Ports are not closed")
+            logging.debug(f"An error occurred: {e}")
 
     # Accept connections from clients
     def accept_connections(self):
         self.host_socket.settimeout(1.0)  # Set the timeout for the socket to make it non-blocking
-        while not self.should_stop_threads:
+        while not self.should_stop_receiving:
             try:
                 client, address = self.host_socket.accept()
                 self.host_socket_gateway = client
@@ -168,20 +176,21 @@ class Network(QObject):
                 receive_metadata_thread.start()
             except socket.timeout:
                 # Check if the threads should be stopped
-                if self.should_stop_threads:
+                if self.should_stop_receiving:
                     break
             except Exception as e:
-                if self.should_stop_threads:
+                if self.should_stop_receiving:
                     break
                 self.exception_signal.emit(f"Error accepting connection: {e}")
+                logging.debug(f"An error occurred: {e}")
 
     # Breaks the connection to the client
     def break_connection(self):
         if self.connected:
             try:
-                if self.sending_files:
+                if self.sending_files and not self.program_about_to_exit:
                     raise RuntimeError("Cannot disconnect when currently sending files")
-                if self.receiving_files:
+                if self.receiving_files and not self.program_about_to_exit:
                     raise RuntimeError("Cannot disconnect when currently receiving files")
 
                 # Close the client socket
@@ -190,6 +199,14 @@ class Network(QObject):
                 self.connection_indicator_signal.emit(False)
             except Exception as e:
                 self.exception_signal.emit(f"An error occurred: {e}")
+                logging.debug(f"An error occurred: {e}")
+
+    def start_request_connection_thread(self, ip, port):
+        if not self.trying_to_connect:
+            self.trying_to_connect = True
+            send_thread = threading.Thread(target=self.request_connection, args=(ip, port))
+            send_thread.daemon = True
+            send_thread.start()
 
     # Sends a connection request to specified IP
     def request_connection(self, ip, port):
@@ -204,13 +221,18 @@ class Network(QObject):
 
             self.client_public_ip = ip
             self.connected = True
+            self.trying_to_connect = False
             self.connection_indicator_signal.emit(True)
         except ConnectionRefusedError:
             self.exception_signal.emit(f"Connection to {ip} refused.")
             self.connection_indicator_signal.emit(False)
+            self.trying_to_connect = False
+            logging.debug(f"An error occurred: Connection to {ip} refused.")
         except Exception as e:
             self.exception_signal.emit(f"An error occurred: {e}")
             self.connection_indicator_signal.emit(False)
+            self.trying_to_connect = False
+            logging.debug(f"An error occurred: {e}")
 
     # Gets the external IP of the host
     def get_host_external_ip(self):
@@ -221,6 +243,7 @@ class Network(QObject):
                 return ip
             except Exception as e:
                 self.exception_signal.emit(f"An error occurred: {e}")
+                logging.debug(f"An error occurred: {e}")
         else:
             try:
                 # Use a public API to get the external IP address
@@ -229,11 +252,13 @@ class Network(QObject):
                 return ip
             except requests.RequestException as e:
                 self.exception_signal.emit(f"An error occurred: {e}")
+                logging.debug(f"An error occurred: {e}")
 
     # Starts the thread for sending files
     def start_send_file_thread(self, file_name, file_size, file_path):
         if not self.sending_files and self.connected and file_path != "None":
             self.sending_files = True
+            self.reset_file_indicators_signal.emit()  # Reset the file indicators
             send_thread = threading.Thread(target=self.send_file, args=(file_name, file_size, file_path))
             send_thread.daemon = True
             send_thread.start()
@@ -255,6 +280,7 @@ class Network(QObject):
         except Exception as e:
             self.exception_signal.emit(f"An error occurred: {e}")
             self.file_sent_indicator_signal.emit(False)  # Signal that the file has not been sent
+            logging.debug(f"An error occurred: {e}")
 
     # Sends the data of a file
     def send_file_data(self, file_path, file_size):
@@ -279,6 +305,7 @@ class Network(QObject):
             self.sent_file_has_been_downloaded_signal.emit(downloaded_file_name)  # Signal that file has been downloaded
         except Exception as e:
             self.exception_signal.emit(f"An error occurred: {e}")
+            logging.debug(f"An error occurred: {e}")
 
     # Starts the thread for sending files
     def start_receive_file_thread(self):
@@ -321,6 +348,7 @@ class Network(QObject):
                 break
             except Exception as e:
                 self.exception_signal.emit(f"An error occurred: {e}")
+                logging.debug(f"An error occurred: {e}")
                 break
 
     # Receives the data of a file
@@ -347,7 +375,10 @@ class Network(QObject):
             self.metadata_event.set()  # Indicate that new metadata can be received
         except Exception as e:
             self.exception_signal.emit(f"An error occurred: {e}")
+            logging.debug(f"An error occurred: {e}")
 
     # Prepares the program for an exit
     def exit(self):
+        self.program_about_to_exit = True
         self.disable_receiving()
+        self.break_connection()

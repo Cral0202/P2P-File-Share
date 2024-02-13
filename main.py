@@ -1,9 +1,14 @@
+import logging
 import os
 import sys
 from PyQt6 import QtWidgets
+from PyQt6.QtGui import QIcon
 from PyQt6.QtWidgets import QFileDialog, QSizePolicy
 from mainGUI import Ui_MainWindow
 from network import Network
+
+logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(levelname)s - %(message)s')  # Change to INFO for
+                                                                                              # production
 
 
 class Main:
@@ -20,6 +25,7 @@ class Main:
     # Sets up the main window
     def window_setup(self):
         self.app = QtWidgets.QApplication(sys.argv)
+        self.app.setWindowIcon(QIcon(self.get_program_icon()))
 
         self.window = QtWidgets.QMainWindow()
 
@@ -67,16 +73,23 @@ class Main:
         self.network.file_sent_indicator_signal.connect(self.update_file_sent_label)
         self.network.file_ready_to_receive_signal.connect(self.update_receive_label)
         self.network.sent_file_has_been_downloaded_signal.connect(self.update_sent_file_has_been_downloaded_label)
+        self.network.reset_file_indicators_signal.connect(self.reset_file_indicators)
         self.network.exception_signal.connect(self.show_exception_message)
 
         # Display warning if upnp is not enabled on network
         if not self.network.upnp_enabled:
-            self.show_exception_message("UPNP is not enabled on network. Manual port mapping must be done for receiving"
-                                        " to work.")
+            self.show_exception_message("WARNING: UPNP is not enabled on network. Manual port mapping must be done "
+                                        "for receiving to work.")
 
     # Used when program is about to exit
     def exit(self):
         self.network.exit()
+
+    # Gets the program icon (has to be done this way because of pyinstaller)
+    def get_program_icon(self):
+        root = os.path.dirname(__file__)
+        program_icon = os.path.join(root, "icon.ico")
+        return program_icon
 
     # Shows an exception message
     def show_exception_message(self, message):
@@ -173,6 +186,7 @@ class Main:
                 self.ui.chosenFileLabel.setText(f"Chosen file: {file_name}")
         except Exception as e:
             self.show_exception_message(f"An error occurred: {e}")
+            logging.debug(f"An error occurred: {e}")
 
     # Confirms the IP of the client
     def confirm_client_ip(self):
@@ -180,9 +194,10 @@ class Main:
             user_input = self.ui.ipLine.text()  # Get the user input
             ip, port = user_input.split(":")  # Extract the IP and port
             port = int(port)
-            self.network.request_connection(ip, port)
-        except Exception:
+            self.network.start_request_connection_thread(ip, port)
+        except Exception as e:
             self.show_exception_message("IP-address input is invalid.")
+            logging.debug(f"An error occurred: {e}")
 
 
 if __name__ == "__main__":

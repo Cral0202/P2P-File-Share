@@ -14,6 +14,7 @@ class Ui_MainWindow(object):
         MainWindow.setObjectName("MainWindow")
         MainWindow.resize(730, 785)
         MainWindow.setStyleSheet("background-color: rgb(34,35,37)")
+        MainWindow.setUnifiedTitleAndToolBarOnMac(False)
         self.centralwidget = QtWidgets.QWidget(parent=MainWindow)
         self.centralwidget.setObjectName("centralwidget")
         self.verticalLayout = QtWidgets.QVBoxLayout(self.centralwidget)
@@ -625,10 +626,6 @@ class Ui_MainWindow(object):
         self.verticalLayout_11.addWidget(self.connectionLabel)
         self.verticalLayout.addLayout(self.verticalLayout_11)
         MainWindow.setCentralWidget(self.centralwidget)
-        self.menubar = QtWidgets.QMenuBar(parent=MainWindow)
-        self.menubar.setGeometry(QtCore.QRect(0, 0, 730, 22))
-        self.menubar.setObjectName("menubar")
-        MainWindow.setMenuBar(self.menubar)
         self.statusbar = QtWidgets.QStatusBar(parent=MainWindow)
         font = QtGui.QFont()
         font.setFamily("Gadugi")
@@ -643,7 +640,7 @@ class Ui_MainWindow(object):
 
     def retranslateUi(self, MainWindow):
         _translate = QtCore.QCoreApplication.translate
-        MainWindow.setWindowTitle(_translate("MainWindow", "File Share"))
+        MainWindow.setWindowTitle(_translate("MainWindow", "P2P File Share"))
         self.ipLabel.setText(_translate("MainWindow", "Your IP:"))
         self.copyButton.setText(_translate("MainWindow", "Copy IP"))
         self.usePortLabel.setText(_translate("MainWindow", "Use port:"))

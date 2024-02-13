@@ -11,10 +11,13 @@
    </rect>
   </property>
   <property name="windowTitle">
-   <string>File Share</string>
+   <string>P2P File Share</string>
   </property>
   <property name="styleSheet">
    <string notr="true">background-color: rgb(34,35,37)</string>
+  </property>
+  <property name="unifiedTitleAndToolBarOnMac">
+   <bool>false</bool>
   </property>
   <widget class="QWidget" name="centralwidget">
    <layout class="QVBoxLayout" name="verticalLayout" stretch="0,0,0,0,0,0,0,0,0,0,0,0,0,0,0">
@@ -1202,16 +1205,6 @@ QProgressBar::chunk {
      </layout>
     </item>
    </layout>
-  </widget>
-  <widget class="QMenuBar" name="menubar">
-   <property name="geometry">
-    <rect>
-     <x>0</x>
-     <y>0</y>
-     <width>730</width>
-     <height>22</height>
-    </rect>
-   </property>
   </widget>
   <widget class="QStatusBar" name="statusbar">
    <property name="font">
