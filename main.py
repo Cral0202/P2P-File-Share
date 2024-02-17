@@ -6,9 +6,10 @@ from PyQt6.QtGui import QIcon
 from PyQt6.QtWidgets import QFileDialog, QSizePolicy
 from mainGUI import Ui_MainWindow
 from network import Network
+from file_metadata import FileMetadata
 
-logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(levelname)s - %(message)s')  # Change to INFO for
-                                                                                              # production
+# Change logging level to INFO for production
+logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(levelname)s - %(message)s')
 
 
 class Main:
@@ -17,8 +18,12 @@ class Main:
         self.ui = None
         self.app = None
         self.clipboard = None  # The host's clipboard
+        self.green_color = "#4CAF50"
+        self.green_color_formatted = f"color: {self.green_color}"
+        self.red_color = "red"
+        self.red_color_formatted = f"color: {self.red_color}"
 
-        self.file_to_transfer = {"name": "None", "size": "None", "path": "None"}  # The file to transfer
+        self.file_to_transfer = None
 
         self.network = Network()
 
@@ -59,9 +64,9 @@ class Main:
 
         self.ui.disableReceivingButton.clicked.connect(lambda: self.network.disable_receiving())
 
-        self.ui.sendButton.clicked.connect(lambda: self.network.start_send_file_thread(self.file_to_transfer["name"],
-                                                                                       self.file_to_transfer["size"],
-                                                                                       self.file_to_transfer["path"]))
+        self.ui.sendButton.clicked.connect(lambda: self.network.start_send_file_thread(self.file_to_transfer.file_path,
+                                                                                       self.file_to_transfer.file_name,
+                                                                                       self.file_to_transfer.file_size))
 
         self.ui.receiveButton.clicked.connect(lambda: self.network.start_receive_file_thread())
 
@@ -91,11 +96,11 @@ class Main:
         program_icon = os.path.join(root, "icon.ico")
         return program_icon
 
-    # Shows an exception message
+    # Shows an exception message for a specific amount of time
     def show_exception_message(self, message):
-        self.ui.statusbar.showMessage(message, 10000)  # Show the message for a specific amount of time
+        self.ui.statusbar.showMessage(message, 10000)
 
-    # Updates the host port
+    # Updates the host port to chosen value
     def update_host_port(self):
         new_port = self.ui.portSpinBox.value()
         self.network.host_port = new_port
@@ -104,21 +109,21 @@ class Main:
     def update_receiving_allowed_label(self, status):
         if status:
             self.ui.receivingLabel.setText("Receiving enabled")
-            self.ui.receivingLabel.setStyleSheet("color: #4CAF50")
+            self.ui.receivingLabel.setStyleSheet(self.green_color_formatted)
         else:
             self.ui.receivingLabel.setText("Receiving disabled")
-            self.ui.receivingLabel.setStyleSheet("color: red")
+            self.ui.receivingLabel.setStyleSheet(self.red_color_formatted)
 
     # Updates the connection indicators to the relevant status
     def update_connection_indicators(self, status):
         if status:
             self.ui.connectionLabel.setText(f"Connected to: {self.network.client_public_ip}")
-            self.ui.connectionLabel.setStyleSheet("color: #4CAF50")
-            self.set_ip_line_edit_border_color("#4CAF50")
+            self.ui.connectionLabel.setStyleSheet(self.green_color_formatted)
+            self.set_ip_line_edit_border_color(self.green_color)
         elif not status and not self.network.connected:
             self.ui.connectionLabel.setText("No connection")
-            self.ui.connectionLabel.setStyleSheet("color: red")
-            self.set_ip_line_edit_border_color("red")
+            self.ui.connectionLabel.setStyleSheet(self.red_color_formatted)
+            self.set_ip_line_edit_border_color(self.red_color)
 
     # Sets the border color of the ip line edit
     def set_ip_line_edit_border_color(self, color):
@@ -168,8 +173,9 @@ class Main:
         try:
             initial_dir = os.getcwd()
 
-            file_path_unformatted = QFileDialog.getOpenFileName(self.window, "Choose file", initial_dir)  # Returns a tuple
-            file_path = file_path_unformatted[0]  # First element in tuple is path
+            # Returns a tuple where first element is path
+            file_path_unformatted = QFileDialog.getOpenFileName(self.window, "Choose file", initial_dir)
+            file_path = file_path_unformatted[0]
 
             # Set metadata for the file
             if file_path:
@@ -177,11 +183,7 @@ class Main:
                 file_name = os.path.basename(file_path)
                 file_size = os.path.getsize(file_path)
 
-                self.file_to_transfer = {
-                    "path": file_path,
-                    "name": file_name,
-                    "size": file_size
-                }
+                self.file_to_transfer = FileMetadata(file_path, file_name, file_size)
 
                 self.ui.chosenFileLabel.setText(f"Chosen file: {file_name}")
         except Exception as e:
@@ -191,7 +193,7 @@ class Main:
     # Confirms the IP of the client
     def confirm_client_ip(self):
         try:
-            user_input = self.ui.ipLine.text()  # Get the user input
+            user_input = self.ui.ipLine.text()
             ip, port = user_input.split(":")  # Extract the IP and port
             port = int(port)
             self.network.start_request_connection_thread(ip, port)
