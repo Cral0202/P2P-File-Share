@@ -4,10 +4,9 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="6230f7af-df35-4497-9404-b5f7052afc44" name="Changes" comment="Additions&#10;- Added icon to program">
+    <list default="true" id="6230f7af-df35-4497-9404-b5f7052afc44" name="Changes" comment="Added encryption">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/file_metadata.py" beforeDir="false" afterPath="$PROJECT_DIR$/file_metadata.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/main.py" beforeDir="false" afterPath="$PROJECT_DIR$/main.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/main.spec" beforeDir="false" afterPath="$PROJECT_DIR$/main.spec" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/network.py" beforeDir="false" afterPath="$PROJECT_DIR$/network.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -182,7 +181,14 @@
       <option name="presentableId" value="LOCAL−00012" />
       <updated>1707826056917</updated>
     </task>
-    <option name="localTasksCounter" value="13" />
+    <task id="LOCAL−00013" summary="Added encryption">
+      <option name="closed" value="true" />
+      <created>1708187663216</created>
+      <option name="number" value="LOCAL−00013" />
+      <option name="presentableId" value="LOCAL−00013" />
+      <updated>1708187663216</updated>
+    </task>
+    <option name="localTasksCounter" value="14" />
     <servers />
   </component>
   <component name="UnknownFeatures">
@@ -209,6 +215,7 @@
     <MESSAGE value="Initial UI designed&#10;- Changes to networking" />
     <MESSAGE value="Port to use can now be chosen by user" />
     <MESSAGE value="Additions&#10;- Added icon to program" />
-    <option name="LAST_COMMIT_MESSAGE" value="Additions&#10;- Added icon to program" />
+    <MESSAGE value="Added encryption" />
+    <option name="LAST_COMMIT_MESSAGE" value="Added encryption" />
   </component>
 </project>

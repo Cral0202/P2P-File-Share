@@ -3,8 +3,8 @@ import os
 import socket
 import threading
 import requests
-import upnpy
 import logging
+import upnpclient
 from file_metadata import FileMetadata
 from PyQt6.QtCore import QObject, pyqtSignal
 from cryptography.hazmat.primitives import serialization, hashes
@@ -49,7 +49,6 @@ class Network(QObject):
         self.client_socket = None  # The socket used for connecting to other users
         self.host_thread = None  # Used for accepting connections
 
-        self.upnp = upnpy.UPnP()  # The upnpy object to use
         self.wan_ip_service = None  # The WAN IP service object of the igd (for UPNP)
         self.upnp_enabled = self.is_upnp_enabled()  # True if UPNP is enabled on host network
 
@@ -189,21 +188,25 @@ class Network(QObject):
 
     # Gets the service to use for WAN IP connections
     def get_wan_ip_service(self):
-        self.upnp.discover()  # Discover UPnP devices on the network, returns a list of devices
-        igd = self.upnp.get_igd()  # Select the IGD
+        devices = upnpclient.discover()
 
-        # Check for services supporting port forwarding
-        for service in igd.get_services():
-            if self.supports_port_forwarding(service):
-                service = igd[service.id.split(':')[-1]]  # Extract the ID part of the string
-                return service
+        # Get the IGD
+        igd = None
+        for device in devices:
+            if "InternetGatewayDevice" in device.device_type:
+                igd = device
+                break
+            else:
+                pass
 
-    # Checks if the service supports port forwarding by examining its actions
-    def supports_port_forwarding(self, service):
-        for action in service.get_actions():
-            if action.name == "AddPortMapping":
-                return True
-        return False
+        # Get the correct service
+        services = igd.services
+        for service in services:
+            for action in service.actions:
+                if action.name == "AddPortMapping":
+                    return service
+                else:
+                    pass
 
     # Enables receiving
     def enable_receiving(self):
@@ -262,7 +265,7 @@ class Network(QObject):
                 NewProtocol="TCP",
                 NewInternalPort=self.host_port,
                 NewInternalClient=self.host_internal_ip,
-                NewEnabled=1,
+                NewEnabled="1",
                 NewPortMappingDescription="File Share",
                 NewLeaseDuration=86400
             )
