@@ -4,9 +4,18 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="6230f7af-df35-4497-9404-b5f7052afc44" name="Changes" comment="Added encryption">
+    <list default="true" id="6230f7af-df35-4497-9404-b5f7052afc44" name="Changes" comment="Changed UPNP library">
+      <change afterPath="$PROJECT_DIR$/gui_controller.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/main_gui.ui" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/spinner.gif" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/Message Application.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/P2P File Share.iml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/modules.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/modules.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/main.py" beforeDir="false" afterPath="$PROJECT_DIR$/main.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/main.spec" beforeDir="false" afterPath="$PROJECT_DIR$/main.spec" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/mainGUI.py" beforeDir="false" afterPath="$PROJECT_DIR$/main_gui.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/mainGUI.ui" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/network.py" beforeDir="false" afterPath="$PROJECT_DIR$/network.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -25,7 +34,7 @@
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
   </component>
   <component name="ProblemsViewState">
-    <option name="selectedTabId" value="ProjectErrors" />
+    <option name="selectedTabId" value="CurrentFile" />
   </component>
   <component name="ProjectColorInfo">{
   &quot;associatedIndex&quot;: 5
@@ -48,6 +57,7 @@
     &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
     &quot;git-widget-placeholder&quot;: &quot;master&quot;,
     &quot;ignore.virus.scanning.warn.message&quot;: &quot;true&quot;,
+    &quot;last_opened_file_path&quot;: &quot;C:/Programming Projects/Python/P2P File Share&quot;,
     &quot;settings.editor.selected.configurable&quot;: &quot;com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable&quot;
   }
 }</component>
@@ -59,7 +69,7 @@
   </component>
   <component name="RunManager">
     <configuration name="main" type="PythonConfigurationType" factoryName="Python" nameIsGenerated="true">
-      <module name="Message Application" />
+      <module name="P2P File Share" />
       <option name="ENV_FILES" value="" />
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
@@ -188,7 +198,14 @@
       <option name="presentableId" value="LOCAL−00013" />
       <updated>1708187663216</updated>
     </task>
-    <option name="localTasksCounter" value="14" />
+    <task id="LOCAL−00014" summary="Changed UPNP library">
+      <option name="closed" value="true" />
+      <created>1708203927064</created>
+      <option name="number" value="LOCAL−00014" />
+      <option name="presentableId" value="LOCAL−00014" />
+      <updated>1708203927064</updated>
+    </task>
+    <option name="localTasksCounter" value="15" />
     <servers />
   </component>
   <component name="UnknownFeatures">
@@ -216,6 +233,7 @@
     <MESSAGE value="Port to use can now be chosen by user" />
     <MESSAGE value="Additions&#10;- Added icon to program" />
     <MESSAGE value="Added encryption" />
-    <option name="LAST_COMMIT_MESSAGE" value="Added encryption" />
+    <MESSAGE value="Changed UPNP library" />
+    <option name="LAST_COMMIT_MESSAGE" value="Changed UPNP library" />
   </component>
 </project>

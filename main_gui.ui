@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>730</width>
-    <height>785</height>
+    <width>722</width>
+    <height>790</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -402,6 +402,35 @@ QPushButton:pressed {
 	color: white;
 }</string>
           </property>
+          <property name="placeholderText">
+           <string/>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QLabel" name="spinnerLabel">
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Ignored" vsizetype="Ignored">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
+          <property name="font">
+           <font>
+            <family>Gadugi</family>
+            <pointsize>10</pointsize>
+            <bold>true</bold>
+           </font>
+          </property>
+          <property name="styleSheet">
+           <string notr="true"/>
+          </property>
+          <property name="text">
+           <string/>
+          </property>
+          <property name="scaledContents">
+           <bool>true</bool>
+          </property>
          </widget>
         </item>
         <item>
@@ -606,7 +635,7 @@ QPushButton:pressed {
          </layout>
         </item>
         <item>
-         <layout class="QHBoxLayout" name="horizontalLayout_7">
+         <layout class="QHBoxLayout" name="horizontalLayout_11">
           <item>
            <widget class="QPushButton" name="chooseFileButton">
             <property name="sizePolicy">
@@ -642,23 +671,6 @@ QPushButton:pressed {
            </widget>
           </item>
           <item>
-           <spacer name="horizontalSpacer_2">
-            <property name="orientation">
-             <enum>Qt::Horizontal</enum>
-            </property>
-            <property name="sizeHint" stdset="0">
-             <size>
-              <width>40</width>
-              <height>20</height>
-             </size>
-            </property>
-           </spacer>
-          </item>
-         </layout>
-        </item>
-        <item>
-         <layout class="QHBoxLayout" name="horizontalLayout_11">
-          <item>
            <widget class="QPushButton" name="sendButton">
             <property name="sizePolicy">
              <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
@@ -689,40 +701,6 @@ QPushButton:pressed {
             </property>
             <property name="text">
              <string>Send</string>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="QPushButton" name="stopSendButton">
-            <property name="sizePolicy">
-             <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-              <horstretch>0</horstretch>
-              <verstretch>0</verstretch>
-             </sizepolicy>
-            </property>
-            <property name="font">
-             <font>
-              <family>Gadugi</family>
-             </font>
-            </property>
-            <property name="styleSheet">
-             <string notr="true">QPushButton {
-    background-color: rgba(169, 169, 169, 0.2); /* Slightly transparent gray */
-    border-radius: 7px; /* Rounded edges */
-    color: white; /* Text color */
-	padding: 5px 15px; /* Add padding to create space around 		the text */
-}
-
-QPushButton:hover {
-    background-color: rgba(169, 169, 169, 0.7); /* Lighten the color on hover */
-}
-
-QPushButton:pressed {
-    background-color: rgba(105, 105, 105, 0.9); /* Darken the color when pressed */
-}</string>
-            </property>
-            <property name="text">
-             <string>Stop</string>
             </property>
            </widget>
           </item>
@@ -1004,7 +982,7 @@ QPushButton:pressed {
          </widget>
         </item>
         <item>
-         <widget class="QPushButton" name="stopReceiveButton">
+         <widget class="QPushButton" name="rejectButton">
           <property name="sizePolicy">
            <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
             <horstretch>0</horstretch>
@@ -1033,7 +1011,7 @@ QPushButton:pressed {
 }</string>
           </property>
           <property name="text">
-           <string>Stop</string>
+           <string>Reject</string>
           </property>
          </widget>
         </item>
@@ -1181,7 +1159,33 @@ QProgressBar::chunk {
        </widget>
       </item>
       <item>
-       <widget class="QLabel" name="connectionLabel">
+       <widget class="QLabel" name="inboundConnectionLabel">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <property name="font">
+         <font>
+          <family>Gadugi</family>
+          <pointsize>9</pointsize>
+          <bold>true</bold>
+         </font>
+        </property>
+        <property name="styleSheet">
+         <string notr="true">color: red;</string>
+        </property>
+        <property name="text">
+         <string>No inbound connection</string>
+        </property>
+        <property name="alignment">
+         <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QLabel" name="outboundConnectionLabel">
         <property name="sizePolicy">
          <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
           <horstretch>0</horstretch>
@@ -1198,7 +1202,7 @@ QProgressBar::chunk {
          <string notr="true">color: red;</string>
         </property>
         <property name="text">
-         <string>No connection</string>
+         <string>No outbound connection</string>
         </property>
        </widget>
       </item>
