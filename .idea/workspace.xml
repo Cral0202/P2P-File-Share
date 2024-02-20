@@ -4,18 +4,12 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="6230f7af-df35-4497-9404-b5f7052afc44" name="Changes" comment="Changed UPNP library">
-      <change afterPath="$PROJECT_DIR$/gui_controller.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/main_gui.ui" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/spinner.gif" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/Message Application.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/P2P File Share.iml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/modules.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/modules.xml" afterDir="false" />
+    <list default="true" id="6230f7af-df35-4497-9404-b5f7052afc44" name="Changes" comment="Additions">
+      <change afterPath="$PROJECT_DIR$/README.md" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/gui_controller.py" beforeDir="false" afterPath="$PROJECT_DIR$/gui_controller.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/main.py" beforeDir="false" afterPath="$PROJECT_DIR$/main.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/main.spec" beforeDir="false" afterPath="$PROJECT_DIR$/main.spec" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/mainGUI.py" beforeDir="false" afterPath="$PROJECT_DIR$/main_gui.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/mainGUI.ui" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/network.py" beforeDir="false" afterPath="$PROJECT_DIR$/network.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -32,6 +26,9 @@
   </component>
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+  </component>
+  <component name="MarkdownSettingsMigration">
+    <option name="stateVersion" value="1" />
   </component>
   <component name="ProblemsViewState">
     <option name="selectedTabId" value="CurrentFile" />
@@ -205,7 +202,14 @@
       <option name="presentableId" value="LOCAL−00014" />
       <updated>1708203927064</updated>
     </task>
-    <option name="localTasksCounter" value="15" />
+    <task id="LOCAL−00015" summary="Additions">
+      <option name="closed" value="true" />
+      <created>1708341707249</created>
+      <option name="number" value="LOCAL−00015" />
+      <option name="presentableId" value="LOCAL−00015" />
+      <updated>1708341707249</updated>
+    </task>
+    <option name="localTasksCounter" value="16" />
     <servers />
   </component>
   <component name="UnknownFeatures">
@@ -225,7 +229,6 @@
   <component name="VcsManagerConfiguration">
     <MESSAGE value="Initial setup" />
     <MESSAGE value="- Shows public ip-address&#10;- Copy button works" />
-    <MESSAGE value="Additions" />
     <MESSAGE value="Added network class&#10;- still buggy" />
     <MESSAGE value="File sharing implemented" />
     <MESSAGE value="Progress bar works" />
@@ -234,6 +237,7 @@
     <MESSAGE value="Additions&#10;- Added icon to program" />
     <MESSAGE value="Added encryption" />
     <MESSAGE value="Changed UPNP library" />
-    <option name="LAST_COMMIT_MESSAGE" value="Changed UPNP library" />
+    <MESSAGE value="Additions" />
+    <option name="LAST_COMMIT_MESSAGE" value="Additions" />
   </component>
 </project>

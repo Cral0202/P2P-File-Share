@@ -143,20 +143,20 @@ class GUIController:
         if status:
             self.ui.outboundConnectionLabel.setText(f"Outbound connection to: {self.network.outbound_peer_public_ip}")
             self.ui.outboundConnectionLabel.setStyleSheet(self.green_color_formatted)
-        elif not status and not self.network.connected:
+            self.set_ip_line_edit_border_color(self.green_color)
+        elif not status and not self.network.outbound_connection:
             self.ui.outboundConnectionLabel.setText("No outbound connection")
             self.ui.outboundConnectionLabel.setStyleSheet(self.red_color_formatted)
+            self.set_ip_line_edit_border_color(self.red_color)
 
     # Updates the inbound connection indicators to the relevant status
     def update_inbound_connection_indicators(self, status):
         if status:
             self.ui.inboundConnectionLabel.setText(f"Inbound connection from: {self.network.inbound_peer_public_ip}")
             self.ui.inboundConnectionLabel.setStyleSheet(self.green_color_formatted)
-            self.set_ip_line_edit_border_color(self.green_color)
         elif not status:
             self.ui.inboundConnectionLabel.setText("No inbound connection")
             self.ui.inboundConnectionLabel.setStyleSheet(self.red_color_formatted)
-            self.set_ip_line_edit_border_color(self.red_color)
 
     # Sets the border color of the ip line edit
     def set_ip_line_edit_border_color(self, color):
