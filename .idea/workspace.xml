@@ -4,10 +4,10 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="6230f7af-df35-4497-9404-b5f7052afc44" name="Changes" comment="Additions">
-      <change afterPath="$PROJECT_DIR$/README.md" afterDir="false" />
+    <list default="true" id="6230f7af-df35-4497-9404-b5f7052afc44" name="Changes" comment="Fixed inconsistent receiving bug">
+      <change afterPath="$PROJECT_DIR$/demo_image.png" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/gui_controller.py" beforeDir="false" afterPath="$PROJECT_DIR$/gui_controller.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/README.md" beforeDir="false" afterPath="$PROJECT_DIR$/README.md" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/main.py" beforeDir="false" afterPath="$PROJECT_DIR$/main.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/main.spec" beforeDir="false" afterPath="$PROJECT_DIR$/main.spec" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/network.py" beforeDir="false" afterPath="$PROJECT_DIR$/network.py" afterDir="false" />
@@ -60,6 +60,7 @@
 }</component>
   <component name="RecentsManager">
     <key name="MoveFile.RECENT_KEYS">
+      <recent name="C:\Programming Projects\Python\P2P File Share" />
       <recent name="C:\Programming Projects\Python\Message Application" />
       <recent name="C:\Programming Projects\Python\Message Application\src" />
     </key>
@@ -209,7 +210,14 @@
       <option name="presentableId" value="LOCAL−00015" />
       <updated>1708341707249</updated>
     </task>
-    <option name="localTasksCounter" value="16" />
+    <task id="LOCAL−00016" summary="Fixed inconsistent receiving bug">
+      <option name="closed" value="true" />
+      <created>1708466601832</created>
+      <option name="number" value="LOCAL−00016" />
+      <option name="presentableId" value="LOCAL−00016" />
+      <updated>1708466601832</updated>
+    </task>
+    <option name="localTasksCounter" value="17" />
     <servers />
   </component>
   <component name="UnknownFeatures">
@@ -238,6 +246,7 @@
     <MESSAGE value="Added encryption" />
     <MESSAGE value="Changed UPNP library" />
     <MESSAGE value="Additions" />
-    <option name="LAST_COMMIT_MESSAGE" value="Additions" />
+    <MESSAGE value="Fixed inconsistent receiving bug" />
+    <option name="LAST_COMMIT_MESSAGE" value="Fixed inconsistent receiving bug" />
   </component>
 </project>

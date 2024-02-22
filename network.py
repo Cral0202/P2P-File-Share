@@ -2,6 +2,8 @@ import json
 import os
 import socket
 import threading
+import time
+
 import requests
 import logging
 import upnpclient
@@ -63,6 +65,7 @@ class Network(QObject):
         self.receiving_enabled = False  # True if receiving is enabled
         self.should_stop_receiving = False  # True if receiving should be stopped
         self.outbound_connection = False  # True if an outbound connection exists
+        self.inbound_connection = False  # True if an inbound connection exists
         self.upnp_ports_open = False  # True if UPNP ports are open
         self.sending_files = False  # True if files are currently being sent
         self.receiving_files = False  # True if files are currently being received
@@ -73,11 +76,14 @@ class Network(QObject):
         self.file_to_be_received_name = None  # The name of the file ready to be received
         self.file_to_be_received_size = None  # The size of the file ready to be received
 
-        self.confirmation_message_size = 64  # The size to use for confirmation messages
-        self.common_message_size = 1024  # The size to use for most messages, e.g. metadata or keys
+        self.confirm_message = b"Confirm_"  # The confirmation message
+        self.confirmation_message_size = 8  # The size to use for confirmation messages
+        self.common_message_size = 256  # The size to use for most messages, e.g. metadata or keys
         self.file_chunk_size = 262144  # The size to use for file chunks
+        self.serialized_public_key_size = 451  # The size of a serialized public key
 
         self.metadata_event = threading.Event()  # Used to sleep and wake metadata thread
+        self.accept_connections_event = threading.Event()  # Used to sleep and wake accept connections thread
 
     # Encrypt with AES
     def aes_encrypt(self, plaintext):
@@ -181,6 +187,18 @@ class Network(QObject):
         )
         return public_key
 
+    # Makes sure the data is received intact
+    def receive_intact_data(self, gateway, length):
+        data = b""
+
+        while len(data) < length:
+            data = data + gateway.recv(length)
+
+            if not data:
+                raise OSError(10054, "Error")
+
+        return data
+
     # Gets the service to use for WAN IP connections
     def get_wan_ip_service(self):
         try:
@@ -219,10 +237,6 @@ class Network(QObject):
 
             self.should_stop_receiving = False
 
-            self.host_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-            self.host_socket.bind(("", self.host_port))
-            self.host_socket.listen(1)
-
             self.host_thread = threading.Thread(target=self.accept_connections)
             self.host_thread.daemon = True
             self.host_thread.start()
@@ -249,6 +263,7 @@ class Network(QObject):
 
             self.should_stop_receiving = True
 
+            self.accept_connections_event.set()
             self.host_socket.close()
             self.host_thread.join()
 
@@ -300,26 +315,38 @@ class Network(QObject):
     def accept_connections(self):
         while not self.should_stop_receiving:
             try:
+                if self.inbound_connection:
+                    time.sleep(1)
+                    continue
+
+                self.accept_connections_event.clear()  # Clear the event since it may have been set
+
+                self.host_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+                self.host_socket.bind(("", self.host_port))
+                self.host_socket.listen(1)
+
                 client, address = self.host_socket.accept()
+
                 self.host_socket_gateway = client
                 self.inbound_peer_public_ip = address[0]
 
                 # Exchange RSA keys
-                serialized_sender_public_key = self.host_socket_gateway.recv(self.common_message_size)
+                serialized_sender_public_key = self.receive_intact_data(self.host_socket_gateway,
+                                                                        self.serialized_public_key_size)
                 self.sending_client_public_key = self.rsa_deserialize_public_key(serialized_sender_public_key)
 
                 serialized_user_public_key = self.rsa_serialize_public_key(self.public_key)
                 self.host_socket_gateway.send(serialized_user_public_key)
 
                 # Receive AES information and decrypt it
-                encrypted_aes_key = self.host_socket_gateway.recv(self.common_message_size)
-                self.host_socket_gateway.send("received".encode())
+                encrypted_aes_key = self.receive_intact_data(self.host_socket_gateway, self.common_message_size)
+                self.host_socket_gateway.send(self.confirm_message)
 
-                encrypted_aes_iv = self.host_socket_gateway.recv(self.common_message_size)
-                self.host_socket_gateway.send("received".encode())
+                encrypted_aes_iv = self.receive_intact_data(self.host_socket_gateway, self.common_message_size)
+                self.host_socket_gateway.send(self.confirm_message)
 
-                signature = self.host_socket_gateway.recv(self.common_message_size)
-                self.host_socket_gateway.send("received".encode())
+                signature = self.receive_intact_data(self.host_socket_gateway, self.common_message_size)
+                self.host_socket_gateway.send(self.confirm_message)
 
                 self.client_aes_key = self.rsa_decrypt_message(encrypted_aes_key)
                 self.client_aes_iv = self.rsa_decrypt_message(encrypted_aes_iv)
@@ -335,11 +362,16 @@ class Network(QObject):
                 receive_metadata_thread.daemon = True
                 receive_metadata_thread.start()
 
+                self.host_socket.close()
+                self.inbound_connection = True
                 self.inbound_connection_indicator_signal.emit(True)
+
+                self.accept_connections_event.wait()
             except Exception as e:
                 if self.should_stop_receiving:
                     break
 
+                self.inbound_connection = False
                 self.inbound_connection_indicator_signal.emit(False)
                 self.exception_signal.emit(f"Error accepting connection: {e}")
                 logging.warning(f"An error occurred: {e}")
@@ -380,6 +412,8 @@ class Network(QObject):
                 raise RuntimeError("Cannot change connection when currently sending files")
             if self.receiving_files:
                 raise RuntimeError("Cannot change connection when currently receiving files")
+            if self.outbound_connection:
+                raise RuntimeError("Cannot change connection when already connected")
 
             self.spinner_signal.emit(True)
 
@@ -390,7 +424,8 @@ class Network(QObject):
             serialized_user_public_key = self.rsa_serialize_public_key(self.public_key)
             self.client_socket.send(serialized_user_public_key)
 
-            serialized_receiver_public_key = self.client_socket.recv(self.common_message_size)
+            serialized_receiver_public_key = self.receive_intact_data(self.client_socket,
+                                                                      self.serialized_public_key_size)
             self.receiving_client_public_key = self.rsa_deserialize_public_key(serialized_receiver_public_key)
 
             # Encrypt AES information and send it
@@ -399,13 +434,13 @@ class Network(QObject):
             signature = self.rsa_sign_message(self.host_aes_key)
 
             self.client_socket.send(encrypted_aes_key)
-            self.client_socket.recv(self.confirmation_message_size)
+            self.receive_intact_data(self.client_socket, self.confirmation_message_size)
 
             self.client_socket.send(encrypted_aes_iv)
-            self.client_socket.recv(self.confirmation_message_size)
+            self.receive_intact_data(self.client_socket, self.confirmation_message_size)
 
             self.client_socket.send(signature)
-            self.client_socket.recv(self.confirmation_message_size)
+            self.receive_intact_data(self.client_socket, self.confirmation_message_size)
 
             self.outbound_peer_public_ip = ip
             self.outbound_connection = True
@@ -413,19 +448,20 @@ class Network(QObject):
             self.outbound_connection_indicator_signal.emit(True)
             self.spinner_signal.emit(False)
         except ConnectionRefusedError:
-            self.exception_signal.emit(f"Connection to \"{ip}\" refused.")
             self.outbound_connection_indicator_signal.emit(False)
             self.spinner_signal.emit(False)
             self.trying_to_connect = False
+            self.exception_signal.emit(f"Connection to \"{ip}\" refused.")
             logging.warning(f"Connection to \"{ip}\" refused.")
         except RuntimeError as e:
-            self.exception_signal.emit(f"An error occurred: {e}")
-            logging.warning(f"An error occurred: {e}")
+            self.trying_to_connect = False
+            self.exception_signal.emit(f"{e}")
+            logging.warning(f"{e}")
         except Exception as e:
-            self.exception_signal.emit(f"Could not connect to \"{ip}\"")
             self.outbound_connection_indicator_signal.emit(False)
             self.spinner_signal.emit(False)
             self.trying_to_connect = False
+            self.exception_signal.emit(f"Could not connect to \"{ip}\"")
             logging.warning(f"Could not connect to \"{ip}\"")
 
     # Gets the external IP of the host
@@ -464,14 +500,16 @@ class Network(QObject):
     def send_file(self, file_path, file_name, file_size):
         try:
             self.send_file_metadata(file_name, file_size)
-            response = self.client_socket.recv(self.confirmation_message_size).decode()
+            response = self.receive_intact_data(self.client_socket, self.confirmation_message_size).decode()
 
             if response == "Accepted":
                 self.file_sent_indicator_signal.emit(False)
                 self.send_file_data(file_path, file_name, file_size)
-            else:
+            elif response == "Rejected":
                 self.sent_file_has_been_downloaded_signal.emit(False, file_name)
                 self.file_sent_indicator_signal.emit(False)
+            else:
+                raise OSError(10054, "Error")
 
             self.sending_files = False
         except OSError as e:
@@ -499,13 +537,13 @@ class Network(QObject):
 
             # Send encrypted metadata and signature
             self.client_socket.send(encrypted_metadata)
-            self.client_socket.recv(self.confirmation_message_size)
+            self.receive_intact_data(self.client_socket, self.confirmation_message_size)
 
             self.client_socket.send(signature)
-            self.client_socket.recv(self.confirmation_message_size)
+            self.receive_intact_data(self.client_socket, self.confirmation_message_size)
 
             self.file_sent_indicator_signal.emit(True)
-            self.client_socket.recv(self.confirmation_message_size)
+            self.receive_intact_data(self.client_socket, self.confirmation_message_size)
         except OSError as e:
             # An existing connection was forcibly closed by the remote host
             if e.errno == 10054:
@@ -541,11 +579,11 @@ class Network(QObject):
                     progress_percentage = (sent_data / file_size) * 100
                     self.send_progress_bar_signal.emit(progress_percentage)
 
-                    self.client_socket.recv(self.confirmation_message_size)
+                    self.receive_intact_data(self.client_socket, self.confirmation_message_size)
 
             # Sync
-            self.client_socket.send("Sync".encode())
-            self.client_socket.recv(self.confirmation_message_size)
+            self.client_socket.send(self.confirm_message)
+            self.receive_intact_data(self.client_socket, self.confirmation_message_size)
 
             self.sent_file_has_been_downloaded_signal.emit(True, file_name)
         except OSError as e:
@@ -573,6 +611,8 @@ class Network(QObject):
             # An existing connection was forcibly closed by the remote host
             if e.errno == 10054:
                 self.file_to_receive_exists = False
+                self.inbound_connection = False
+                self.accept_connections_event.set()
                 self.file_ready_to_receive_signal.emit(False)
                 self.inbound_connection_indicator_signal.emit(False)
                 self.exception_signal.emit("An existing connection was terminated.")
@@ -597,6 +637,8 @@ class Network(QObject):
             if e.errno == 10054:
                 self.file_to_receive_exists = False
                 self.receiving_files = False
+                self.inbound_connection = False
+                self.accept_connections_event.set()
                 self.file_ready_to_receive_signal.emit(False)
                 self.inbound_connection_indicator_signal.emit(False)
                 self.exception_signal.emit("An existing connection was terminated.")
@@ -617,11 +659,11 @@ class Network(QObject):
                 self.metadata_event.clear()  # Clear the event since it may have been set
 
                 # Receive encrypted metadata and signature
-                encrypted_metadata = self.host_socket_gateway.recv(self.common_message_size)
-                self.host_socket_gateway.send("received".encode())
+                encrypted_metadata = self.receive_intact_data(self.host_socket_gateway, self.common_message_size)
+                self.host_socket_gateway.send(self.confirm_message)
 
-                signature = self.host_socket_gateway.recv(self.common_message_size)
-                self.host_socket_gateway.send("received".encode())
+                signature = self.receive_intact_data(self.host_socket_gateway, self.common_message_size)
+                self.host_socket_gateway.send(self.confirm_message)
 
                 if not encrypted_metadata or not signature:
                     raise ConnectionError
@@ -637,7 +679,7 @@ class Network(QObject):
                     self.file_to_be_received_size = metadata.file_size
                     self.file_ready_to_receive_signal.emit(True)
 
-                    self.host_socket_gateway.send("Metadata received".encode())
+                    self.host_socket_gateway.send(self.confirm_message)
                     self.file_to_receive_exists = True
 
                     self.metadata_event.wait()  # Block until there is new metadata to be received
@@ -646,6 +688,8 @@ class Network(QObject):
             except ConnectionError:
                 # ConnectionError occurs when the socket is closed
                 self.file_to_receive_exists = False
+                self.inbound_connection = False
+                self.accept_connections_event.set()
                 self.file_ready_to_receive_signal.emit(False)
                 self.inbound_connection_indicator_signal.emit(False)
                 self.exception_signal.emit("An existing connection was terminated.")
@@ -655,6 +699,8 @@ class Network(QObject):
                 # An existing connection was forcibly closed by the remote host
                 if e.errno == 10054:
                     self.file_to_receive_exists = False
+                    self.inbound_connection = False
+                    self.accept_connections_event.set()
                     self.file_ready_to_receive_signal.emit(False)
                     self.inbound_connection_indicator_signal.emit(False)
                     self.exception_signal.emit("An existing connection was terminated.")
@@ -670,26 +716,21 @@ class Network(QObject):
         try:
             file_path = os.path.join(os.path.expanduser("~"), "Downloads", file_name)  # Get the download folder
             received_data = 0
-            incomplete_chunk = False
-            first_chunk_temp = b""
 
             with open(file_path, "wb") as file:
                 while received_data < file_size:
-                    encrypted_chunk = self.host_socket_gateway.recv(self.file_chunk_size)
+                    # Make sure chunk is received intact
+                    data_left = file_size - received_data
 
-                    # Make sure chunk is received complete
-                    chunk_length = len(encrypted_chunk)
-                    temp_chunk_length = len(first_chunk_temp)
-                    length = chunk_length + temp_chunk_length
-                    if length < self.file_chunk_size and length <= (file_size - received_data):
-                        first_chunk_temp += encrypted_chunk
-                        incomplete_chunk = True
-                        continue
+                    if self.file_chunk_size > data_left:
+                        # Encrypted data is always a multiple of 16,
+                        # and if already a multiple of 16 it gets 16 added to it
+                        remainder = data_left % 16
+                        length = (data_left - remainder) + 16
 
-                    if incomplete_chunk:
-                        encrypted_chunk = first_chunk_temp + encrypted_chunk
-                        incomplete_chunk = False
-                        first_chunk_temp = b""
+                        encrypted_chunk = self.receive_intact_data(self.host_socket_gateway, length)
+                    else:
+                        encrypted_chunk = self.receive_intact_data(self.host_socket_gateway, self.file_chunk_size)
 
                     chunk = self.aes_decrypt(encrypted_chunk)
 
@@ -704,11 +745,11 @@ class Network(QObject):
                     progress_percentage = (received_data / file_size) * 100
                     self.receive_progress_bar_signal.emit(progress_percentage)
 
-                    self.host_socket_gateway.send("Chunk received".encode())
+                    self.host_socket_gateway.send(self.confirm_message)
 
             # Sync
-            self.host_socket_gateway.recv(self.confirmation_message_size)
-            self.host_socket_gateway.send("File downloaded".encode())
+            self.receive_intact_data(self.host_socket_gateway, self.confirmation_message_size)
+            self.host_socket_gateway.send(self.confirm_message)
 
             self.file_ready_to_receive_signal.emit(False)  # Reset label
             self.file_to_receive_exists = False  # Indicate that there is no new file to receive
@@ -717,6 +758,8 @@ class Network(QObject):
             # An existing connection was forcibly closed by the remote host
             if e.errno == 10054:
                 self.file_to_receive_exists = False
+                self.inbound_connection = False
+                self.accept_connections_event.set()
                 self.file_ready_to_receive_signal.emit(False)
                 self.inbound_connection_indicator_signal.emit(False)
                 self.metadata_event.set()
