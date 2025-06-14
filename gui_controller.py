@@ -205,7 +205,7 @@ class GUIController:
 
     # Copies the users IP to the clipboard
     def copy_user_ip_to_clipboard(self):
-        self.clipboard.setText(self.network.host_external_ip)
+        self.clipboard.setText(f"{self.network.host_external_ip}:{self.network.host_port}")
 
     # Determines which file to transfer
     def determine_file_to_transfer(self):
