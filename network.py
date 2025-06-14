@@ -6,7 +6,7 @@ import time
 
 import requests
 import logging
-import upnpclient
+import miniupnpc
 from file_metadata import FileMetadata
 from PyQt6.QtCore import QObject, pyqtSignal
 from cryptography.hazmat.primitives import serialization, hashes
@@ -16,7 +16,6 @@ from cryptography.hazmat.primitives.asymmetric import rsa
 from cryptography.hazmat.backends import default_backend
 from cryptography.exceptions import InvalidSignature
 from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
-
 
 class Network(QObject):
     receive_progress_bar_signal = pyqtSignal(float)  # The signal for the receive progress bar
@@ -202,24 +201,21 @@ class Network(QObject):
     # Gets the service to use for WAN IP connections
     def get_wan_ip_service(self):
         try:
-            devices = upnpclient.discover()
+            u = miniupnpc.UPnP()
+            num_devs = u.discover()
 
-            # Get the IGD
-            igd = None
-            for device in devices:
-                if "InternetGatewayDevice" in device.device_type:
-                    igd = device
-                    break
+            if num_devs == 0:
+                raise RuntimeError("No UPnP devices discovered on the network")
 
-            # Get the correct service
-            services = igd.services
-            for service in services:
-                for action in service.actions:
-                    if action.name == "AddPortMapping":
-                        self.upnp_enabled = True
-                        return service
+            u.selectigd()
 
-            raise RuntimeError("WAN IP service could not be found")
+            ext_ip = u.externalipaddress()
+
+            if not ext_ip:
+                raise RuntimeError("Failed to get external IP from IGD")
+
+            self.upnp_enabled = True
+            return u
         except Exception as e:
             self.exception_signal.emit(f"An error occurred: {e}")
             logging.warning(f"An error occurred: {e}")
@@ -264,6 +260,10 @@ class Network(QObject):
             self.should_stop_receiving = True
 
             self.accept_connections_event.set()
+            try:
+                self.host_socket.shutdown(socket.SHUT_RDWR)
+            except Exception:
+                pass
             self.host_socket.close()
             self.host_thread.join()
 
@@ -277,20 +277,23 @@ class Network(QObject):
     def open_ports(self):
         try:
             # Opens the ports
-            self.wan_ip_service.AddPortMapping(
-                NewRemoteHost="",
-                NewExternalPort=self.host_port,
-                NewProtocol="TCP",
-                NewInternalPort=self.host_port,
-                NewInternalClient=self.host_internal_ip,
-                NewEnabled="1",
-                NewPortMappingDescription="File Share",
-                NewLeaseDuration=86400
+            ok = self.wan_ip_service.addportmapping(
+                self.host_port,         # external_port
+                'TCP',                  # protocol
+                self.host_internal_ip,  # internal_client
+                self.host_port,         # internal_port
+                'File Share',           # description
+                '',                     # remote_host
+                86400                   # lease_duration
             )
+
+            if not ok:
+                raise RuntimeError("UPnP port mapping failed")
+
             self.upnp_ports_open = True
             return True
         except Exception as e:
-            if "ConflictInMappingEntry" in str(e):
+            if "ConflictInMappingEntry" in str(e) or 'refuse' in str(e).lower():
                 self.exception_signal.emit(f"Error adding port mapping: Port may already be in use. Ports are not open")
             else:
                 self.exception_signal.emit(f"Error adding port mapping: {e}. Ports are not open")
@@ -301,11 +304,15 @@ class Network(QObject):
     def close_ports(self):
         try:
             # Deletes the port mapping
-            self.wan_ip_service.DeletePortMapping(
-                NewRemoteHost="",
-                NewExternalPort=self.host_port,
-                NewProtocol="TCP"
+            ok = self.wan_ip_service.deleteportmapping(
+                self.host_port,  # external_port
+                'TCP',           # protocol
+                ''               # remote_host
             )
+
+            if not ok:
+                raise RuntimeError("UPnP port unmapping failed")
+
             self.upnp_ports_open = False
         except Exception as e:
             self.exception_signal.emit(f"An error occurred: {e} | Ports are not closed")
@@ -367,6 +374,9 @@ class Network(QObject):
                 self.inbound_connection_indicator_signal.emit(True)
 
                 self.accept_connections_event.wait()
+            except OSError:
+                # Socket was shutdown/closed
+                break
             except Exception as e:
                 if self.should_stop_receiving:
                     break
@@ -468,8 +478,7 @@ class Network(QObject):
     def get_host_external_ip(self):
         if self.upnp_enabled:
             try:
-                ip_unformatted = self.wan_ip_service.GetExternalIPAddress()
-                ip = ip_unformatted["NewExternalIPAddress"]  # Get the IP-address part
+                ip = self.wan_ip_service.externalipaddress()
                 return ip
             except Exception as e:
                 self.exception_signal.emit(f"An error occurred: {e}")

@@ -1,0 +1,14 @@
+certifi==2025.4.26
+cffi==1.17.1
+charset-normalizer==3.4.2
+cryptography==45.0.4
+idna==3.10
+miniupnpc==2.3.3
+pycparser==2.22
+PyQt6==6.9.1
+PyQt6-Qt6==6.9.1
+PyQt6_sip==13.10.2
+requests==2.32.4
+setuptools==80.9.0
+urllib3==2.4.0
+wheel==0.45.1
