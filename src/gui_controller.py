@@ -118,7 +118,7 @@ class GUIController:
         return QMovie(spinner_gif)
 
     # Toggles the spinner
-    def toggle_spinner(self, status):
+    def toggle_spinner(self, status: bool):
         if status:
             self.spinner.start()
             self.ui.spinnerLabel.setSizePolicy(QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Fixed)
@@ -127,7 +127,7 @@ class GUIController:
             self.ui.spinnerLabel.setSizePolicy(QSizePolicy.Policy.Ignored, QSizePolicy.Policy.Ignored)
 
     # Shows an exception message for a specific amount of time
-    def show_exception_message(self, message):
+    def show_exception_message(self, message: str):
         self.ui.statusbar.showMessage(message, 10000)
 
     # Updates the host port to chosen value
@@ -136,7 +136,7 @@ class GUIController:
         self.network.host_port = new_port
 
     # Updates the receiving label to the relevant status
-    def update_receiving_allowed_label(self, status):
+    def update_receiving_allowed_label(self, status: bool):
         if status:
             self.ui.receivingLabel.setText("Receiving enabled")
             self.ui.receivingLabel.setStyleSheet(self.green_color_formatted)
@@ -145,7 +145,7 @@ class GUIController:
             self.ui.receivingLabel.setStyleSheet(self.red_color_formatted)
 
     # Updates the outbound connection indicators to the relevant status
-    def update_outbound_connection_indicators(self, status):
+    def update_outbound_connection_indicators(self, status: bool):
         if status:
             self.ui.outboundConnectionLabel.setText(f"Outbound connection to: {self.network.outbound_peer_public_ip}")
             self.ui.outboundConnectionLabel.setStyleSheet(self.green_color_formatted)
@@ -156,7 +156,7 @@ class GUIController:
             self.set_ip_line_edit_border_color(self.red_color)
 
     # Updates the inbound connection indicators to the relevant status
-    def update_inbound_connection_indicators(self, status):
+    def update_inbound_connection_indicators(self, status: bool):
         if status:
             self.ui.inboundConnectionLabel.setText(f"Inbound connection from: {self.network.inbound_peer_public_ip}")
             self.ui.inboundConnectionLabel.setStyleSheet(self.green_color_formatted)
@@ -165,19 +165,19 @@ class GUIController:
             self.ui.inboundConnectionLabel.setStyleSheet(self.red_color_formatted)
 
     # Sets the border color of the ip line edit
-    def set_ip_line_edit_border_color(self, color):
+    def set_ip_line_edit_border_color(self, color: str):
         style_sheet = ("QLineEdit {{border: 2px solid #ccc; border-radius: 5px; "
                        "padding: 5px; color: white; border-color: {}}}".format(color))
         self.ui.ipLine.setStyleSheet(style_sheet)
 
     # Updates the file sent label
-    def update_file_sent_label(self, status):
+    def update_file_sent_label(self, status: bool):
         if status:
             self.ui.fileSentLabel.setSizePolicy(QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Fixed)
         else:
             self.ui.fileSentLabel.setSizePolicy(QSizePolicy.Policy.Ignored, QSizePolicy.Policy.Ignored)
 
-    def update_receive_label(self, status):
+    def update_receive_label(self, status: bool):
         if status:
             self.ui.readyToReceiveLabel.setText(f"Ready to receive: {self.network.file_to_be_received_name}")
             self.update_receive_progress_bar(0)
@@ -185,7 +185,7 @@ class GUIController:
             self.ui.readyToReceiveLabel.setText(f"Ready to receive:")
 
     # Updates the sent file has been downloaded label
-    def update_sent_file_has_been_downloaded_label(self, status, file_name):
+    def update_sent_file_has_been_downloaded_label(self, status: bool, file_name: str):
         if status:
             self.ui.receiverDownloadedFileLabel.setText(f"The sent file \"{file_name}\" has been downloaded by the "
                                                     f"receiver.")
@@ -196,12 +196,12 @@ class GUIController:
         self.ui.receiverDownloadedFileLabel.setSizePolicy(QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Fixed)
 
     # Updates the receive progress bar
-    def update_receive_progress_bar(self, progress):
-        self.ui.receiveProgressBar.setValue(int(progress))
+    def update_receive_progress_bar(self, progress: int):
+        self.ui.receiveProgressBar.setValue(progress)
 
     # Updates the send progress bar
-    def update_send_progress_bar(self, progress):
-        self.ui.sendProgressBar.setValue(int(progress))
+    def update_send_progress_bar(self, progress: int):
+        self.ui.sendProgressBar.setValue(progress)
 
     # Resets the file indicators, e.g. the file sent label
     def reset_file_indicators(self):
