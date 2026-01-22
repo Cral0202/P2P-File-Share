@@ -3,19 +3,12 @@ import os
 import socket
 import threading
 import time
+import encryption
 
 import requests
-import logging
 import miniupnpc
 from file_metadata import FileMetadata
 from PyQt6.QtCore import QObject, pyqtSignal
-from cryptography.hazmat.primitives import serialization, hashes
-from cryptography.hazmat.primitives.asymmetric import padding as asym_pad
-from cryptography.hazmat.primitives import padding as sym_pad
-from cryptography.hazmat.primitives.asymmetric import rsa
-from cryptography.hazmat.backends import default_backend
-from cryptography.exceptions import InvalidSignature
-from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
 
 class Network(QObject):
     receive_progress_bar_signal = pyqtSignal(float)  # The signal for the receive progress bar
@@ -33,19 +26,15 @@ class Network(QObject):
     def __init__(self):
         super().__init__()
 
-        self.private_key = None  # The host's private RSA key
-        self.public_key = None  # The host's public RSA key
+        self.public_key, self.private_key = encryption.generate_rsa_keys() # The host's private RSA key and public RSA key
         self.receiving_client_public_key = None  # The public RSA key of a receiving user
         self.sending_client_public_key = None  # The public RSA key of a sending user
-        self.generate_rsa_keys()  # Generate RSA keys
 
         self.host_aes_key = os.urandom(16)  # Generate a random secret key (16 bytes for AES-128)
         self.host_aes_iv = os.urandom(16)  # Generate a random initialization vector (IV) for CBC mode (16 bytes)
-        self.host_cipher = Cipher(algorithms.AES(self.host_aes_key), modes.CBC(self.host_aes_iv))
 
         self.client_aes_key = None
         self.client_aes_iv = None
-        self.client_cipher = None
 
         self.host_socket = None  # The socket that clients connect to
         self.host_socket_gateway = None  # The communication object for the host socket
@@ -84,108 +73,6 @@ class Network(QObject):
         self.metadata_event = threading.Event()  # Used to sleep and wake metadata thread
         self.accept_connections_event = threading.Event()  # Used to sleep and wake accept connections thread
 
-    # Encrypt with AES
-    def aes_encrypt(self, plaintext):
-        encryptor = self.host_cipher.encryptor()
-        ciphertext = encryptor.update(plaintext) + encryptor.finalize()
-        return ciphertext
-
-    # Decrypt with AES
-    def aes_decrypt(self, ciphertext):
-        decryptor = self.client_cipher.decryptor()
-        plaintext = decryptor.update(ciphertext) + decryptor.finalize()
-        return plaintext
-
-    # Add padding to message
-    def aes_add_padding(self, message):
-        padder = sym_pad.PKCS7(128).padder()
-        padded_message = padder.update(message) + padder.finalize()
-        return padded_message
-
-    # Remove padding from message
-    def aes_remove_padding(self, message):
-        unpadder = sym_pad.PKCS7(128).unpadder()
-        unpadded_message = unpadder.update(message) + unpadder.finalize()
-        return unpadded_message
-
-    # Generate RSA keys
-    def generate_rsa_keys(self):
-        self.private_key = rsa.generate_private_key(
-            public_exponent=65537,
-            key_size=2048,
-            backend=default_backend()
-        )
-        self.public_key = self.private_key.public_key()
-
-    # Encrypts a message with RSA
-    def rsa_encrypt_message(self, message):
-        ciphertext = self.receiving_client_public_key.encrypt(
-            message,
-            asym_pad.OAEP(
-                mgf=asym_pad.MGF1(algorithm=hashes.SHA256()),
-                algorithm=hashes.SHA256(),
-                label=None
-            )
-        )
-        return ciphertext
-
-    # Decrypts a message with RSA
-    def rsa_decrypt_message(self, ciphertext):
-        plaintext = self.private_key.decrypt(
-            ciphertext,
-            asym_pad.OAEP(
-                mgf=asym_pad.MGF1(algorithm=hashes.SHA256()),
-                algorithm=hashes.SHA256(),
-                label=None
-            )
-        )
-        return plaintext
-
-    # Signs a message with RSA
-    def rsa_sign_message(self, message):
-        signature = self.private_key.sign(
-            message,
-            asym_pad.PSS(
-                mgf=asym_pad.MGF1(hashes.SHA256()),
-                salt_length=asym_pad.PSS.MAX_LENGTH
-            ),
-            hashes.SHA256()
-        )
-        return signature
-
-    # Verifies a message's signature with RSA
-    def rsa_verify_signature(self, signature, message):
-        try:
-            self.sending_client_public_key.verify(
-                signature,
-                message,
-                asym_pad.PSS(
-                    mgf=asym_pad.MGF1(hashes.SHA256()),
-                    salt_length=asym_pad.PSS.MAX_LENGTH
-                ),
-                hashes.SHA256()
-            )
-            return True
-        except InvalidSignature:
-            logging.warning("Invalid signature")
-            return False
-
-    # Serialize a public key object into bytes
-    def rsa_serialize_public_key(self, key):
-        serialized_public_key = key.public_bytes(
-            encoding=serialization.Encoding.PEM,
-            format=serialization.PublicFormat.SubjectPublicKeyInfo
-        )
-        return serialized_public_key
-
-    # Deserialize the bytes into a public key object
-    def rsa_deserialize_public_key(self, key):
-        public_key = serialization.load_pem_public_key(
-            key,
-            backend=default_backend()
-        )
-        return public_key
-
     # Makes sure the data is received intact
     def receive_intact_data(self, gateway, length):
         data = b""
@@ -218,7 +105,6 @@ class Network(QObject):
             return u
         except Exception as e:
             self.exception_signal.emit(f"An error occurred: {e}")
-            logging.warning(f"An error occurred: {e}")
             return None
 
     # Enables receiving
@@ -241,7 +127,6 @@ class Network(QObject):
             self.receiving_allowed_indicator_signal.emit(True)
         except Exception as e:
             self.exception_signal.emit(f"An error occurred: {e}")
-            logging.warning(f"An error occurred: {e}")
 
     # Disables receiving
     def disable_receiving(self):
@@ -271,7 +156,6 @@ class Network(QObject):
             self.receiving_allowed_indicator_signal.emit(False)
         except Exception as e:
             self.exception_signal.emit(f"An error occurred: {e}")
-            logging.warning(f"An error occurred: {e}")
 
     # Opens ports on the network
     def open_ports(self):
@@ -297,7 +181,7 @@ class Network(QObject):
                 self.exception_signal.emit(f"Error adding port mapping: Port may already be in use. Ports are not open")
             else:
                 self.exception_signal.emit(f"Error adding port mapping: {e}. Ports are not open")
-            logging.warning(f"An error occurred: {e}")
+
             return False
 
     # Closes the ports on the network
@@ -316,7 +200,6 @@ class Network(QObject):
             self.upnp_ports_open = False
         except Exception as e:
             self.exception_signal.emit(f"An error occurred: {e} | Ports are not closed")
-            logging.warning(f"An error occurred: {e}")
 
     # Accept connections from clients
     def accept_connections(self):
@@ -340,9 +223,9 @@ class Network(QObject):
                 # Exchange RSA keys
                 serialized_sender_public_key = self.receive_intact_data(self.host_socket_gateway,
                                                                         self.serialized_public_key_size)
-                self.sending_client_public_key = self.rsa_deserialize_public_key(serialized_sender_public_key)
+                self.sending_client_public_key = encryption.rsa_deserialize_public_key(serialized_sender_public_key)
 
-                serialized_user_public_key = self.rsa_serialize_public_key(self.public_key)
+                serialized_user_public_key = encryption.rsa_serialize_public_key(self.public_key)
                 self.host_socket_gateway.send(serialized_user_public_key)
 
                 # Receive AES information and decrypt it
@@ -355,13 +238,11 @@ class Network(QObject):
                 signature = self.receive_intact_data(self.host_socket_gateway, self.common_message_size)
                 self.host_socket_gateway.send(self.confirm_message)
 
-                self.client_aes_key = self.rsa_decrypt_message(encrypted_aes_key)
-                self.client_aes_iv = self.rsa_decrypt_message(encrypted_aes_iv)
+                self.client_aes_key = encryption.rsa_decrypt(encrypted_aes_key, self.private_key)
+                self.client_aes_iv = encryption.rsa_decrypt(encrypted_aes_iv, self.private_key)
 
                 # Verify signature
-                if self.rsa_verify_signature(signature, self.client_aes_key):
-                    self.client_cipher = Cipher(algorithms.AES(self.client_aes_key), modes.CBC(self.client_aes_iv))
-                else:
+                if not encryption.rsa_verify_signature(signature, self.client_aes_key, self.sending_client_public_key):
                     raise RuntimeError("Client AES key could not be verified")
 
                 # Start the receive_metadata thread
@@ -384,7 +265,6 @@ class Network(QObject):
                 self.inbound_connection = False
                 self.inbound_connection_indicator_signal.emit(False)
                 self.exception_signal.emit(f"Error accepting connection: {e}")
-                logging.warning(f"An error occurred: {e}")
 
     # Breaks the connection to the client
     def break_connection(self):
@@ -403,7 +283,6 @@ class Network(QObject):
             self.outbound_connection_indicator_signal.emit(False)
         except Exception as e:
             self.exception_signal.emit(f"An error occurred: {e}")
-            logging.warning(f"An error occurred: {e}")
 
     # Starts the request_connection thread
     def start_request_connection_thread(self, ip, port):
@@ -431,17 +310,17 @@ class Network(QObject):
             self.client_socket.connect((ip, port))
 
             # Exchange RSA keys
-            serialized_user_public_key = self.rsa_serialize_public_key(self.public_key)
+            serialized_user_public_key = encryption.rsa_serialize_public_key(self.public_key)
             self.client_socket.send(serialized_user_public_key)
 
             serialized_receiver_public_key = self.receive_intact_data(self.client_socket,
                                                                       self.serialized_public_key_size)
-            self.receiving_client_public_key = self.rsa_deserialize_public_key(serialized_receiver_public_key)
+            self.receiving_client_public_key = encryption.rsa_deserialize_public_key(serialized_receiver_public_key)
 
             # Encrypt AES information and send it
-            encrypted_aes_key = self.rsa_encrypt_message(self.host_aes_key)
-            encrypted_aes_iv = self.rsa_encrypt_message(self.host_aes_iv)
-            signature = self.rsa_sign_message(self.host_aes_key)
+            encrypted_aes_key = encryption.rsa_encrypt(self.host_aes_key, self.receiving_client_public_key)
+            encrypted_aes_iv = encryption.rsa_encrypt(self.host_aes_iv, self.receiving_client_public_key)
+            signature = encryption.rsa_sign(self.host_aes_key, self.private_key)
 
             self.client_socket.send(encrypted_aes_key)
             self.receive_intact_data(self.client_socket, self.confirmation_message_size)
@@ -462,36 +341,28 @@ class Network(QObject):
             self.spinner_signal.emit(False)
             self.trying_to_connect = False
             self.exception_signal.emit(f"Connection to \"{ip}\" refused.")
-            logging.warning(f"Connection to \"{ip}\" refused.")
         except RuntimeError as e:
             self.trying_to_connect = False
             self.exception_signal.emit(f"{e}")
-            logging.warning(f"{e}")
         except Exception as e:
             self.outbound_connection_indicator_signal.emit(False)
             self.spinner_signal.emit(False)
             self.trying_to_connect = False
             self.exception_signal.emit(f"Could not connect to \"{ip}\"")
-            logging.warning(f"Could not connect to \"{ip}\"")
 
     # Gets the external IP of the host
     def get_host_external_ip(self):
-        if self.upnp_enabled:
-            try:
+        try:
+            if self.upnp_enabled:
                 ip = self.wan_ip_service.externalipaddress()
                 return ip
-            except Exception as e:
-                self.exception_signal.emit(f"An error occurred: {e}")
-                logging.warning(f"An error occurred: {e}")
-        else:
-            try:
+            else:
                 # Use a public API to get the external IP address
                 response = requests.get("https://api64.ipify.org?format=json")
                 ip = response.json()["ip"]
                 return ip
-            except requests.RequestException as e:
-                self.exception_signal.emit(f"An error occurred: {e}")
-                logging.warning(f"An error occurred: {e}")
+        except Exception as e:
+            self.exception_signal.emit(f"An error occurred: {e}")
 
     # Starts the thread for sending files
     def start_send_file_thread(self, file_path, file_name, file_size):
@@ -529,11 +400,9 @@ class Network(QObject):
                 self.file_sent_indicator_signal.emit(False)
                 self.outbound_connection_indicator_signal.emit(False)
                 self.exception_signal.emit("An existing connection was terminated.")
-                logging.warning("An existing connection was terminated.")
         except Exception as e:
             self.exception_signal.emit(f"An error occurred: {e}")
             self.file_sent_indicator_signal.emit(False)
-            logging.warning(f"An error occurred: {e}")
 
     # Sends the metadata of a file
     def send_file_metadata(self, file_name, file_size):
@@ -541,8 +410,8 @@ class Network(QObject):
             metadata = FileMetadata(None, file_name, file_size)
             metadata_json = json.dumps(metadata.__dict__)  # Serialize metadata to JSON
 
-            encrypted_metadata = self.rsa_encrypt_message(metadata_json.encode())
-            signature = self.rsa_sign_message(metadata_json.encode())
+            encrypted_metadata = encryption.rsa_encrypt(metadata_json.encode(), self.receiving_client_public_key)
+            signature = encryption.rsa_sign(metadata_json.encode(), self.private_key)
 
             # Send encrypted metadata and signature
             self.client_socket.send(encrypted_metadata)
@@ -560,11 +429,9 @@ class Network(QObject):
                 self.file_sent_indicator_signal.emit(False)
                 self.outbound_connection_indicator_signal.emit(False)
                 self.exception_signal.emit("An existing connection was terminated.")
-                logging.warning("An existing connection was terminated.")
         except Exception as e:
             self.exception_signal.emit(f"An error occurred: {e}")
             self.file_sent_indicator_signal.emit(False)
-            logging.warning(f"An error occurred: {e}")
 
     # Sends the data of a file
     def send_file_data(self, file_path, file_name, file_size):
@@ -579,9 +446,9 @@ class Network(QObject):
 
                     # Add padding if last chunk
                     if len(chunk) < self.file_chunk_size:
-                        chunk = self.aes_add_padding(chunk)
+                        chunk = encryption.aes_add_padding(chunk)
 
-                    encrypted_chunk = self.aes_encrypt(chunk)
+                    encrypted_chunk = encryption.aes_encrypt(chunk, self.host_aes_key, self.host_aes_iv)
                     self.client_socket.send(encrypted_chunk)
 
                     # Update the progress bar
@@ -601,10 +468,8 @@ class Network(QObject):
                 self.outbound_connection = False
                 self.outbound_connection_indicator_signal.emit(False)
                 self.exception_signal.emit("An existing connection was terminated.")
-                logging.warning("An existing connection was terminated.")
         except Exception as e:
             self.exception_signal.emit(f"An error occurred: {e}")
-            logging.warning(f"An error occurred: {e}")
 
     # Rejects a file
     def reject_file(self):
@@ -625,10 +490,8 @@ class Network(QObject):
                 self.file_ready_to_receive_signal.emit(False)
                 self.inbound_connection_indicator_signal.emit(False)
                 self.exception_signal.emit("An existing connection was terminated.")
-                logging.warning("An existing connection was terminated.")
         except Exception as e:
             self.exception_signal.emit(f"An error occurred: {e}")
-            logging.warning(f"An error occurred: {e}")
 
     # Starts the thread for sending files
     def start_receive_file_thread(self):
@@ -651,10 +514,8 @@ class Network(QObject):
                 self.file_ready_to_receive_signal.emit(False)
                 self.inbound_connection_indicator_signal.emit(False)
                 self.exception_signal.emit("An existing connection was terminated.")
-                logging.warning("An existing connection was terminated.")
         except Exception as e:
             self.exception_signal.emit(f"An error occurred: {e}")
-            logging.warning(f"An error occurred: {e}")
 
     # Receives a file
     def receive_file(self):
@@ -677,10 +538,10 @@ class Network(QObject):
                 if not encrypted_metadata or not signature:
                     raise ConnectionError
 
-                metadata_json = self.rsa_decrypt_message(encrypted_metadata).decode()
+                metadata_json = encryption.rsa_decrypt(encrypted_metadata, self.private_key).decode()
 
                 # Verify signature
-                if self.rsa_verify_signature(signature, metadata_json.encode()):
+                if encryption.rsa_verify_signature(signature, metadata_json.encode(), self.sending_client_public_key):
                     metadata_dict = json.loads(metadata_json)  # Convert JSON string to dictionary
                     metadata = FileMetadata(**metadata_dict)  # Unpack metadata_dict and create an object from it
 
@@ -702,7 +563,6 @@ class Network(QObject):
                 self.file_ready_to_receive_signal.emit(False)
                 self.inbound_connection_indicator_signal.emit(False)
                 self.exception_signal.emit("An existing connection was terminated.")
-                logging.warning("An existing connection was terminated.")
                 break
             except OSError as e:
                 # An existing connection was forcibly closed by the remote host
@@ -713,11 +573,9 @@ class Network(QObject):
                     self.file_ready_to_receive_signal.emit(False)
                     self.inbound_connection_indicator_signal.emit(False)
                     self.exception_signal.emit("An existing connection was terminated.")
-                    logging.warning("An existing connection was terminated.")
                     break
             except Exception as e:
                 self.exception_signal.emit(f"An error occurred: {e}")
-                logging.warning(f"An error occurred: {e}")
                 break
 
     # Receives the data of a file
@@ -741,11 +599,11 @@ class Network(QObject):
                     else:
                         encrypted_chunk = self.receive_intact_data(self.host_socket_gateway, self.file_chunk_size)
 
-                    chunk = self.aes_decrypt(encrypted_chunk)
+                    chunk = encryption.aes_decrypt(encrypted_chunk, self.client_aes_key, self.client_aes_iv)
 
                     # Remove padding if last chunk
                     if received_data + len(chunk) > file_size:
-                        chunk = self.aes_remove_padding(chunk)
+                        chunk = encryption.aes_remove_padding(chunk)
 
                     file.write(chunk)
                     received_data += len(chunk)
@@ -773,10 +631,8 @@ class Network(QObject):
                 self.inbound_connection_indicator_signal.emit(False)
                 self.metadata_event.set()
                 self.exception_signal.emit("An existing connection was terminated.")
-                logging.warning("An existing connection was terminated.")
         except Exception as e:
             self.exception_signal.emit(f"An error occurred: {e}")
-            logging.warning(f"An error occurred: {e}")
 
     # Prepares the program for an exit
     def exit(self):

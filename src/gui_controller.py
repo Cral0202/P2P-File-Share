@@ -1,4 +1,3 @@
-import logging
 import os
 import sys
 from PyQt6 import QtWidgets
@@ -7,7 +6,6 @@ from PyQt6.QtWidgets import QFileDialog, QSizePolicy
 from main_gui import Ui_MainWindow
 from network import Network
 from file_metadata import FileMetadata
-
 
 class GUIController:
     def __init__(self):
@@ -53,7 +51,7 @@ class GUIController:
         self.ui.portSpinBox.setValue(self.network.host_port)
         self.ui.portSpinBox.valueChanged.connect(self.update_host_port)
 
-        self.ui.copyButton.clicked.connect(self.copy_user_ip_to_clipboard)
+        self.ui.copyButton.clicked.connect(self.copy_user_ip_and_port_to_clipboard)
         self.ui.chooseFileButton.clicked.connect(self.determine_file_to_transfer)
 
         self.ui.connectButton.clicked.connect(self.confirm_client_ip)
@@ -203,8 +201,8 @@ class GUIController:
         self.ui.receiverDownloadedFileLabel.setSizePolicy(QSizePolicy.Policy.Ignored, QSizePolicy.Policy.Ignored)
         self.ui.sendProgressBar.setValue(0)
 
-    # Copies the users IP to the clipboard
-    def copy_user_ip_to_clipboard(self):
+    # Copies the users IP + Port to the clipboard
+    def copy_user_ip_and_port_to_clipboard(self):
         self.clipboard.setText(f"{self.network.host_external_ip}:{self.network.host_port}")
 
     # Determines which file to transfer
@@ -227,7 +225,6 @@ class GUIController:
                 self.ui.chosenFileLabel.setText(f"Chosen file: {file_name}")
         except Exception as e:
             self.show_exception_message(f"An error occurred: {e}")
-            logging.warning(f"An error occurred: {e}")
 
     # Confirms the IP of the client
     def confirm_client_ip(self):
@@ -238,4 +235,3 @@ class GUIController:
             self.network.start_request_connection_thread(ip, port)
         except Exception as e:
             self.show_exception_message("IP-address input is invalid.")
-            logging.warning(f"An error occurred: {e}")
