@@ -5,7 +5,6 @@ from PyQt6.QtGui import QIcon, QMovie
 from PyQt6.QtWidgets import QFileDialog, QSizePolicy
 from main_gui import Ui_MainWindow
 from network import Network
-from file_metadata import FileMetadata
 
 class GUIController:
     def __init__(self):
@@ -20,7 +19,12 @@ class GUIController:
         self.red_color_formatted = f"color: {self.red_color}"
 
         self.spinner = None
-        self.file_to_transfer = FileMetadata("None", "None", "None")
+
+        self.file_to_transfer = {
+            "file_path": None,
+            "file_name": None,
+            "file_size": None,
+        }
 
         self.network = Network()
 
@@ -62,9 +66,13 @@ class GUIController:
 
         self.ui.disableReceivingButton.clicked.connect(lambda: self.network.disable_receiving())
 
-        self.ui.sendButton.clicked.connect(lambda: self.network.start_send_file_thread(self.file_to_transfer.file_path,
-                                                                                       self.file_to_transfer.file_name,
-                                                                                       self.file_to_transfer.file_size))
+        self.ui.sendButton.clicked.connect(
+            lambda: self.network.start_send_file_thread(
+                self.file_to_transfer["file_path"],
+                self.file_to_transfer["file_name"],
+                self.file_to_transfer["file_size"]
+            )
+        )
 
         self.ui.receiveButton.clicked.connect(lambda: self.network.start_receive_file_thread())
 
@@ -220,7 +228,11 @@ class GUIController:
                 file_name = os.path.basename(file_path)
                 file_size = os.path.getsize(file_path)
 
-                self.file_to_transfer = FileMetadata(file_path, file_name, file_size)
+                self.file_to_transfer = {
+                    "file_path": file_path,
+                    "file_name": file_name,
+                    "file_size": file_size,
+                }
 
                 self.ui.chosenFileLabel.setText(f"Chosen file: {file_name}")
         except Exception as e:

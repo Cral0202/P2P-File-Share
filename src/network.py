@@ -7,7 +7,6 @@ import encryption
 
 import requests
 import miniupnpc
-from file_metadata import FileMetadata
 from PyQt6.QtCore import QObject, pyqtSignal
 
 class Network(QObject):
@@ -407,8 +406,11 @@ class Network(QObject):
     # Sends the metadata of a file
     def send_file_metadata(self, file_name, file_size):
         try:
-            metadata = FileMetadata(None, file_name, file_size)
-            metadata_json = json.dumps(metadata.__dict__)  # Serialize metadata to JSON
+            metadata = {
+                "file_name": file_name,
+                "file_size": file_size,
+            }
+            metadata_json = json.dumps(metadata)
 
             encrypted_metadata = encryption.rsa_encrypt(metadata_json.encode(), self.receiving_client_public_key)
             signature = encryption.rsa_sign(metadata_json.encode(), self.private_key)
@@ -542,11 +544,10 @@ class Network(QObject):
 
                 # Verify signature
                 if encryption.rsa_verify_signature(signature, metadata_json.encode(), self.sending_client_public_key):
-                    metadata_dict = json.loads(metadata_json)  # Convert JSON string to dictionary
-                    metadata = FileMetadata(**metadata_dict)  # Unpack metadata_dict and create an object from it
+                    metadata = json.loads(metadata_json)
 
-                    self.file_to_be_received_name = metadata.file_name
-                    self.file_to_be_received_size = metadata.file_size
+                    self.file_to_be_received_name = metadata["file_name"]
+                    self.file_to_be_received_size = metadata["file_size"]
                     self.file_ready_to_receive_signal.emit(True)
 
                     self.host_socket_gateway.send(self.confirm_message)
