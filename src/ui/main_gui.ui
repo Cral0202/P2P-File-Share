@@ -30,10 +30,10 @@
           <item>
            <spacer name="horizontalSpacer_15">
             <property name="orientation">
-             <enum>Qt::Horizontal</enum>
+             <enum>Qt::Orientation::Horizontal</enum>
             </property>
             <property name="sizeType">
-             <enum>QSizePolicy::Fixed</enum>
+             <enum>QSizePolicy::Policy::Fixed</enum>
             </property>
             <property name="sizeHint" stdset="0">
              <size>
@@ -87,36 +87,36 @@
             </property>
             <property name="styleSheet">
              <string notr="true">QPushButton {
-    background-color: rgba(169, 169, 169, 0.2); /* Slightly transparent gray */
-    border-radius: 7px; /* Rounded edges */
-    color: white; /* Text color */
-	padding: 5px 15px; /* Add padding to create space around 		the text */
+    background-color: rgba(169, 169, 169, 0.2); 
+    border-radius: 7px;
+    color: white;
+	padding: 5px 15px;
 }
 
 QPushButton:hover {
-    background-color: rgba(169, 169, 169, 0.7); /* Lighten the color on hover */
+    background-color: rgba(169, 169, 169, 0.7); 
 }
 
 QPushButton:pressed {
-    background-color: rgba(105, 105, 105, 0.9); /* Darken the color when pressed */
+    background-color: rgba(105, 105, 105, 0.9); 
 }</string>
             </property>
             <property name="text">
-             <string>Copy IP</string>
+             <string>Copy IP + Port</string>
             </property>
            </widget>
           </item>
           <item>
            <spacer name="horizontalSpacer_14">
             <property name="orientation">
-             <enum>Qt::Horizontal</enum>
+             <enum>Qt::Orientation::Horizontal</enum>
             </property>
             <property name="sizeType">
-             <enum>QSizePolicy::Fixed</enum>
+             <enum>QSizePolicy::Policy::Fixed</enum>
             </property>
             <property name="sizeHint" stdset="0">
              <size>
-              <width>50</width>
+              <width>12</width>
               <height>20</height>
              </size>
             </property>
@@ -141,7 +141,7 @@ QPushButton:pressed {
              <string notr="true">color: rgb(255, 255, 255);</string>
             </property>
             <property name="text">
-             <string>Use port:</string>
+             <string>Port:</string>
             </property>
            </widget>
           </item>
@@ -153,12 +153,19 @@ QPushButton:pressed {
               <verstretch>0</verstretch>
              </sizepolicy>
             </property>
+            <property name="minimumSize">
+             <size>
+              <width>98</width>
+              <height>0</height>
+             </size>
+            </property>
             <property name="styleSheet">
              <string notr="true">QSpinBox {
-    background-color: rgba(169, 169, 169, 0.2); /* Slightly transparent gray */
-    border: 1px solid #4d4d4d; /* Light gray border */
-    border-radius: 4px; /* Rounded corners */
-    padding: 2px; /* Padding around the text */
+    background-color: rgba(169, 169, 169, 0.2);
+    border: 1px solid #4d4d4d;
+    border-radius: 7px;
+	padding-left: 2px;
+    padding-right: 2px;
 	color: rgb(255, 255, 255);
 }</string>
             </property>
@@ -173,10 +180,10 @@ QPushButton:pressed {
           <item>
            <spacer name="horizontalSpacer_7">
             <property name="orientation">
-             <enum>Qt::Horizontal</enum>
+             <enum>Qt::Orientation::Horizontal</enum>
             </property>
             <property name="sizeType">
-             <enum>QSizePolicy::Expanding</enum>
+             <enum>QSizePolicy::Policy::Expanding</enum>
             </property>
             <property name="sizeHint" stdset="0">
              <size>
@@ -205,18 +212,18 @@ QPushButton:pressed {
             </property>
             <property name="styleSheet">
              <string notr="true">QPushButton {
-    background-color: rgba(169, 169, 169, 0.2); /* Slightly transparent gray */
-    border-radius: 7px; /* Rounded edges */
-    color: white; /* Text color */
-	padding: 5px 15px; /* Add padding to create space around 		the text */
+    background-color: rgba(169, 169, 169, 0.2);
+    border-radius: 7px;
+    color: white;
+	padding: 5px 15px;
 }
 
 QPushButton:hover {
-    background-color: rgba(169, 169, 169, 0.7); /* Lighten the color on hover */
+    background-color: rgba(169, 169, 169, 0.7); 
 }
 
 QPushButton:pressed {
-    background-color: rgba(105, 105, 105, 0.9); /* Darken the color when pressed */
+    background-color: rgba(105, 105, 105, 0.9); 
 }</string>
             </property>
             <property name="text">
@@ -239,18 +246,18 @@ QPushButton:pressed {
             </property>
             <property name="styleSheet">
              <string notr="true">QPushButton {
-    background-color: rgba(169, 169, 169, 0.2); /* Slightly transparent gray */
-    border-radius: 7px; /* Rounded edges */
-    color: white; /* Text color */
-	padding: 5px 15px; /* Add padding to create space around 		the text */
+    background-color: rgba(169, 169, 169, 0.2);
+    border-radius: 7px;
+    color: white;
+	padding: 5px 15px; 
 }
 
 QPushButton:hover {
-    background-color: rgba(169, 169, 169, 0.7); /* Lighten the color on hover */
+    background-color: rgba(169, 169, 169, 0.7);
 }
 
 QPushButton:pressed {
-    background-color: rgba(105, 105, 105, 0.9); /* Darken the color when pressed */
+    background-color: rgba(105, 105, 105, 0.9);
 }</string>
             </property>
             <property name="text">
@@ -261,10 +268,10 @@ QPushButton:pressed {
           <item>
            <spacer name="horizontalSpacer_6">
             <property name="orientation">
-             <enum>Qt::Horizontal</enum>
+             <enum>Qt::Orientation::Horizontal</enum>
             </property>
             <property name="sizeType">
-             <enum>QSizePolicy::Expanding</enum>
+             <enum>QSizePolicy::Policy::Expanding</enum>
             </property>
             <property name="sizeHint" stdset="0">
              <size>
@@ -286,7 +293,7 @@ QPushButton:pressed {
        <string notr="true"/>
       </property>
       <property name="frameShadow">
-       <enum>QFrame::Sunken</enum>
+       <enum>QFrame::Shadow::Sunken</enum>
       </property>
       <property name="lineWidth">
        <number>2</number>
@@ -295,17 +302,17 @@ QPushButton:pressed {
        <number>0</number>
       </property>
       <property name="orientation">
-       <enum>Qt::Horizontal</enum>
+       <enum>Qt::Orientation::Horizontal</enum>
       </property>
      </widget>
     </item>
     <item>
      <spacer name="verticalSpacer">
       <property name="orientation">
-       <enum>Qt::Vertical</enum>
+       <enum>Qt::Orientation::Vertical</enum>
       </property>
       <property name="sizeType">
-       <enum>QSizePolicy::Expanding</enum>
+       <enum>QSizePolicy::Policy::Expanding</enum>
       </property>
       <property name="sizeHint" stdset="0">
        <size>
@@ -322,10 +329,10 @@ QPushButton:pressed {
         <item>
          <spacer name="horizontalSpacer_11">
           <property name="orientation">
-           <enum>Qt::Horizontal</enum>
+           <enum>Qt::Orientation::Horizontal</enum>
           </property>
           <property name="sizeType">
-           <enum>QSizePolicy::Preferred</enum>
+           <enum>QSizePolicy::Policy::Preferred</enum>
           </property>
           <property name="sizeHint" stdset="0">
            <size>
@@ -361,7 +368,7 @@ QPushButton:pressed {
         <item>
          <spacer name="horizontalSpacer_5">
           <property name="orientation">
-           <enum>Qt::Horizontal</enum>
+           <enum>Qt::Orientation::Horizontal</enum>
           </property>
           <property name="sizeHint" stdset="0">
            <size>
@@ -385,7 +392,7 @@ QPushButton:pressed {
           </property>
           <property name="minimumSize">
            <size>
-            <width>155</width>
+            <width>185</width>
             <height>0</height>
            </size>
           </property>
@@ -396,9 +403,9 @@ QPushButton:pressed {
           </property>
           <property name="styleSheet">
            <string notr="true">QLineEdit {
-    border: 2px solid #4d4d4d; /* Light gray border */
-    border-radius: 5px; /* Rounded corners */
-    padding: 5px; /* Padding */
+    border: 2px solid #4d4d4d;
+    border-radius: 5px;
+    padding: 5px;
 	color: white;
 }</string>
           </property>
@@ -436,7 +443,7 @@ QPushButton:pressed {
         <item>
          <spacer name="horizontalSpacer_8">
           <property name="orientation">
-           <enum>Qt::Horizontal</enum>
+           <enum>Qt::Orientation::Horizontal</enum>
           </property>
           <property name="sizeHint" stdset="0">
            <size>
@@ -465,18 +472,18 @@ QPushButton:pressed {
           </property>
           <property name="styleSheet">
            <string notr="true">QPushButton {
-    background-color: rgba(169, 169, 169, 0.2); /* Slightly transparent gray */
-    border-radius: 7px; /* Rounded edges */
-    color: white; /* Text color */
-	padding: 5px 15px; /* Add padding to create space around 		the text */
+    background-color: rgba(169, 169, 169, 0.2);
+    border-radius: 7px;
+    color: white;
+	padding: 5px 15px;
 }
 
 QPushButton:hover {
-    background-color: rgba(169, 169, 169, 0.7); /* Lighten the color on hover */
+    background-color: rgba(169, 169, 169, 0.7);
 }
 
 QPushButton:pressed {
-    background-color: rgba(105, 105, 105, 0.9); /* Darken the color when pressed */
+    background-color: rgba(105, 105, 105, 0.9);
 }</string>
           </property>
           <property name="text">
@@ -499,18 +506,18 @@ QPushButton:pressed {
           </property>
           <property name="styleSheet">
            <string notr="true">QPushButton {
-    background-color: rgba(169, 169, 169, 0.2); /* Slightly transparent gray */
-    border-radius: 7px; /* Rounded edges */
-    color: white; /* Text color */
-	padding: 5px 15px; /* Add padding to create space around 		the text */
+    background-color: rgba(169, 169, 169, 0.2);
+    border-radius: 7px;
+    color: white;
+	padding: 5px 15px;
 }
 
 QPushButton:hover {
-    background-color: rgba(169, 169, 169, 0.7); /* Lighten the color on hover */
+    background-color: rgba(169, 169, 169, 0.7);
 }
 
 QPushButton:pressed {
-    background-color: rgba(105, 105, 105, 0.9); /* Darken the color when pressed */
+    background-color: rgba(105, 105, 105, 0.9);
 }</string>
           </property>
           <property name="text">
@@ -521,7 +528,7 @@ QPushButton:pressed {
         <item>
          <spacer name="horizontalSpacer_9">
           <property name="orientation">
-           <enum>Qt::Horizontal</enum>
+           <enum>Qt::Orientation::Horizontal</enum>
           </property>
           <property name="sizeHint" stdset="0">
            <size>
@@ -538,7 +545,7 @@ QPushButton:pressed {
     <item>
      <spacer name="verticalSpacer_6">
       <property name="orientation">
-       <enum>Qt::Vertical</enum>
+       <enum>Qt::Orientation::Vertical</enum>
       </property>
       <property name="sizeHint" stdset="0">
        <size>
@@ -554,17 +561,17 @@ QPushButton:pressed {
        <number>2</number>
       </property>
       <property name="orientation">
-       <enum>Qt::Horizontal</enum>
+       <enum>Qt::Orientation::Horizontal</enum>
       </property>
      </widget>
     </item>
     <item>
      <spacer name="verticalSpacer_4">
       <property name="orientation">
-       <enum>Qt::Vertical</enum>
+       <enum>Qt::Orientation::Vertical</enum>
       </property>
       <property name="sizeType">
-       <enum>QSizePolicy::Expanding</enum>
+       <enum>QSizePolicy::Policy::Expanding</enum>
       </property>
       <property name="sizeHint" stdset="0">
        <size>
@@ -583,10 +590,10 @@ QPushButton:pressed {
           <item>
            <spacer name="horizontalSpacer_16">
             <property name="orientation">
-             <enum>Qt::Horizontal</enum>
+             <enum>Qt::Orientation::Horizontal</enum>
             </property>
             <property name="sizeType">
-             <enum>QSizePolicy::Fixed</enum>
+             <enum>QSizePolicy::Policy::Fixed</enum>
             </property>
             <property name="sizeHint" stdset="0">
              <size>
@@ -622,7 +629,7 @@ QPushButton:pressed {
           <item>
            <spacer name="horizontalSpacer_3">
             <property name="orientation">
-             <enum>Qt::Horizontal</enum>
+             <enum>Qt::Orientation::Horizontal</enum>
             </property>
             <property name="sizeHint" stdset="0">
              <size>
@@ -651,18 +658,18 @@ QPushButton:pressed {
             </property>
             <property name="styleSheet">
              <string notr="true">QPushButton {
-    background-color: rgba(169, 169, 169, 0.2); /* Slightly transparent gray */
-    border-radius: 7px; /* Rounded edges */
-    color: white; /* Text color */
-	padding: 5px 15px; /* Add padding to create space around 		the text */
+    background-color: rgba(169, 169, 169, 0.2);
+    border-radius: 7px;
+    color: white;
+	padding: 5px 15px;
 }
 
 QPushButton:hover {
-    background-color: rgba(169, 169, 169, 0.7); /* Lighten the color on hover */
+    background-color: rgba(169, 169, 169, 0.7);
 }
 
 QPushButton:pressed {
-    background-color: rgba(105, 105, 105, 0.9); /* Darken the color when pressed */
+    background-color: rgba(105, 105, 105, 0.9);
 }</string>
             </property>
             <property name="text">
@@ -685,18 +692,18 @@ QPushButton:pressed {
             </property>
             <property name="styleSheet">
              <string notr="true">QPushButton {
-    background-color: rgba(169, 169, 169, 0.2); /* Slightly transparent gray */
-    border-radius: 7px; /* Rounded edges */
-    color: white; /* Text color */
-	padding: 5px 15px; /* Add padding to create space around 		the text */
+    background-color: rgba(169, 169, 169, 0.2);
+    border-radius: 7px;
+    color: white;
+	padding: 5px 15px;
 }
 
 QPushButton:hover {
-    background-color: rgba(169, 169, 169, 0.7); /* Lighten the color on hover */
+    background-color: rgba(169, 169, 169, 0.7);
 }
 
 QPushButton:pressed {
-    background-color: rgba(105, 105, 105, 0.9); /* Darken the color when pressed */
+    background-color: rgba(105, 105, 105, 0.9);
 }</string>
             </property>
             <property name="text">
@@ -733,7 +740,7 @@ QPushButton:pressed {
           <item>
            <spacer name="horizontalSpacer_4">
             <property name="orientation">
-             <enum>Qt::Horizontal</enum>
+             <enum>Qt::Orientation::Horizontal</enum>
             </property>
             <property name="sizeHint" stdset="0">
              <size>
@@ -777,15 +784,16 @@ QPushButton:pressed {
             </property>
             <property name="styleSheet">
              <string notr="true">QProgressBar {
-    border-radius: 5px; /* Rounded corners */
-    background-color: rgba(169, 169, 169, 0.2); /* Slightly transparent gray */
-	text-align: center; /* Center-align the text */
+    border-radius: 5px;
+    background-color: rgba(169, 169, 169, 0.2);
+	text-align: center;
 	color: white
 }
 
 QProgressBar::chunk {
-    background-color: #4CAF50; /* Progress color */
-    border-radius: 5px; /* Maintain rounded corners for progress chunk */
+	/* Progress Version */
+    background-color: #4CAF50;
+    border-radius: 5px;
 }</string>
             </property>
             <property name="value">
@@ -802,10 +810,10 @@ QProgressBar::chunk {
           <item>
            <spacer name="horizontalSpacer_12">
             <property name="orientation">
-             <enum>Qt::Horizontal</enum>
+             <enum>Qt::Orientation::Horizontal</enum>
             </property>
             <property name="sizeType">
-             <enum>QSizePolicy::Expanding</enum>
+             <enum>QSizePolicy::Policy::Expanding</enum>
             </property>
             <property name="sizeHint" stdset="0">
              <size>
@@ -845,7 +853,7 @@ QProgressBar::chunk {
           <item>
            <spacer name="horizontalSpacer_13">
             <property name="orientation">
-             <enum>Qt::Horizontal</enum>
+             <enum>Qt::Orientation::Horizontal</enum>
             </property>
             <property name="sizeHint" stdset="0">
              <size>
@@ -864,7 +872,7 @@ QProgressBar::chunk {
     <item>
      <spacer name="verticalSpacer_5">
       <property name="orientation">
-       <enum>Qt::Vertical</enum>
+       <enum>Qt::Orientation::Vertical</enum>
       </property>
       <property name="sizeHint" stdset="0">
        <size>
@@ -880,17 +888,17 @@ QProgressBar::chunk {
        <number>2</number>
       </property>
       <property name="orientation">
-       <enum>Qt::Horizontal</enum>
+       <enum>Qt::Orientation::Horizontal</enum>
       </property>
      </widget>
     </item>
     <item>
      <spacer name="verticalSpacer_3">
       <property name="orientation">
-       <enum>Qt::Vertical</enum>
+       <enum>Qt::Orientation::Vertical</enum>
       </property>
       <property name="sizeType">
-       <enum>QSizePolicy::Expanding</enum>
+       <enum>QSizePolicy::Policy::Expanding</enum>
       </property>
       <property name="sizeHint" stdset="0">
        <size>
@@ -907,10 +915,10 @@ QProgressBar::chunk {
         <item>
          <spacer name="horizontalSpacer_17">
           <property name="orientation">
-           <enum>Qt::Horizontal</enum>
+           <enum>Qt::Orientation::Horizontal</enum>
           </property>
           <property name="sizeType">
-           <enum>QSizePolicy::Fixed</enum>
+           <enum>QSizePolicy::Policy::Fixed</enum>
           </property>
           <property name="sizeHint" stdset="0">
            <size>
@@ -962,18 +970,18 @@ QProgressBar::chunk {
           </property>
           <property name="styleSheet">
            <string notr="true">QPushButton {
-    background-color: rgba(169, 169, 169, 0.2); /* Slightly transparent gray */
-    border-radius: 7px; /* Rounded edges */
-    color: white; /* Text color */
-	padding: 5px 15px; /* Add padding to create space around 		the text */
+    background-color: rgba(169, 169, 169, 0.2);
+    border-radius: 7px;
+    color: white;
+	padding: 5px 15px;
 }
 
 QPushButton:hover {
-    background-color: rgba(169, 169, 169, 0.7); /* Lighten the color on hover */
+    background-color: rgba(169, 169, 169, 0.7);
 }
 
 QPushButton:pressed {
-    background-color: rgba(105, 105, 105, 0.9); /* Darken the color when pressed */
+    background-color: rgba(105, 105, 105, 0.9);
 }</string>
           </property>
           <property name="text">
@@ -996,18 +1004,18 @@ QPushButton:pressed {
           </property>
           <property name="styleSheet">
            <string notr="true">QPushButton {
-    background-color: rgba(169, 169, 169, 0.2); /* Slightly transparent gray */
-    border-radius: 7px; /* Rounded edges */
-    color: white; /* Text color */
-	padding: 5px 15px; /* Add padding to create space around 		the text */
+    background-color: rgba(169, 169, 169, 0.2);
+    border-radius: 7px;
+    color: white;
+	padding: 5px 15px;
 }
 
 QPushButton:hover {
-    background-color: rgba(169, 169, 169, 0.7); /* Lighten the color on hover */
+    background-color: rgba(169, 169, 169, 0.7);
 }
 
 QPushButton:pressed {
-    background-color: rgba(105, 105, 105, 0.9); /* Darken the color when pressed */
+    background-color: rgba(105, 105, 105, 0.9);
 }</string>
           </property>
           <property name="text">
@@ -1018,7 +1026,7 @@ QPushButton:pressed {
         <item>
          <spacer name="horizontalSpacer">
           <property name="orientation">
-           <enum>Qt::Horizontal</enum>
+           <enum>Qt::Orientation::Horizontal</enum>
           </property>
           <property name="sizeHint" stdset="0">
            <size>
@@ -1065,15 +1073,16 @@ QPushButton:pressed {
           </property>
           <property name="styleSheet">
            <string notr="true">QProgressBar {
-    border-radius: 5px; /* Rounded corners */
-    background-color: rgba(169, 169, 169, 0.2); /* Slightly transparent gray */
-	text-align: center; /* Center-align the text */
+    border-radius: 5px;
+    background-color: rgba(169, 169, 169, 0.2);
+	text-align: center;
 	color: white
 }
 
 QProgressBar::chunk {
-    background-color: #4CAF50; /* Progress color */
-    border-radius: 5px; /* Maintain rounded corners for progress chunk */
+	/* Progress Version */
+    background-color: #4CAF50;
+    border-radius: 5px;
 }</string>
           </property>
           <property name="value">
@@ -1090,10 +1099,10 @@ QProgressBar::chunk {
         <item>
          <spacer name="horizontalSpacer_10">
           <property name="orientation">
-           <enum>Qt::Horizontal</enum>
+           <enum>Qt::Orientation::Horizontal</enum>
           </property>
           <property name="sizeType">
-           <enum>QSizePolicy::Expanding</enum>
+           <enum>QSizePolicy::Policy::Expanding</enum>
           </property>
           <property name="sizeHint" stdset="0">
            <size>
@@ -1110,7 +1119,7 @@ QProgressBar::chunk {
     <item>
      <spacer name="verticalSpacer_7">
       <property name="orientation">
-       <enum>Qt::Vertical</enum>
+       <enum>Qt::Orientation::Vertical</enum>
       </property>
       <property name="sizeHint" stdset="0">
        <size>
@@ -1126,7 +1135,7 @@ QProgressBar::chunk {
        <number>2</number>
       </property>
       <property name="orientation">
-       <enum>Qt::Horizontal</enum>
+       <enum>Qt::Orientation::Horizontal</enum>
       </property>
      </widget>
     </item>
@@ -1154,7 +1163,7 @@ QProgressBar::chunk {
          <string>Receiving disabled</string>
         </property>
         <property name="alignment">
-         <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
+         <set>Qt::AlignmentFlag::AlignLeading|Qt::AlignmentFlag::AlignLeft|Qt::AlignmentFlag::AlignVCenter</set>
         </property>
        </widget>
       </item>
@@ -1180,7 +1189,7 @@ QProgressBar::chunk {
          <string>No inbound connection</string>
         </property>
         <property name="alignment">
-         <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
+         <set>Qt::AlignmentFlag::AlignLeading|Qt::AlignmentFlag::AlignLeft|Qt::AlignmentFlag::AlignVCenter</set>
         </property>
        </widget>
       </item>
