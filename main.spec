@@ -2,10 +2,10 @@
 
 
 a = Analysis(
-    ['main.py'],
+    ['src/main.py'],
     pathex=[],
     binaries=[],
-    datas=[('icon.ico', '.'), ('spinner.gif', '.')],
+    datas=[('assets/icon.ico', '.'), ('assets/spinner.gif', '.')],
     hiddenimports=[],
     hookspath=[],
     hooksconfig={},
@@ -34,5 +34,5 @@ exe = EXE(
     target_arch=None,
     codesign_identity=None,
     entitlements_file=None,
-    icon=['icon.ico'],
+    icon=['assets/icon.ico'],
 )

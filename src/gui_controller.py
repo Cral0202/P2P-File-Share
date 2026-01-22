@@ -102,13 +102,13 @@ class GUIController:
     # Gets the program icon (has to be done this way because of pyinstaller)
     def get_program_icon(self):
         root = os.path.dirname(__file__)
-        program_icon = os.path.join(root, "icon.ico")
+        program_icon = os.path.join(root, "../assets/icon.ico")
         return program_icon
 
     # Gets the spinner gif (has to be done this way because of pyinstaller)
     def get_spinner_gif(self):
         root = os.path.dirname(__file__)
-        spinner_gif = os.path.join(root, "spinner.gif")
+        spinner_gif = os.path.join(root, "../assets/spinner.gif")
         return QMovie(spinner_gif)
 
     # Toggles the spinner
