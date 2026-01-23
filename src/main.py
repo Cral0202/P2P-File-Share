@@ -1,4 +1,4 @@
-from gui_controller import GUIController
+from gui import GUIController
 
 if __name__ == "__main__":
     gui_controller = GUIController()
