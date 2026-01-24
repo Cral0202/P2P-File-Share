@@ -4,16 +4,23 @@ import socket
 import threading
 import time
 import encryption
-
 import requests
 import miniupnpc
 from PyQt6.QtCore import QObject, pyqtSignal
+from models.transfer_file import TransferFile
+from dataclasses import dataclass
+from typing import Callable
 
 CONFIRM_MSG = b"Confirm_" # The confirmation message
 CONFIRMATION_MSG_SIZE = 8 # The size to use for confirmation messages
 COMMON_MSG_SIZE = 256 # The size to use for most messages, e.g. metadata or keys
 FILE_CHUNK_SIZE = 262144 # The size to use for file chunks
 SERIALIZED_PUB_KEY_SIZE = 451 # The size of a serialized public key
+
+@dataclass
+class NetworkEvent:
+    type: str
+    message: str | None = None
 
 class Network(QObject):
     receive_progress_bar_signal = pyqtSignal(int)  # The signal for the receive progress bar
@@ -22,7 +29,6 @@ class Network(QObject):
     outbound_connection_indicator_signal = pyqtSignal(bool)  # The signal for outbound connection indicators
     inbound_connection_indicator_signal = pyqtSignal(bool)  # The signal for inbound connection indicators
     file_sent_indicator_signal = pyqtSignal(bool)  # The signal for the file sent indicators
-    receiving_allowed_indicator_signal = pyqtSignal(bool)  # The signal for enabled/disabled receiving indicators
     sent_file_has_been_downloaded_signal = pyqtSignal(bool, str)  # The signal for if sent file has been downloaded
     file_ready_to_receive_signal = pyqtSignal(bool)  # The signal for files ready to be received
     reset_file_indicators_signal = pyqtSignal()  # The signal for resetting file indicators
@@ -31,7 +37,10 @@ class Network(QObject):
     def __init__(self):
         super().__init__()
 
-        self._public_key, self._private_key = encryption.generate_rsa_keys() # The host's private RSA key and public RSA key
+        self._subscribers: list[Callable[[NetworkEvent], None]] = []
+
+        self._public_key = None
+        self._private_key = None
         self._receiving_client_public_key = None  # The public RSA key of a receiving user
         self._sending_client_public_key = None  # The public RSA key of a sending user
 
@@ -47,10 +56,10 @@ class Network(QObject):
         self._host_thread = None  # Used for accepting connections
 
         self.upnp_enabled = False  # True if UPNP is enabled on host network
-        self._wan_ip_service = self._get_wan_ip_service()  # The WAN IP service object of the igd (for UPNP)
+        self._wan_ip_service = None  # The WAN IP service object of the igd (for UPNP)
 
         self.host_port = 35555  # Port which is opened and used
-        self.host_external_ip = self._get_host_external_ip()  # The external ip of the host
+        self.host_external_ip = None  # The external ip of the host
         self.outbound_peer_public_ip = None  # The public ip of the outbound peer
         self.inbound_peer_public_ip = None  # The public ip of the inbound peer
 
@@ -65,13 +74,25 @@ class Network(QObject):
         self._trying_to_connect = False  # True if trying to connect to IP
         self._program_about_to_exit = False  # True if program is about to exit
 
-        self.file_to_be_received_name = None  # The name of the file ready to be received
-        self._file_to_be_received_size = None  # The size of the file ready to be received
+        self.selected_file: TransferFile | None = None
+        self.incoming_file: TransferFile | None = None
 
         self._metadata_event = threading.Event()  # Used to sleep and wake metadata thread
         self._accept_connections_event = threading.Event()  # Used to sleep and wake accept connections thread
 
-    # Makes sure the data is received intact
+    def initialize(self):
+        self._wan_ip_service = self._get_wan_ip_service()
+        self.host_external_ip = self._get_host_external_ip()
+        self._public_key, self._private_key = encryption.generate_rsa_keys()
+
+    def subscribe(self, callback):
+        self._subscribers.append(callback)
+
+    def _emit(self, event: NetworkEvent):
+        for cb in self._subscribers:
+            cb(event)
+
+    # Makes sure data is received intact
     def _receive_intact_data(self, gateway: socket, length: int) -> bytes:
         data = b""
 
@@ -102,7 +123,8 @@ class Network(QObject):
             self.upnp_enabled = True
             return u
         except Exception as e:
-            self.exception_signal.emit(f"An error occurred: {e}")
+            self.upnp_enabled = False
+            self._emit(NetworkEvent("UPNP_UNAVAILABLE", str(e)))
             return None
 
     # Enables receiving
@@ -110,52 +132,44 @@ class Network(QObject):
         if self._receiving_enabled:
             return
 
-        try:
-            if self.upnp_enabled and not self._upnp_ports_open:
-                if not self._open_ports():
-                    return
+        if self.upnp_enabled and not self._upnp_ports_open:
+            if not self._open_ports():
+                return
 
-            self._should_stop_receiving = False
+        self._should_stop_receiving = False
 
-            self._host_thread = threading.Thread(target=self._accept_connections)
-            self._host_thread.daemon = True
-            self._host_thread.start()
+        self._host_thread = threading.Thread(target=self._accept_connections)
+        self._host_thread.daemon = True
+        self._host_thread.start()
 
-            self._receiving_enabled = True
-            self.receiving_allowed_indicator_signal.emit(True)
-        except Exception as e:
-            self.exception_signal.emit(f"An error occurred: {e}")
+        self._receiving_enabled = True
 
     # Disables receiving
     def disable_receiving(self):
         if not self._receiving_enabled:
             return
 
+        if self._sending_files and not self._program_about_to_exit:
+            raise RuntimeError("Cannot disable receiving when currently sending files")
+        if self._receiving_files and not self._program_about_to_exit:
+            raise RuntimeError("Cannot disable receiving when currently receiving files")
+
+        if self._upnp_ports_open:
+            self._close_ports()
+
+        self._should_stop_receiving = True
+
+        self._accept_connections_event.set()
+
         try:
-            if self._sending_files and not self._program_about_to_exit:
-                raise RuntimeError("Cannot disable receiving when currently sending files")
-            if self._receiving_files and not self._program_about_to_exit:
-                raise RuntimeError("Cannot disable receiving when currently receiving files")
+            self._host_socket.shutdown(socket.SHUT_RDWR)
+        except Exception:
+            pass
 
-            if self._upnp_ports_open:
-                self._close_ports()
+        self._host_socket.close()
+        self._host_thread.join()
 
-            self._should_stop_receiving = True
-
-            self._accept_connections_event.set()
-
-            try:
-                self._host_socket.shutdown(socket.SHUT_RDWR)
-            except Exception:
-                pass
-
-            self._host_socket.close()
-            self._host_thread.join()
-
-            self._receiving_enabled = False
-            self.receiving_allowed_indicator_signal.emit(False)
-        except Exception as e:
-            self.exception_signal.emit(f"An error occurred: {e}")
+        self._receiving_enabled = False
 
     # Opens ports on the network
     def _open_ports(self) -> bool:
@@ -348,16 +362,16 @@ class Network(QObject):
             self.exception_signal.emit(f"An error occurred: {e}")
 
     # Sends a file to the client
-    def _send_file(self, file_path: str, file_name: str, file_size: int):
+    def _send_file(self):
         try:
-            self._send_file_metadata(file_name, file_size)
+            self._send_file_metadata()
             response = self._receive_intact_data(self._client_socket, CONFIRMATION_MSG_SIZE).decode()
 
             if response == "Accepted":
                 self.file_sent_indicator_signal.emit(False)
-                self._send_file_data(file_path, file_name, file_size)
+                self._send_file_data()
             elif response == "Rejected":
-                self.sent_file_has_been_downloaded_signal.emit(False, file_name)
+                self.sent_file_has_been_downloaded_signal.emit(False, self.selected_file.name)
                 self.file_sent_indicator_signal.emit(False)
             else:
                 raise ConnectionError
@@ -370,11 +384,11 @@ class Network(QObject):
             self.file_sent_indicator_signal.emit(False)
 
     # Sends the metadata of a file
-    def _send_file_metadata(self, file_name: str, file_size: int):
+    def _send_file_metadata(self):
         try:
             metadata = {
-                "file_name": file_name,
-                "file_size": file_size,
+                "file_name": self.selected_file.name,
+                "file_size": self.selected_file.size,
             }
             metadata_json = json.dumps(metadata)
 
@@ -397,12 +411,12 @@ class Network(QObject):
             self.file_sent_indicator_signal.emit(False)
 
     # Sends the data of a file
-    def _send_file_data(self, file_path: str, file_name: str, file_size: int):
+    def _send_file_data(self):
         try:
             sent_data = 0
 
-            with open(file_path, "rb") as file:
-                while sent_data < file_size:
+            with open(self.selected_file.path, "rb") as file:
+                while sent_data < self.selected_file.size:
                     chunk = file.read(FILE_CHUNK_SIZE)
 
                     sent_data += len(chunk)
@@ -415,7 +429,7 @@ class Network(QObject):
                     self._client_socket.send(encrypted_chunk)
 
                     # Update the progress bar
-                    progress_percentage = (sent_data / file_size) * 100
+                    progress_percentage = (sent_data / self.selected_file.size) * 100
                     self.send_progress_bar_signal.emit(int(progress_percentage))
 
                     self._receive_intact_data(self._client_socket, CONFIRMATION_MSG_SIZE)
@@ -424,7 +438,7 @@ class Network(QObject):
             self._client_socket.send(CONFIRM_MSG)
             self._receive_intact_data(self._client_socket, CONFIRMATION_MSG_SIZE)
 
-            self.sent_file_has_been_downloaded_signal.emit(True, file_name)
+            self.sent_file_has_been_downloaded_signal.emit(True, self.selected_file.name)
         except ConnectionError:
             self._handle_connection_error(True)
         except Exception as e:
@@ -467,8 +481,13 @@ class Network(QObject):
                 if encryption.rsa_verify_signature(signature, metadata_json.encode(), self._sending_client_public_key):
                     metadata = json.loads(metadata_json)
 
-                    self.file_to_be_received_name = metadata["file_name"]
-                    self._file_to_be_received_size = metadata["file_size"]
+                    file = TransferFile(
+                        path = None,
+                        name = metadata["file_name"],
+                        size = metadata["file_size"],
+                    )
+
+                    self.incoming_file = file
                     self.file_ready_to_receive_signal.emit(True)
 
                     self._host_socket_gateway.send(CONFIRM_MSG)
@@ -487,13 +506,13 @@ class Network(QObject):
     # Receives the data of a file
     def _receive_file_data(self):
         try:
-            file_path = os.path.join(os.path.expanduser("~"), "Downloads", self.file_to_be_received_name)  # Get the download folder
+            file_path = os.path.join(os.path.expanduser("~"), "Downloads", self.incoming_file.name)  # Get the download folder
             received_data = 0
 
             with open(file_path, "wb") as file:
-                while received_data < self._file_to_be_received_size:
+                while received_data < self.incoming_file.size:
                     # Make sure chunk is received intact
-                    data_left = self._file_to_be_received_size - received_data
+                    data_left = self.incoming_file.size - received_data
 
                     if FILE_CHUNK_SIZE > data_left:
                         # Encrypted data is always a multiple of 16,
@@ -508,14 +527,14 @@ class Network(QObject):
                     chunk = encryption.aes_decrypt(encrypted_chunk, self._client_aes_key, self._client_aes_iv)
 
                     # Remove padding if last chunk
-                    if received_data + len(chunk) > self._file_to_be_received_size:
+                    if received_data + len(chunk) > self.incoming_file.size:
                         chunk = encryption.aes_remove_padding(chunk)
 
                     file.write(chunk)
                     received_data += len(chunk)
 
                     # Update the progress bar
-                    progress_percentage = (received_data / self._file_to_be_received_size) * 100
+                    progress_percentage = (received_data / self.incoming_file.size) * 100
                     self.receive_progress_bar_signal.emit(int(progress_percentage))
 
                     self._host_socket_gateway.send(CONFIRM_MSG)
@@ -588,13 +607,13 @@ class Network(QObject):
         request_connection_thread.start()
 
     # Starts the thread for sending files
-    def start_send_file_thread(self, file_path: str, file_name: str, file_size: int):
-        if self._sending_files or not self.outbound_connection or file_path == "None":
+    def start_send_file_thread(self):
+        if self._sending_files or not self.outbound_connection or not self.selected_file:
             return
 
         self._sending_files = True
         self.reset_file_indicators_signal.emit()
 
-        send_thread = threading.Thread(target=self._send_file, args=(file_path, file_name, file_size))
+        send_thread = threading.Thread(target=self._send_file)
         send_thread.daemon = True
         send_thread.start()

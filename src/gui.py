@@ -33,6 +33,7 @@ class GUIController:
         self._ui.setupUi(self._window)
 
         self._setup_window_widgets()
+        self._session_controller.initialize()
 
         self._window.show()
         self._app.aboutToQuit.connect(self._exit)
@@ -77,17 +78,13 @@ class GUIController:
         self._session_controller.should_update_receive_label.connect(self._update_receive_label)
         self._session_controller.download_changed.connect(self._update_downloaded_label)
         self._session_controller.should_reset_file_indicators.connect(self._reset_file_indicators)
-        self._session_controller.should_show_exception_message.connect(self._show_exception_message)
+        self._session_controller.exception_signal.connect(self._show_exception_message)
         self._session_controller.file_selected.connect(self._on_file_selected)
 
         # Set up spinner
         self._spinner = self._get_spinner_gif()
         self._ui.spinnerLabel.setMovie(self._spinner)
         self._toggle_spinner(False)
-
-        if not host_info.upnp_enabled:
-            self._show_exception_message("WARNING: UPNP is not enabled on network. Manual port mapping must be done "
-                                        "for receiving to work.")
 
     # Used when program is about to exit
     def _exit(self):
