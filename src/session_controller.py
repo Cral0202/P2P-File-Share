@@ -5,34 +5,22 @@ from models.transfer_file import TransferFile
 from models.host_info import HostInfo
 
 class SessionController(QObject):
-    outbound_status_changed = pyqtSignal(str, bool)
-    inbound_status_changed = pyqtSignal(str, bool)
-    receiving_status_changed = pyqtSignal(str, bool)
-    receive_pgrs_bar_changed = pyqtSignal(int)
-    send_pgrs_bar_changed = pyqtSignal(int)
-    download_changed = pyqtSignal(str)
-    should_reset_file_indicators = pyqtSignal()
-    should_toggle_spinner = pyqtSignal(bool)
-    should_toggle_file_sent = pyqtSignal(bool)
-    should_update_receive_label = pyqtSignal(str, bool)
+    outbound_status_signal = pyqtSignal(str, bool)
+    inbound_status_signal = pyqtSignal(str, bool)
+    receiving_status_signal = pyqtSignal(str, bool)
+    receive_pgrs_bar_signal = pyqtSignal(int)
+    send_pgrs_bar_signal = pyqtSignal(int)
+    download_signal = pyqtSignal(str)
+    file_indicators_signal = pyqtSignal()
+    spinner_signal = pyqtSignal(bool)
+    file_sent_signal = pyqtSignal(bool)
+    receive_label_signal = pyqtSignal(str, bool)
     exception_signal = pyqtSignal(str, int)
-    file_selected = pyqtSignal(str)
+    selected_file_signal = pyqtSignal(str)
 
     def __init__(self, network: Network):
         super().__init__()
         self._network = network
-
-        # Signals
-        self._network.outbound_connection_indicator_signal.connect(self._on_outbound_change)
-        self._network.inbound_connection_indicator_signal.connect(self._on_inbound_change)
-        self._network.receive_progress_bar_signal.connect(self._on_receive_pgrs_bar_change)
-        self._network.send_progress_bar_signal.connect(self._on_send_pgrs_bar_change)
-        self._network.sent_file_has_been_downloaded_signal.connect(self._on_downloaded_change)
-        self._network.reset_file_indicators_signal.connect(self._reset_file_indicators)
-        self._network.spinner_signal.connect(self._toggle_spinner)
-        self._network.file_sent_indicator_signal.connect(self._toggle_file_sent)
-        self._network.file_ready_to_receive_signal.connect(self._update_receive_label)
-        self._network.exception_signal.connect(self._show_exception_message)
 
     def initialize(self):
         self._network.subscribe(self._on_network_event)
@@ -44,7 +32,7 @@ class SessionController(QObject):
         else:
             text = "No outbound connection"
 
-        self.outbound_status_changed.emit(text, connected)
+        self.outbound_status_signal.emit(text, connected)
 
     def _on_inbound_change(self, connected: bool):
         if connected:
@@ -52,7 +40,7 @@ class SessionController(QObject):
         else:
             text = "No inbound connection"
 
-        self.inbound_status_changed.emit(text, connected)
+        self.inbound_status_signal.emit(text, connected)
 
     def _on_receiving_change(self, enabled: bool):
         if enabled:
@@ -60,13 +48,7 @@ class SessionController(QObject):
         else:
             text = "Receiving disabled"
 
-        self.receiving_status_changed.emit(text, enabled)
-
-    def _on_receive_pgrs_bar_change(self, progress: int):
-        self.receive_pgrs_bar_changed.emit(progress)
-
-    def _on_send_pgrs_bar_change(self, progress: int):
-        self.send_pgrs_bar_changed.emit(progress)
+        self.receiving_status_signal.emit(text, enabled)
 
     def _on_downloaded_change(self, downloaded: bool, file_name: str):
         if downloaded:
@@ -74,16 +56,7 @@ class SessionController(QObject):
         else:
             text = f"The sent file \"{file_name}\" was rejected by the receiver."
 
-        self.download_changed.emit(text)
-
-    def _reset_file_indicators(self):
-        self.should_reset_file_indicators.emit()
-
-    def _toggle_spinner(self, enable: bool):
-        self.should_toggle_spinner.emit(enable)
-
-    def _toggle_file_sent(self, show: bool):
-        self.should_toggle_file_sent.emit(show)
+        self.download_signal.emit(text)
 
     def _update_receive_label(self, reset_pgrs_bar: bool):
         if reset_pgrs_bar:
@@ -91,11 +64,7 @@ class SessionController(QObject):
         else:
             text = "Ready to receive:"
 
-        self.should_update_receive_label.emit(text, reset_pgrs_bar)
-
-    # TODO: Remove
-    def _show_exception_message(self, message: str, duration: int = 10000):
-        self.exception_signal.emit(message, duration)
+        self.receive_label_signal.emit(text, reset_pgrs_bar)
 
     ############
     # Requests #
@@ -105,14 +74,23 @@ class SessionController(QObject):
         self._network.host_port = port
 
     def request_disconnect(self):
-        self._network.break_connection()
+        try:
+            self._network.break_connection()
+            self._on_outbound_change(False)
+        except Exception as e:
+            self.exception_signal.emit(str(e), 10000)
 
     def request_enable_receiving(self):
         try:
             self._network.enable_receiving()
             self._on_receiving_change(True)
         except Exception as e:
-            self.exception_signal.emit(str(e), 10000)
+            text = str(e)
+
+            if "ConflictInMappingEntry" in text or "refuse" in text.lower():
+                text = "UPnP port mapping failed. Port may already be in use."
+
+            self.exception_signal.emit(text, 10000)
 
     def request_disable_receiving(self):
         try:
@@ -122,23 +100,30 @@ class SessionController(QObject):
             self.exception_signal.emit(str(e), 10000)
 
     def request_accept_incoming_file(self):
-        self._network.start_receive_file_thread()
+        try:
+            self._network.start_receive_file_thread()
+        except Exception as e:
+            self.exception_signal.emit(str(e), 10000)
 
     def request_reject_incoming_file(self):
-        self._network.reject_file()
+        try:
+            attempted = self._network.reject_file()
+
+            if attempted:
+                self._update_receive_label(False)
+        except Exception as e:
+            self._update_receive_label(False) # Still emit because the attempt happened
+            self.exception_signal.emit(str(e), 10000)
 
     def request_select_file(self, path: str):
-        file = TransferFile(
-            path = path,
-            name = os.path.basename(path),
-            size = os.path.getsize(path),
-        )
-
-        self._network.selected_file = file
-        self.file_selected.emit(file.name)
+        file_name = self._network.set_selected_file(path)
+        self.selected_file_signal.emit(file_name)
 
     def request_send_selected_file(self):
-        self._network.start_send_file_thread()
+        attempted = self._network.start_send_file_thread()
+
+        if attempted:
+            self.file_indicators_signal.emit()
 
     def request_connect(self, text: str):
         try:
@@ -148,7 +133,22 @@ class SessionController(QObject):
             self._show_exception_message("IP-address input is invalid.")
             return
 
-        self._network.start_request_connection_thread(ip, port)
+        status = self._network.start_request_connection_thread(ip, port)
+        msg = ""
+
+        if status == "STARTED":
+            self.spinner_signal.emit(True)
+            return
+        elif status == "ALREADY_CONNECTING":
+            return
+        elif status == "SENDING_FILES":
+            msg = "Cannot change connection when currently sending files."
+        elif status == "RECEIVING_FILES":
+            msg = "Cannot change connection when currently receiving files."
+        elif status == "ALREADY_CONNECTED":
+            msg = "Cannot change connection when already connected."
+
+        self.exception_signal.emit(msg, 10000)
 
     def request_exit(self):
         self._network.exit()
@@ -170,5 +170,76 @@ class SessionController(QObject):
 
     def _on_network_event(self, event: NetworkEvent):
         if event.type == "UPNP_UNAVAILABLE":
-            self.exception_signal.emit("UPNP is not enabled on network. Manual port mapping must be done "
-                                        "for receiving to work.", 10000)
+            self.exception_signal.emit("UPNP is not enabled on network. Manual port mapping must be done for receiving to work.", 10000)
+
+        elif event.type == "CONNECTION_LOST":
+            self.exception_signal.emit("An existing connection was terminated.", 10000)
+
+            if event.message == "OUTBOUND":
+                self._on_outbound_change(False)
+                self.file_sent_signal.emit(False)
+            elif event.message == "INBOUND":
+                self._on_inbound_change(False)
+                self._on_receiving_change(False)
+
+        elif event.type == "FILE_SEND_FINISHED":
+            self.file_sent_signal.emit(False)
+
+            if event.message == "REJECTED":
+                self._on_downloaded_change(False, self._network.selected_file.name)
+            elif event.message == "ERROR":
+                self.exception_signal.emit("An error occurred while sending file.", 10000)
+
+        elif event.type == "FILE_METADATA_SEND_FINISHED":
+            status = False
+
+            if event.message == "ACCEPTED":
+                status = True
+            elif event.message == "ERROR":
+                self.exception_signal.emit("An error occurred while sending file metadata.", 10000)
+
+            self.file_sent_signal.emit(status)
+
+        elif event.type == "FILE_DATA_SEND_PROGRESS":
+            self.send_pgrs_bar_signal.emit(int(event.message))
+
+        elif event.type == "FILE_DATA_SEND_FINISHED":
+            if event.message == "SUCCESS":
+                self._on_downloaded_change(True, self._network.selected_file.name)
+            elif event.message == "ERROR":
+                self.exception_signal.emit("An error occurred while sending file data.", 10000)
+
+        elif event.type == "FILE_METADATA_RECEIVE_FINISHED":
+            if event.message == "SUCCESS":
+                self._update_receive_label(True)
+            elif event.message == "ERROR":
+                self.exception_signal.emit("An error occurred while receiving file metadata.", 10000)
+
+        elif event.type == "FILE_DATA_RECEIVE_PROGRESS":
+            self.receive_pgrs_bar_signal.emit(int(event.message))
+
+        elif event.type == "FILE_DATA_RECEIVE_FINISHED":
+            if event.message == "SUCCESS":
+                self._update_receive_label(False)
+            elif event.message == "ERROR":
+                self.exception_signal.emit("An error occurred while receiving file data.", 10000)
+
+        elif event.type == "OUTBOUND_CONNECTION_REQUEST":
+            status = False
+
+            if event.message == "SUCCESS":
+                status = True
+            elif event.message == "CONNECTION_REFUSED":
+                self.exception_signal.emit("Connection was refused.", 10000)
+            elif event.message == "CONNECTION_ERROR":
+                self.exception_signal.emit("Could not connect.", 10000)
+
+            self._on_outbound_change(status)
+            self.spinner_signal.emit(False)
+
+        elif event.type == "INBOUND_CONNECTION_REQUEST":
+            if event.message == "SUCCESS":
+                self._on_inbound_change(True)
+            elif event.message == "ERROR":
+                self._on_inbound_change(False)
+                self.exception_signal.emit("Inbound connection request failed.", 10000)

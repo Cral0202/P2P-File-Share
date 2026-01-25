@@ -43,7 +43,7 @@ class GUIController:
     def _setup_window_widgets(self):
         self._clipboard = QtWidgets.QApplication.clipboard()
 
-        host_info = self._session_controller.get_host_info()
+        host_info = self._session_controller.get_host_info() # TODO: Currently runs before controller is initialized, so this is empty
         self._ui.ipLabel.setText(f"Your IP: {host_info.ip}")
         self._ui.ipLine.setPlaceholderText(f"{host_info.ip}:{host_info.port}")
         self._ui.ipLine.returnPressed.connect(self._on_connect_btn_pressed)  # Allow user to press enter
@@ -68,18 +68,18 @@ class GUIController:
         self._ui.rejectButton.clicked.connect(self._session_controller.request_reject_incoming_file)
 
         # Signals
-        self._session_controller.receive_pgrs_bar_changed.connect(self._update_receive_progress_bar)
-        self._session_controller.send_pgrs_bar_changed.connect(self._update_send_progress_bar)
-        self._session_controller.should_toggle_spinner.connect(self._toggle_spinner)
-        self._session_controller.outbound_status_changed.connect(self._update_outbound_ui)
-        self._session_controller.inbound_status_changed.connect(self._update_inbound_ui)
-        self._session_controller.receiving_status_changed.connect(self._update_receiving_ui)
-        self._session_controller.should_toggle_file_sent.connect(self._toggle_file_sent_label)
-        self._session_controller.should_update_receive_label.connect(self._update_receive_label)
-        self._session_controller.download_changed.connect(self._update_downloaded_label)
-        self._session_controller.should_reset_file_indicators.connect(self._reset_file_indicators)
+        self._session_controller.receive_pgrs_bar_signal.connect(self._update_receive_progress_bar)
+        self._session_controller.send_pgrs_bar_signal.connect(self._update_send_progress_bar)
+        self._session_controller.spinner_signal.connect(self._toggle_spinner)
+        self._session_controller.outbound_status_signal.connect(self._update_outbound_ui)
+        self._session_controller.inbound_status_signal.connect(self._update_inbound_ui)
+        self._session_controller.receiving_status_signal.connect(self._update_receiving_ui)
+        self._session_controller.file_sent_signal.connect(self._toggle_file_sent_label)
+        self._session_controller.receive_label_signal.connect(self._update_receive_label)
+        self._session_controller.download_signal.connect(self._update_downloaded_label)
+        self._session_controller.file_indicators_signal.connect(self._reset_file_indicators)
         self._session_controller.exception_signal.connect(self._show_exception_message)
-        self._session_controller.file_selected.connect(self._on_file_selected)
+        self._session_controller.selected_file_signal.connect(self._on_file_selected)
 
         # Set up spinner
         self._spinner = self._get_spinner_gif()
