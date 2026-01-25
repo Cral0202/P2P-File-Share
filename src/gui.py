@@ -32,8 +32,10 @@ class GUIController:
         self._ui = Ui_MainWindow()
         self._ui.setupUi(self._window)
 
+        # Widget setup is split into two phases because some UI values depend on the controller being initialized
         self._setup_window_widgets()
         self._session_controller.initialize()
+        self._populate_window_widgets()
 
         self._window.show()
         self._app.aboutToQuit.connect(self._exit)
@@ -43,27 +45,15 @@ class GUIController:
     def _setup_window_widgets(self):
         self._clipboard = QtWidgets.QApplication.clipboard()
 
-        host_info = self._session_controller.get_host_info() # TODO: Currently runs before controller is initialized, so this is empty
-        self._ui.ipLabel.setText(f"Your IP: {host_info.ip}")
-        self._ui.ipLine.setPlaceholderText(f"{host_info.ip}:{host_info.port}")
         self._ui.ipLine.returnPressed.connect(self._on_connect_btn_pressed)  # Allow user to press enter
-
-        self._ui.portSpinBox.setValue(host_info.port)
         self._ui.portSpinBox.valueChanged.connect(self._update_host_port)
-
         self._ui.copyButton.clicked.connect(self._copy_user_ip_and_port_to_clipboard)
         self._ui.chooseFileButton.clicked.connect(self._determine_file_to_transfer)
-
         self._ui.connectButton.clicked.connect(self._on_connect_btn_pressed)
-
         self._ui.disconnectButton.clicked.connect(self._session_controller.request_disconnect)
-
         self._ui.enableReceivingButton.clicked.connect(self._session_controller.request_enable_receiving)
-
         self._ui.disableReceivingButton.clicked.connect(self._session_controller.request_disable_receiving)
-
         self._ui.sendButton.clicked.connect(self._session_controller.request_send_selected_file)
-
         self._ui.receiveButton.clicked.connect(self._session_controller.request_accept_incoming_file)
         self._ui.rejectButton.clicked.connect(self._session_controller.request_reject_incoming_file)
 
@@ -85,6 +75,13 @@ class GUIController:
         self._spinner = self._get_spinner_gif()
         self._ui.spinnerLabel.setMovie(self._spinner)
         self._toggle_spinner(False)
+
+    def _populate_window_widgets(self):
+        host_info = self._session_controller.get_host_info()
+
+        self._ui.ipLabel.setText(f"Your IP: {host_info.ip}")
+        self._ui.ipLine.setPlaceholderText(f"{host_info.ip}:{host_info.port}")
+        self._ui.portSpinBox.setValue(host_info.port)
 
     # Used when program is about to exit
     def _exit(self):
