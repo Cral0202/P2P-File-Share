@@ -3,9 +3,7 @@ send files without a public IP address.**
 
 ---
 
-- All files are sent encrypted. A hybrid encryption approach is used. For exchanging AES keys, sending metadata, and verifying
-  signatures, RSA-2048 is used. For the actual file encryption, AES-128 is used.
-  Note that public RSA keys are currently exchanged without encryption, which needs to be addressed in future updates to improve security.
+- All files are sent encrypted over a TLS connection. Note that certificate verification is currently not implemented.
 
 - Ports need to be opened on your network to allow file receiving.
   If UPnP is enabled on your network, the program will automatically open and close the ports of your choosing.

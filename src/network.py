@@ -3,18 +3,17 @@ import os
 import socket
 import threading
 import time
-import encryption
 import requests
 import miniupnpc
+import ssl
+import encryption
+
 from models.transfer_file import TransferFile
 from dataclasses import dataclass, asdict
 from typing import Callable
 
-CONFIRM_MSG = b"Confirm_" # The confirmation message
-CONFIRMATION_MSG_SIZE = 8 # The size to use for confirmation messages
-COMMON_MSG_SIZE = 256 # The size to use for most messages, e.g. metadata or keys
-FILE_CHUNK_SIZE = 262144 # The size to use for file chunks
-SERIALIZED_PUB_KEY_SIZE = 451 # The size of a serialized public key
+FILE_CHUNK_SIZE = 262144
+METADATA_HEADER_SIZE = 4
 
 @dataclass
 class NetworkEvent:
@@ -26,17 +25,6 @@ class Network:
         super().__init__()
 
         self._subscribers: list[Callable[[NetworkEvent], None]] = []
-
-        self._public_key = None
-        self._private_key = None
-        self._receiving_client_public_key = None  # The public RSA key of a receiving user
-        self._sending_client_public_key = None  # The public RSA key of a sending user
-
-        self._host_aes_key = os.urandom(16)  # Generate a random secret key (16 bytes for AES-128)
-        self._host_aes_iv = os.urandom(16)  # Generate a random initialization vector (IV) for CBC mode (16 bytes)
-
-        self._client_aes_key = None
-        self._client_aes_iv = None
 
         self._host_socket = None  # The socket that clients connect to
         self._host_socket_gateway = None  # The communication object for the host socket
@@ -70,7 +58,6 @@ class Network:
     def initialize(self):
         self._wan_ip_service = self._get_wan_ip_service()
         self.host_external_ip = self._get_host_external_ip()
-        self._public_key, self._private_key = encryption.generate_rsa_keys()
 
     def subscribe(self, callback):
         self._subscribers.append(callback)
@@ -79,19 +66,6 @@ class Network:
         for cb in self._subscribers:
             cb(event)
 
-    # Makes sure data is received intact
-    def _receive_intact_data(self, gateway: socket, length: int) -> bytes:
-        data = b""
-
-        while len(data) < length:
-            data = data + gateway.recv(length)
-
-            if not data:
-                raise ConnectionError
-
-        return data
-
-    # Gets the service to use for WAN IP connections
     def _get_wan_ip_service(self) -> miniupnpc.UPnP | None:
         try:
             u = miniupnpc.UPnP()
@@ -114,7 +88,6 @@ class Network:
             self._emit(NetworkEvent("UPNP_UNAVAILABLE", str(e)))
             return None
 
-    # Enables receiving
     def enable_receiving(self):
         if self._receiving_enabled:
             return
@@ -130,7 +103,6 @@ class Network:
 
         self._receiving_enabled = True
 
-    # Disables receiving
     def disable_receiving(self):
         if not self._receiving_enabled:
             return
@@ -190,6 +162,8 @@ class Network:
 
     # Accept connections from clients
     def _accept_connections(self):
+        context = encryption.get_ssl_context(self.host_external_ip)
+
         while not self._should_stop_receiving:
             try:
                 if self._inbound_connection:
@@ -202,39 +176,15 @@ class Network:
                 self._host_socket.bind(("", self.host_port))
                 self._host_socket.listen(1)
 
-                client, address = self._host_socket.accept()
+                newsocket, address = self._host_socket.accept()
 
-                self._host_socket_gateway = client
+                self._host_socket_gateway = context.wrap_socket(newsocket, server_side=True)
                 self.inbound_peer_public_ip = address[0]
 
-                # Exchange RSA keys
-                serialized_sender_public_key = self._receive_intact_data(self._host_socket_gateway, SERIALIZED_PUB_KEY_SIZE)
-                self._sending_client_public_key = encryption.rsa_deserialize_public_key(serialized_sender_public_key)
-
-                serialized_user_public_key = encryption.rsa_serialize_public_key(self._public_key)
-                self._host_socket_gateway.send(serialized_user_public_key)
-
-                # Receive AES information and decrypt it
-                encrypted_aes_key = self._receive_intact_data(self._host_socket_gateway, COMMON_MSG_SIZE)
-                self._host_socket_gateway.send(CONFIRM_MSG)
-
-                encrypted_aes_iv = self._receive_intact_data(self._host_socket_gateway, COMMON_MSG_SIZE)
-                self._host_socket_gateway.send(CONFIRM_MSG)
-
-                signature = self._receive_intact_data(self._host_socket_gateway, COMMON_MSG_SIZE)
-                self._host_socket_gateway.send(CONFIRM_MSG)
-
-                self._client_aes_key = encryption.rsa_decrypt(encrypted_aes_key, self._private_key)
-                self._client_aes_iv = encryption.rsa_decrypt(encrypted_aes_iv, self._private_key)
-
-                # Verify signature
-                if not encryption.rsa_verify_signature(signature, self._client_aes_key, self._sending_client_public_key):
-                    raise RuntimeError("Client AES key could not be verified")
-
-                # Start the receive_metadata thread
-                receive_metadata_thread = threading.Thread(target=self._receive_file_metadata)
-                receive_metadata_thread.daemon = True
-                receive_metadata_thread.start()
+                # Start the metadata thread
+                thread = threading.Thread(target=self._receive_file_metadata)
+                thread.daemon = True
+                thread.start()
 
                 self._host_socket.close()
                 self._inbound_connection = True
@@ -268,30 +218,11 @@ class Network:
     def _request_connection(self, ip: str, port: int):
         try:
             event_msg = ""
+            context = ssl._create_unverified_context() # TODO: Use verification
 
-            self._client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            raw_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            self._client_socket = context.wrap_socket(raw_socket, server_hostname=ip)
             self._client_socket.connect((ip, port))
-
-            # Exchange RSA keys
-            serialized_user_public_key = encryption.rsa_serialize_public_key(self._public_key)
-            self._client_socket.send(serialized_user_public_key)
-
-            serialized_receiver_public_key = self._receive_intact_data(self._client_socket, SERIALIZED_PUB_KEY_SIZE)
-            self._receiving_client_public_key = encryption.rsa_deserialize_public_key(serialized_receiver_public_key)
-
-            # Encrypt AES information and send it
-            encrypted_aes_key = encryption.rsa_encrypt(self._host_aes_key, self._receiving_client_public_key)
-            encrypted_aes_iv = encryption.rsa_encrypt(self._host_aes_iv, self._receiving_client_public_key)
-            signature = encryption.rsa_sign(self._host_aes_key, self._private_key)
-
-            self._client_socket.send(encrypted_aes_key)
-            self._receive_intact_data(self._client_socket, CONFIRMATION_MSG_SIZE)
-
-            self._client_socket.send(encrypted_aes_iv)
-            self._receive_intact_data(self._client_socket, CONFIRMATION_MSG_SIZE)
-
-            self._client_socket.send(signature)
-            self._receive_intact_data(self._client_socket, CONFIRMATION_MSG_SIZE)
 
             self.outbound_peer_public_ip = ip
             self.outbound_connection = True
@@ -323,12 +254,12 @@ class Network:
             event_msg = ""
 
             self._send_file_metadata()
-            response = self._receive_intact_data(self._client_socket, CONFIRMATION_MSG_SIZE).decode()
+            response = self._client_socket.recv(1024).decode().strip()
 
-            if response == "Accepted":
+            if response == "ACCEPTED":
                 event_msg = "ACCEPTED"
                 self._send_file_data()
-            elif response == "Rejected":
+            elif response == "REJECTED":
                 event_msg = "REJECTED"
             else:
                 raise ConnectionError
@@ -344,18 +275,12 @@ class Network:
     def _send_file_metadata(self):
         try:
             event_msg = ""
+            metadata_json = json.dumps(asdict(self.selected_file)).encode()
 
-            metadata_json = json.dumps(asdict(self.selected_file))
-            encrypted_metadata = encryption.rsa_encrypt(metadata_json.encode(), self._receiving_client_public_key)
-            signature = encryption.rsa_sign(metadata_json.encode(), self._private_key)
-
-            # Send encrypted metadata and signature
-            self._client_socket.send(encrypted_metadata)
-            self._receive_intact_data(self._client_socket, CONFIRMATION_MSG_SIZE)
-
-            self._client_socket.send(signature)
-            self._receive_intact_data(self._client_socket, CONFIRMATION_MSG_SIZE)
-            self._receive_intact_data(self._client_socket, CONFIRMATION_MSG_SIZE)
+            # Send length first so receiver knows how much to read
+            metadata_size = len(metadata_json).to_bytes(METADATA_HEADER_SIZE, byteorder='big')
+            self._client_socket.sendall(metadata_size)
+            self._client_socket.sendall(metadata_json)
 
             event_msg = "ACCEPTED"
         except ConnectionError:
@@ -375,24 +300,15 @@ class Network:
                 while sent_data < self.selected_file.size:
                     chunk = file.read(FILE_CHUNK_SIZE)
 
+                    if not chunk:
+                        break
+
+                    self._client_socket.sendall(chunk)
                     sent_data += len(chunk)
-
-                    # Add padding if last chunk
-                    if len(chunk) < FILE_CHUNK_SIZE:
-                        chunk = encryption.aes_add_padding(chunk)
-
-                    encrypted_chunk = encryption.aes_encrypt(chunk, self._host_aes_key, self._host_aes_iv)
-                    self._client_socket.send(encrypted_chunk)
 
                     # Update progress
                     progress_percentage = int((sent_data / self.selected_file.size) * 100)
                     self._emit(NetworkEvent("FILE_DATA_SEND_PROGRESS", str(progress_percentage)))
-
-                    self._receive_intact_data(self._client_socket, CONFIRMATION_MSG_SIZE)
-
-            # Sync
-            self._client_socket.send(CONFIRM_MSG)
-            self._receive_intact_data(self._client_socket, CONFIRMATION_MSG_SIZE)
 
             event_msg = "SUCCESS"
         except ConnectionError:
@@ -410,7 +326,7 @@ class Network:
         try:
             self.incoming_file = None
             self._metadata_event.set()  # Indicate that new metadata can be received
-            self._host_socket_gateway.send("Rejected".encode())
+            self._host_socket_gateway.sendall("REJECTED".encode())
             return True
         except ConnectionError:
             self._handle_connection_error(False)
@@ -423,30 +339,18 @@ class Network:
         while self._host_socket_gateway and not self._program_about_to_exit:
             try:
                 self._metadata_event.clear()  # Clear the event since it may have been set
+                size_data = self._host_socket_gateway.recv(METADATA_HEADER_SIZE)
 
-                # Receive encrypted metadata and signature
-                encrypted_metadata = self._receive_intact_data(self._host_socket_gateway, COMMON_MSG_SIZE)
-                self._host_socket_gateway.send(CONFIRM_MSG)
+                if not size_data:
+                    break
 
-                signature = self._receive_intact_data(self._host_socket_gateway, COMMON_MSG_SIZE)
-                self._host_socket_gateway.send(CONFIRM_MSG)
+                metadata_size = int.from_bytes(size_data, byteorder='big')
+                metadata_json = self._host_socket_gateway.recv(metadata_size).decode()
+                metadata = json.loads(metadata_json)
 
-                if not encrypted_metadata or not signature:
-                    raise ConnectionError
-
-                metadata_json = encryption.rsa_decrypt(encrypted_metadata, self._private_key).decode()
-
-                # Verify signature
-                if encryption.rsa_verify_signature(signature, metadata_json.encode(), self._sending_client_public_key):
-                    metadata = json.loads(metadata_json)
-                    self.incoming_file = TransferFile(**metadata)
-
-                    self._host_socket_gateway.send(CONFIRM_MSG)
-                    self._emit(NetworkEvent("FILE_METADATA_RECEIVE_FINISHED", "SUCCESS"))
-
-                    self._metadata_event.wait()  # Block until there is new metadata to be received
-                else:
-                    raise RuntimeError("Metadata signature could not be verified")
+                self.incoming_file = TransferFile(**metadata)
+                self._emit(NetworkEvent("FILE_METADATA_RECEIVE_FINISHED", "SUCCESS"))
+                self._metadata_event.wait()
             except ConnectionError:
                 self._handle_connection_error(e, False)
                 break
@@ -463,24 +367,10 @@ class Network:
 
             with open(file_path, "wb") as file:
                 while received_data < self.incoming_file.size:
-                    # Make sure chunk is received intact
-                    data_left = self.incoming_file.size - received_data
+                    chunk = self._host_socket_gateway.recv(FILE_CHUNK_SIZE)
 
-                    if FILE_CHUNK_SIZE > data_left:
-                        # Encrypted data is always a multiple of 16,
-                        # and if already a multiple of 16, it gets 16 added to it
-                        remainder = data_left % 16
-                        length = (data_left - remainder) + 16
-
-                        encrypted_chunk = self._receive_intact_data(self._host_socket_gateway, length)
-                    else:
-                        encrypted_chunk = self._receive_intact_data(self._host_socket_gateway, FILE_CHUNK_SIZE)
-
-                    chunk = encryption.aes_decrypt(encrypted_chunk, self._client_aes_key, self._client_aes_iv)
-
-                    # Remove padding if last chunk
-                    if received_data + len(chunk) > self.incoming_file.size:
-                        chunk = encryption.aes_remove_padding(chunk)
+                    if not chunk:
+                        break
 
                     file.write(chunk)
                     received_data += len(chunk)
@@ -488,12 +378,6 @@ class Network:
                     # Update progress
                     progress_percentage = int((received_data / self.incoming_file.size) * 100)
                     self._emit(NetworkEvent("FILE_DATA_RECEIVE_PROGRESS", str(progress_percentage)))
-
-                    self._host_socket_gateway.send(CONFIRM_MSG)
-
-            # Sync
-            self._receive_intact_data(self._host_socket_gateway, CONFIRMATION_MSG_SIZE)
-            self._host_socket_gateway.send(CONFIRM_MSG)
 
             event_msg = "SUCCESS"
             self.incoming_file = None
@@ -543,22 +427,21 @@ class Network:
     # Thread starters #
     ###################
 
-    # Starts the thread for receiving files
     def start_receive_file_thread(self):
         if self._receiving_files or not self.incoming_file:
             return
 
         try:
             self._receiving_files = True
-            self._host_socket_gateway.send("Accepted".encode())
-            receive_thread = threading.Thread(target=self._receive_file_data, daemon=True)
-            receive_thread.start()
+            self._host_socket_gateway.sendall("ACCEPTED".encode())
+
+            thread = threading.Thread(target=self._receive_file_data, daemon=True)
+            thread.start()
         except ConnectionError:
             self._handle_connection_error(False)
         except Exception:
             raise
 
-    # Starts the request_connection thread
     def start_request_connection_thread(self, ip: str, port: int) -> str:
         if self._trying_to_connect:
             return "ALREADY_CONNECTING"
@@ -570,11 +453,10 @@ class Network:
             return "ALREADY_CONNECTED"
 
         self._trying_to_connect = True
-        request_connection_thread = threading.Thread(target=self._request_connection, args=(ip, port), daemon=True)
-        request_connection_thread.start()
+        thread = threading.Thread(target=self._request_connection, args=(ip, port), daemon=True)
+        thread.start()
         return "STARTED"
 
-    # Starts the thread for sending files
     def start_send_file_thread(self) -> bool:
         if self._sending_files or not self.outbound_connection or not self.selected_file:
             return False
