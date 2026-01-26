@@ -60,7 +60,7 @@ class GUIController:
         # Signals
         self._session_controller.receive_pgrs_bar_signal.connect(self._update_receive_progress_bar)
         self._session_controller.send_pgrs_bar_signal.connect(self._update_send_progress_bar)
-        self._session_controller.spinner_signal.connect(self._toggle_spinner)
+        self._session_controller.connecting_spinner_signal.connect(self._toggle_connecting_spinner)
         self._session_controller.outbound_status_signal.connect(self._update_outbound_ui)
         self._session_controller.inbound_status_signal.connect(self._update_inbound_ui)
         self._session_controller.receiving_status_signal.connect(self._update_receiving_ui)
@@ -68,13 +68,13 @@ class GUIController:
         self._session_controller.receive_label_signal.connect(self._update_receive_label)
         self._session_controller.download_signal.connect(self._update_downloaded_label)
         self._session_controller.file_indicators_signal.connect(self._reset_file_indicators)
-        self._session_controller.exception_signal.connect(self._show_exception_message)
+        self._session_controller.info_signal.connect(self._show_info_message)
         self._session_controller.selected_file_signal.connect(self._on_file_selected)
 
         # Set up spinner
         self._spinner = self._get_spinner_gif()
-        self._ui.spinnerLabel.setMovie(self._spinner)
-        self._toggle_spinner(False)
+        self._ui.connectingSpinnerLabel.setMovie(self._spinner)
+        self._toggle_connecting_spinner(False)
 
     def _populate_window_widgets(self):
         host_info = self._session_controller.get_host_info()
@@ -99,15 +99,15 @@ class GUIController:
         spinner_gif = os.path.join(root, "../assets/spinner.gif")
         return QMovie(spinner_gif)
 
-    def _toggle_spinner(self, enable: bool):
+    def _toggle_connecting_spinner(self, enable: bool):
         if enable:
             self._spinner.start()
-            self._ui.spinnerLabel.setSizePolicy(QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Fixed)
+            self._ui.connectingSpinnerLabel.setSizePolicy(QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Fixed)
         else:
             self._spinner.stop()
-            self._ui.spinnerLabel.setSizePolicy(QSizePolicy.Policy.Ignored, QSizePolicy.Policy.Ignored)
+            self._ui.connectingSpinnerLabel.setSizePolicy(QSizePolicy.Policy.Ignored, QSizePolicy.Policy.Ignored)
 
-    def _show_exception_message(self, message: str, duration: int = 10000):
+    def _show_info_message(self, message: str, duration: int):
         self._ui.statusbar.showMessage(message, duration)
 
     def _update_host_port(self):

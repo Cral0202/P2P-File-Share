@@ -12,10 +12,10 @@ class SessionController(QObject):
     send_pgrs_bar_signal = pyqtSignal(int)
     download_signal = pyqtSignal(str)
     file_indicators_signal = pyqtSignal()
-    spinner_signal = pyqtSignal(bool)
+    connecting_spinner_signal = pyqtSignal(bool)
     file_sent_signal = pyqtSignal(bool)
     receive_label_signal = pyqtSignal(str, bool)
-    exception_signal = pyqtSignal(str, int)
+    info_signal = pyqtSignal(str, int)
     selected_file_signal = pyqtSignal(str)
 
     def __init__(self, network: Network):
@@ -78,7 +78,7 @@ class SessionController(QObject):
             self._network.break_connection()
             self._on_outbound_change(False)
         except Exception as e:
-            self.exception_signal.emit(str(e), 10000)
+            self.info_signal.emit(str(e), 10000)
 
     def request_enable_receiving(self):
         try:
@@ -90,20 +90,20 @@ class SessionController(QObject):
             if "ConflictInMappingEntry" in text or "refuse" in text.lower():
                 text = "UPnP port mapping failed. Port may already be in use."
 
-            self.exception_signal.emit(text, 10000)
+            self.info_signal.emit(text, 10000)
 
     def request_disable_receiving(self):
         try:
             self._network.disable_receiving()
             self._on_receiving_change(False)
         except Exception as e:
-            self.exception_signal.emit(str(e), 10000)
+            self.info_signal.emit(str(e), 10000)
 
     def request_accept_incoming_file(self):
         try:
             self._network.start_receive_file_thread()
         except Exception as e:
-            self.exception_signal.emit(str(e), 10000)
+            self.info_signal.emit(str(e), 10000)
 
     def request_reject_incoming_file(self):
         try:
@@ -113,7 +113,7 @@ class SessionController(QObject):
                 self._update_receive_label(False)
         except Exception as e:
             self._update_receive_label(False) # Still emit because the attempt happened
-            self.exception_signal.emit(str(e), 10000)
+            self.info_signal.emit(str(e), 10000)
 
     def request_select_file(self, path: str):
         file_name = self._network.set_selected_file(path)
@@ -137,7 +137,7 @@ class SessionController(QObject):
         msg = ""
 
         if status == "STARTED":
-            self.spinner_signal.emit(True)
+            self.connecting_spinner_signal.emit(True)
             return
         elif status == "ALREADY_CONNECTING":
             return
@@ -148,7 +148,7 @@ class SessionController(QObject):
         elif status == "ALREADY_CONNECTED":
             msg = "Cannot change connection when already connected."
 
-        self.exception_signal.emit(msg, 10000)
+        self.info_signal.emit(msg, 10000)
 
     def request_exit(self):
         self._network.exit()
@@ -170,10 +170,10 @@ class SessionController(QObject):
 
     def _on_network_event(self, event: NetworkEvent):
         if event.type == "UPNP_UNAVAILABLE":
-            self.exception_signal.emit("UPNP is not enabled on network. Manual port mapping must be done for receiving to work.", 10000)
+            self.info_signal.emit("UPNP is not enabled on network. Manual port mapping must be done for receiving to work.", 10000)
 
         elif event.type == "CONNECTION_LOST":
-            self.exception_signal.emit("An existing connection was terminated.", 10000)
+            self.info_signal.emit("An existing connection was terminated.", 10000)
 
             if event.message == "OUTBOUND":
                 self._on_outbound_change(False)
@@ -188,7 +188,7 @@ class SessionController(QObject):
             if event.message == "REJECTED":
                 self._on_downloaded_change(False, self._network.selected_file.name)
             elif event.message == "ERROR":
-                self.exception_signal.emit("An error occurred while sending file.", 10000)
+                self.info_signal.emit("An error occurred while sending file.", 10000)
 
         elif event.type == "FILE_METADATA_SEND_FINISHED":
             status = False
@@ -196,7 +196,7 @@ class SessionController(QObject):
             if event.message == "ACCEPTED":
                 status = True
             elif event.message == "ERROR":
-                self.exception_signal.emit("An error occurred while sending file metadata.", 10000)
+                self.info_signal.emit("An error occurred while sending file metadata.", 10000)
 
             self.file_sent_signal.emit(status)
 
@@ -207,13 +207,13 @@ class SessionController(QObject):
             if event.message == "SUCCESS":
                 self._on_downloaded_change(True, self._network.selected_file.name)
             elif event.message == "ERROR":
-                self.exception_signal.emit("An error occurred while sending file data.", 10000)
+                self.info_signal.emit("An error occurred while sending file data.", 10000)
 
         elif event.type == "FILE_METADATA_RECEIVE_FINISHED":
             if event.message == "SUCCESS":
                 self._update_receive_label(True)
             elif event.message == "ERROR":
-                self.exception_signal.emit("An error occurred while receiving file metadata.", 10000)
+                self.info_signal.emit("An error occurred while receiving file metadata.", 10000)
 
         elif event.type == "FILE_DATA_RECEIVE_PROGRESS":
             self.receive_pgrs_bar_signal.emit(int(event.message))
@@ -222,7 +222,7 @@ class SessionController(QObject):
             if event.message == "SUCCESS":
                 self._update_receive_label(False)
             elif event.message == "ERROR":
-                self.exception_signal.emit("An error occurred while receiving file data.", 10000)
+                self.info_signal.emit("An error occurred while receiving file data.", 10000)
 
         elif event.type == "OUTBOUND_CONNECTION_REQUEST":
             status = False
@@ -230,16 +230,16 @@ class SessionController(QObject):
             if event.message == "SUCCESS":
                 status = True
             elif event.message == "CONNECTION_REFUSED":
-                self.exception_signal.emit("Connection was refused.", 10000)
+                self.info_signal.emit("Connection was refused.", 10000)
             elif event.message == "CONNECTION_ERROR":
-                self.exception_signal.emit("Could not connect.", 10000)
+                self.info_signal.emit("Could not connect.", 10000)
 
             self._on_outbound_change(status)
-            self.spinner_signal.emit(False)
+            self.connecting_spinner_signal.emit(False)
 
         elif event.type == "INBOUND_CONNECTION_REQUEST":
             if event.message == "SUCCESS":
                 self._on_inbound_change(True)
             elif event.message == "ERROR":
                 self._on_inbound_change(False)
-                self.exception_signal.emit("Inbound connection request failed.", 10000)
+                self.info_signal.emit("Inbound connection request failed.", 10000)
