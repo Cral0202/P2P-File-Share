@@ -7,13 +7,14 @@ import requests
 import miniupnpc
 import ssl
 import encryption
+import hashlib
 
 from models.transfer_file import TransferFile
 from dataclasses import dataclass, asdict
 from typing import Callable
 
-FILE_CHUNK_SIZE = 262144
-METADATA_HEADER_SIZE = 4
+FILE_CHUNK_SIZE: int = 262144
+METADATA_HEADER_SIZE: int = 4
 
 @dataclass
 class NetworkEvent:
@@ -162,7 +163,11 @@ class Network:
 
     # Accept connections from clients
     def _accept_connections(self):
-        context = encryption.get_ssl_context(self.host_external_ip)
+        context = encryption.get_ssl_context(True)
+
+        self._host_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        self._host_socket.bind(("", self.host_port))
+        self._host_socket.listen(1)
 
         while not self._should_stop_receiving:
             try:
@@ -172,13 +177,17 @@ class Network:
 
                 self._accept_connections_event.clear()  # Clear the event since it may have been set
 
-                self._host_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-                self._host_socket.bind(("", self.host_port))
-                self._host_socket.listen(1)
-
                 newsocket, address = self._host_socket.accept()
-
                 self._host_socket_gateway = context.wrap_socket(newsocket, server_side=True)
+
+                # Fingerprint verification
+                client_cert = self._host_socket_gateway.getpeercert(binary_form=True)
+                fingerprint = hashlib.sha256(client_cert).hexdigest().upper()
+
+                if not encryption.is_cert_fingerprint_trusted(fingerprint):
+                    self._host_socket_gateway.close()
+                    continue
+
                 self.inbound_peer_public_ip = address[0]
 
                 # Start the metadata thread
@@ -193,7 +202,7 @@ class Network:
                 self._accept_connections_event.wait()
             except ConnectionError:
                 break
-            except Exception as e:
+            except Exception:
                 if self._should_stop_receiving:
                     break
 
@@ -218,11 +227,20 @@ class Network:
     def _request_connection(self, ip: str, port: int):
         try:
             event_msg = ""
-            context = ssl._create_unverified_context() # TODO: Use verification
+            context = encryption.get_ssl_context(False)
 
             raw_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-            self._client_socket = context.wrap_socket(raw_socket, server_hostname=ip)
+            self._client_socket = context.wrap_socket(raw_socket, server_hostname=encryption.CERT_HOSTNAME)
             self._client_socket.connect((ip, port))
+
+            # Fingerprint verification
+            server_cert = self._client_socket.getpeercert(binary_form=True)
+            server_fingerprint = hashlib.sha256(server_cert).hexdigest().upper()
+
+            # TODO: Should check for the expected fingerprint, not just an allowed one
+            if not encryption.is_cert_fingerprint_trusted(server_fingerprint):
+                self._client_socket.close()
+                raise ssl.SSLCertVerificationError("Fingerprint mismatch")
 
             self.outbound_peer_public_ip = ip
             self.outbound_connection = True

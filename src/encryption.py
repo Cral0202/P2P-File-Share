@@ -1,6 +1,6 @@
 import os
 import ssl
-import ipaddress
+from typing import Tuple
 
 from cryptography import x509
 from cryptography.x509.oid import NameOID
@@ -9,26 +9,42 @@ from cryptography.hazmat.primitives.asymmetric import ec
 from cryptography.hazmat.backends import default_backend
 from datetime import datetime, timedelta, timezone
 
-def get_ssl_context(ip: str) -> ssl.SSLContext:
-        cert_dir = os.path.join(os.path.expanduser("~"), ".p2p_file_share")
-        cert_path = os.path.join(cert_dir, "cert.pem")
-        key_path = os.path.join(cert_dir, "key.pem")
+CERT_HOSTNAME: str = "p2p-node"
 
-        # Generate certs if needed
-        if not is_cert_valid(cert_path, ip) or not os.path.exists(key_path):
-            os.makedirs(cert_dir, exist_ok=True)
-            generate_cert(cert_path, key_path, ip)
+def get_cert_and_key() -> Tuple[str, str]:
+    cert_dir = os.path.join(os.path.expanduser("~"), ".p2p_file_share")
+    cert_path = os.path.join(cert_dir, "cert.pem")
+    key_path = os.path.join(cert_dir, "key.pem")
 
+    # Generate new ones if needed
+    if not is_cert_valid(cert_path) or not os.path.exists(key_path):
+        os.makedirs(cert_dir, exist_ok=True)
+        generate_cert_and_key(cert_path, key_path)
+
+    return cert_path, key_path
+
+def get_ssl_context(client_auth: bool) -> ssl.SSLContext:
+    cert_path, key_path = get_cert_and_key()
+
+    if client_auth:
         context = ssl.create_default_context(ssl.Purpose.CLIENT_AUTH)
-        context.load_cert_chain(certfile=cert_path, keyfile=key_path)
-        return context
+        context.load_verify_locations(cafile=cert_path) # Allows for self-signed certs
+        mode = ssl.CERT_REQUIRED # Makes the client send over their cert
+    else:
+        context = ssl.create_default_context(ssl.Purpose.SERVER_AUTH)
+        mode = ssl.CERT_NONE
 
-def generate_cert(cert_path: str, key_path: str, ip: str):
+    context.check_hostname = False # Since we use fingerprints, we can disable this
+    context.verify_mode = mode
+    context.load_cert_chain(certfile=cert_path, keyfile=key_path)
+    return context
+
+def generate_cert_and_key(cert_path: str, key_path: str):
     # Generate ECDSA private key
     key = ec.generate_private_key(ec.SECP256R1(), default_backend())
 
     subject = issuer = x509.Name([
-        x509.NameAttribute(NameOID.COMMON_NAME, u"p2p-file-share"),
+        x509.NameAttribute(NameOID.COMMON_NAME, "p2p-file-share"),
     ])
 
     cert = (
@@ -44,10 +60,7 @@ def generate_cert(cert_path: str, key_path: str, ip: str):
             critical=True,
         )
         .add_extension(
-            x509.SubjectAlternativeName([
-                x509.DNSName(u"localhost"),
-                x509.IPAddress(ipaddress.IPv4Address(ip))
-            ]),
+            x509.SubjectAlternativeName([x509.DNSName(CERT_HOSTNAME)]),
             critical=False,
         )
         .sign(key, hashes.SHA256(), default_backend())
@@ -67,22 +80,26 @@ def generate_cert(cert_path: str, key_path: str, ip: str):
     with open(cert_path, "wb") as f:
         f.write(cert.public_bytes(serialization.Encoding.PEM))
 
-def is_cert_valid(cert_path: str, current_ip: str) -> bool:
+def is_cert_valid(cert_path: str) -> bool:
     try:
         with open(cert_path, "rb") as f:
             cert = x509.load_pem_x509_certificate(f.read(), default_backend())
 
         # Check if it's expired
-        if cert.not_valid_after_utc <= datetime.now(timezone.utc):
-            return False
-
-        # Check if it matches the current IP
-        san = cert.extensions.get_extension_for_class(x509.SubjectAlternativeName)
-        ips = san.value.get_values_for_type(x509.IPAddress)
-
-        if not any(str(ip) == current_ip for ip in ips):
-            return False
-
-        return True
+        return cert.not_valid_after_utc > datetime.now(timezone.utc)
     except Exception:
         return False
+
+def get_cert_fingerprint(cert_path: str) -> str:
+    with open(cert_path, "rb") as f:
+        cert_data = f.read()
+        cert = x509.load_pem_x509_certificate(cert_data, default_backend())
+
+    fingerprint = cert.fingerprint(hashes.SHA256())
+
+    # Return as hex string
+    return ":".join("{:02X}".format(b) for b in fingerprint)
+
+def is_cert_fingerprint_trusted(fingerprint: str) -> bool:
+    # TODO: Implement
+    return True
