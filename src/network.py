@@ -8,6 +8,7 @@ import miniupnpc
 import ssl
 import encryption
 import hashlib
+import base64
 
 from models.transfer_file import TransferFile
 from dataclasses import dataclass, asdict
@@ -180,13 +181,14 @@ class Network:
                 newsocket, address = self._host_socket.accept()
                 self._host_socket_gateway = context.wrap_socket(newsocket, server_side=True)
 
-                # Fingerprint verification
+                # TODO: Actually implement
+                """ # Fingerprint verification
                 client_cert = self._host_socket_gateway.getpeercert(binary_form=True)
                 fingerprint = hashlib.sha256(client_cert).hexdigest().upper()
 
                 if not encryption.is_cert_fingerprint_trusted(fingerprint):
                     self._host_socket_gateway.close()
-                    continue
+                    continue """
 
                 self.inbound_peer_public_ip = address[0]
 
@@ -224,7 +226,7 @@ class Network:
         self.outbound_connection = False
 
     # Sends a connection request to specified IP
-    def _request_connection(self, ip: str, port: int):
+    def _request_connection(self, ip: str, port: int, expected_fingerprint: str):
         try:
             event_msg = ""
             context = encryption.get_ssl_context(False)
@@ -235,10 +237,10 @@ class Network:
 
             # Fingerprint verification
             server_cert = self._client_socket.getpeercert(binary_form=True)
-            server_fingerprint = hashlib.sha256(server_cert).hexdigest().upper()
+            server_fingerprint = hashlib.sha256(server_cert).digest()
+            base64_server_fingerprint = base64.b64encode(server_fingerprint).decode("ascii")
 
-            # TODO: Should check for the expected fingerprint, not just an allowed one
-            if not encryption.is_cert_fingerprint_trusted(server_fingerprint):
+            if base64_server_fingerprint != expected_fingerprint:
                 self._client_socket.close()
                 raise ssl.SSLCertVerificationError("Fingerprint mismatch")
 
@@ -247,6 +249,8 @@ class Network:
             event_msg = "SUCCESS"
         except ConnectionRefusedError:
             event_msg = "CONNECTION_REFUSED"
+        except ssl.SSLCertVerificationError:
+            event_msg = "INVALID_FINGERPRINT"
         except Exception:
             event_msg = "CONNECTION_ERROR"
         finally:
@@ -460,7 +464,7 @@ class Network:
         except Exception:
             raise
 
-    def start_request_connection_thread(self, ip: str, port: int) -> str:
+    def start_request_connection_thread(self, ip: str, port: int, expected_fingerprint) -> str:
         if self._trying_to_connect:
             return "ALREADY_CONNECTING"
         elif self._sending_files:
@@ -471,7 +475,7 @@ class Network:
             return "ALREADY_CONNECTED"
 
         self._trying_to_connect = True
-        thread = threading.Thread(target=self._request_connection, args=(ip, port), daemon=True)
+        thread = threading.Thread(target=self._request_connection, args=(ip, port, expected_fingerprint), daemon=True)
         thread.start()
         return "STARTED"
 

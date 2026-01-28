@@ -1,4 +1,5 @@
 import ipaddress
+import encryption
 
 from PyQt6.QtCore import QObject, pyqtSignal
 from network import Network, NetworkEvent
@@ -127,7 +128,7 @@ class SessionController(QObject):
         if attempted:
             self.file_indicators_signal.emit()
 
-    def request_connect(self, ip: str, port_str: str):
+    def request_connect(self, ip: str, port_str: str, expected_fingerprint: str):
         # Validate Port
         try:
             port = int(port_str)
@@ -139,18 +140,13 @@ class SessionController(QObject):
             return
 
         # Validate IP
-        # Handle localhost alias
-        target_ip = ip.strip().lower()
-        if target_ip == "localhost":
-            target_ip = "127.0.0.1"
-
         try:
-            ipaddress.ip_address(target_ip)
+            ipaddress.ip_address(ip)
         except Exception:
             self.info_signal.emit(f"'{ip}' is not a valid IP address.", 10000)
             return
 
-        status = self._network.start_request_connection_thread(target_ip, port)
+        status = self._network.start_request_connection_thread(ip, port, expected_fingerprint)
         msg = ""
 
         if status == "STARTED":
@@ -191,9 +187,12 @@ class SessionController(QObject):
     ###########
 
     def get_host_info(self) -> HostInfo:
+        cert_path, _ = encryption.get_cert_and_key()
+
         return HostInfo(
             ip=self._network.host_external_ip,
             port=self._network.host_port,
+            cert_fingerprint=encryption.get_cert_fingerprint(cert_path),
             upnp_enabled=self._network.upnp_enabled,
         )
 
@@ -267,6 +266,8 @@ class SessionController(QObject):
                 status = True
             elif event.message == "CONNECTION_REFUSED":
                 self.info_signal.emit("Connection was refused.", 10000)
+            elif event.message == "INVALID_FINGERPRINT":
+                self.info_signal.emit("Connection blocked due to fingerprint mismatch.", 10000)
             elif event.message == "CONNECTION_ERROR":
                 self.info_signal.emit("Could not connect.", 10000)
 

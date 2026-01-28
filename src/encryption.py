@@ -1,5 +1,6 @@
 import os
 import ssl
+import base64
 from typing import Tuple
 
 from cryptography import x509
@@ -28,8 +29,7 @@ def get_ssl_context(client_auth: bool) -> ssl.SSLContext:
 
     if client_auth:
         context = ssl.create_default_context(ssl.Purpose.CLIENT_AUTH)
-        context.load_verify_locations(cafile=cert_path) # Allows for self-signed certs
-        mode = ssl.CERT_REQUIRED # Makes the client send over their cert
+        mode = ssl.CERT_NONE # TODO: Change
     else:
         context = ssl.create_default_context(ssl.Purpose.SERVER_AUTH)
         mode = ssl.CERT_NONE
@@ -97,8 +97,8 @@ def get_cert_fingerprint(cert_path: str) -> str:
 
     fingerprint = cert.fingerprint(hashes.SHA256())
 
-    # Return as hex string
-    return ":".join("{:02X}".format(b) for b in fingerprint)
+    # Base64 encode it to reduce length
+    return base64.b64encode(fingerprint).decode("ascii")
 
 def is_cert_fingerprint_trusted(fingerprint: str) -> bool:
     # TODO: Implement
