@@ -1,7 +1,8 @@
-import os
+import ipaddress
+
 from PyQt6.QtCore import QObject, pyqtSignal
 from network import Network, NetworkEvent
-from models.transfer_file import TransferFile
+from contact_storage import ContactStorage
 from models.host_info import HostInfo
 
 class SessionController(QObject):
@@ -18,9 +19,10 @@ class SessionController(QObject):
     info_signal = pyqtSignal(str, int)
     selected_file_signal = pyqtSignal(str)
 
-    def __init__(self, network: Network):
+    def __init__(self):
         super().__init__()
-        self._network = network
+        self._network = Network()
+        self._contact_storage = ContactStorage()
 
     def initialize(self):
         self._network.subscribe(self._on_network_event)
@@ -125,15 +127,30 @@ class SessionController(QObject):
         if attempted:
             self.file_indicators_signal.emit()
 
-    def request_connect(self, text: str):
+    def request_connect(self, ip: str, port_str: str):
+        # Validate Port
         try:
-            ip, port_str = text.split(":") # Extract the IP and port
             port = int(port_str)
+
+            if not (0 <= port <= 65535):
+                raise ValueError
         except Exception:
-            self._show_exception_message("IP-address input is invalid.")
+            self.info_signal.emit("Port must be a number between 0 and 65535.", 10000)
             return
 
-        status = self._network.start_request_connection_thread(ip, port)
+        # Validate IP
+        # Handle localhost alias
+        target_ip = ip.strip().lower()
+        if target_ip == "localhost":
+            target_ip = "127.0.0.1"
+
+        try:
+            ipaddress.ip_address(target_ip)
+        except Exception:
+            self.info_signal.emit(f"'{ip}' is not a valid IP address.", 10000)
+            return
+
+        status = self._network.start_request_connection_thread(target_ip, port)
         msg = ""
 
         if status == "STARTED":
@@ -150,6 +167,22 @@ class SessionController(QObject):
 
         self.info_signal.emit(msg, 10000)
 
+    def request_add_contact(self, name: str, ip: str, port: int, fingerprint: str):
+        self._contact_storage.add_contact(name, ip, port, fingerprint)
+
+    def request_remove_contact(self, index: int):
+        self._contact_storage.remove_contact(index)
+
+    def request_edit_contact(self, index: int, field: str, new_value: str):
+        # Convert port to int if that's the field being edited
+        if field == "port":
+            try:
+                new_value = int(new_value)
+            except Exception:
+                return
+
+        self._contact_storage.edit_contact(index, field, new_value)
+
     def request_exit(self):
         self._network.exit()
 
@@ -163,6 +196,9 @@ class SessionController(QObject):
             port=self._network.host_port,
             upnp_enabled=self._network.upnp_enabled,
         )
+
+    def get_contacts(self) -> list:
+        return self._contact_storage.contacts
 
     ###########
     # Other #

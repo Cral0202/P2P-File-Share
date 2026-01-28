@@ -335,137 +335,6 @@ QPushButton:pressed {
         <item>
          <layout class="QVBoxLayout" name="verticalLayout_24">
           <item>
-           <layout class="QHBoxLayout" name="horizontalLayout_64">
-            <item>
-             <spacer name="horizontalSpacer_70">
-              <property name="orientation">
-               <enum>Qt::Orientation::Horizontal</enum>
-              </property>
-              <property name="sizeType">
-               <enum>QSizePolicy::Policy::Preferred</enum>
-              </property>
-              <property name="sizeHint" stdset="0">
-               <size>
-                <width>8</width>
-                <height>20</height>
-               </size>
-              </property>
-             </spacer>
-            </item>
-            <item>
-             <widget class="QLabel" name="ipSendLabel">
-              <property name="sizePolicy">
-               <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-                <horstretch>0</horstretch>
-                <verstretch>0</verstretch>
-               </sizepolicy>
-              </property>
-              <property name="font">
-               <font>
-                <family>Gadugi</family>
-                <pointsize>10</pointsize>
-                <bold>true</bold>
-               </font>
-              </property>
-              <property name="styleSheet">
-               <string notr="true">color: rgb(255, 255, 255);</string>
-              </property>
-              <property name="text">
-               <string>Connect to IP and port</string>
-              </property>
-             </widget>
-            </item>
-            <item>
-             <spacer name="horizontalSpacer_71">
-              <property name="orientation">
-               <enum>Qt::Orientation::Horizontal</enum>
-              </property>
-              <property name="sizeHint" stdset="0">
-               <size>
-                <width>40</width>
-                <height>20</height>
-               </size>
-              </property>
-             </spacer>
-            </item>
-           </layout>
-          </item>
-          <item>
-           <layout class="QHBoxLayout" name="horizontalLayout_65">
-            <item>
-             <widget class="QLineEdit" name="ipLine">
-              <property name="sizePolicy">
-               <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-                <horstretch>0</horstretch>
-                <verstretch>0</verstretch>
-               </sizepolicy>
-              </property>
-              <property name="minimumSize">
-               <size>
-                <width>185</width>
-                <height>0</height>
-               </size>
-              </property>
-              <property name="font">
-               <font>
-                <family>Gadugi</family>
-               </font>
-              </property>
-              <property name="styleSheet">
-               <string notr="true">QLineEdit {
-    border: 2px solid #4d4d4d;
-    border-radius: 5px;
-    padding: 5px;
-	color: white;
-}</string>
-              </property>
-              <property name="placeholderText">
-               <string/>
-              </property>
-             </widget>
-            </item>
-            <item>
-             <widget class="QLabel" name="connectingSpinnerLabel">
-              <property name="sizePolicy">
-               <sizepolicy hsizetype="Ignored" vsizetype="Ignored">
-                <horstretch>0</horstretch>
-                <verstretch>0</verstretch>
-               </sizepolicy>
-              </property>
-              <property name="font">
-               <font>
-                <family>Gadugi</family>
-                <pointsize>10</pointsize>
-                <bold>true</bold>
-               </font>
-              </property>
-              <property name="styleSheet">
-               <string notr="true"/>
-              </property>
-              <property name="text">
-               <string/>
-              </property>
-              <property name="scaledContents">
-               <bool>true</bool>
-              </property>
-             </widget>
-            </item>
-            <item>
-             <spacer name="horizontalSpacer_72">
-              <property name="orientation">
-               <enum>Qt::Orientation::Horizontal</enum>
-              </property>
-              <property name="sizeHint" stdset="0">
-               <size>
-                <width>40</width>
-                <height>20</height>
-               </size>
-              </property>
-             </spacer>
-            </item>
-           </layout>
-          </item>
-          <item>
            <layout class="QHBoxLayout" name="horizontalLayout_66">
             <item>
              <widget class="QPushButton" name="connectButton">
@@ -536,6 +405,68 @@ QPushButton:pressed {
              </widget>
             </item>
             <item>
+             <widget class="QPushButton" name="addContactButton">
+              <property name="styleSheet">
+               <string notr="true">QPushButton {
+    background-color: rgba(169, 169, 169, 0.2);
+    border-radius: 7px;
+    color: white;
+	padding: 5px 15px;
+}
+
+QPushButton:hover {
+    background-color: rgba(169, 169, 169, 0.7);
+}
+
+QPushButton:pressed {
+    background-color: rgba(105, 105, 105, 0.9);
+}</string>
+              </property>
+              <property name="text">
+               <string>Add Contact</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QPushButton" name="removeContactButton">
+              <property name="styleSheet">
+               <string notr="true">QPushButton {
+    background-color: rgba(169, 169, 169, 0.2);
+    border-radius: 7px;
+    color: white;
+	padding: 5px 15px;
+}
+
+QPushButton:hover {
+    background-color: rgba(169, 169, 169, 0.7);
+}
+
+QPushButton:pressed {
+    background-color: rgba(105, 105, 105, 0.9);
+}</string>
+              </property>
+              <property name="text">
+               <string>Remove Contact</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QLabel" name="connectingSpinnerLabel">
+              <property name="sizePolicy">
+               <sizepolicy hsizetype="Ignored" vsizetype="Ignored">
+                <horstretch>0</horstretch>
+                <verstretch>0</verstretch>
+               </sizepolicy>
+              </property>
+              <property name="text">
+               <string/>
+              </property>
+              <property name="scaledContents">
+               <bool>true</bool>
+              </property>
+             </widget>
+            </item>
+            <item>
              <spacer name="horizontalSpacer_73">
               <property name="orientation">
                <enum>Qt::Orientation::Horizontal</enum>
@@ -549,6 +480,39 @@ QPushButton:pressed {
              </spacer>
             </item>
            </layout>
+          </item>
+          <item>
+           <widget class="QTableWidget" name="contactTable">
+            <property name="selectionMode">
+             <enum>QAbstractItemView::SelectionMode::SingleSelection</enum>
+            </property>
+            <property name="selectionBehavior">
+             <enum>QAbstractItemView::SelectionBehavior::SelectRows</enum>
+            </property>
+            <attribute name="verticalHeaderVisible">
+             <bool>false</bool>
+            </attribute>
+            <column>
+             <property name="text">
+              <string>Name</string>
+             </property>
+            </column>
+            <column>
+             <property name="text">
+              <string>IP</string>
+             </property>
+            </column>
+            <column>
+             <property name="text">
+              <string>Port</string>
+             </property>
+            </column>
+            <column>
+             <property name="text">
+              <string>Fingerprint</string>
+             </property>
+            </column>
+           </widget>
           </item>
          </layout>
         </item>

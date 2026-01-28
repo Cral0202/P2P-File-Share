@@ -1,16 +1,17 @@
 import os
 import sys
-from PyQt6 import QtWidgets
+
 from PyQt6.QtGui import QIcon, QMovie
-from PyQt6.QtWidgets import QFileDialog, QSizePolicy
+from PyQt6.QtWidgets import QFileDialog, QSizePolicy, QApplication, QMainWindow, QTableWidgetItem
+
 from gui_layout import Ui_MainWindow
-from network import Network
 from session_controller import SessionController
 
 GREEN_COLOR = "#4CAF50"
 GREEN_COLOR_FORMATTED = f"color: {GREEN_COLOR}"
 RED_COLOR = "red"
 RED_COLOR_FORMATTED = f"color: {RED_COLOR}"
+CONTACT_FIELDS = ["name", "ip", "port", "fingerprint"]
 
 class GUIController:
     def __init__(self):
@@ -20,14 +21,14 @@ class GUIController:
         self._clipboard = None
 
         self._spinner = None
-        self._session_controller = SessionController(Network())
+        self._session_controller = SessionController()
 
     # Sets up the main window
     def window_setup(self):
-        self._app = QtWidgets.QApplication(sys.argv)
+        self._app = QApplication(sys.argv)
         self._app.setWindowIcon(QIcon(self._get_program_icon()))
 
-        self._window = QtWidgets.QMainWindow()
+        self._window = QMainWindow()
 
         self._ui = Ui_MainWindow()
         self._ui.setupUi(self._window)
@@ -43,13 +44,15 @@ class GUIController:
 
     # Sets up the widgets for the main window
     def _setup_window_widgets(self):
-        self._clipboard = QtWidgets.QApplication.clipboard()
+        self._clipboard = QApplication.clipboard()
 
-        self._ui.ipLine.returnPressed.connect(self._on_connect_btn_pressed)  # Allow user to press enter
         self._ui.portSpinBox.valueChanged.connect(self._update_host_port)
         self._ui.copyButton.clicked.connect(self._copy_user_ip_and_port_to_clipboard)
         self._ui.chooseFileButton.clicked.connect(self._determine_file_to_transfer)
         self._ui.connectButton.clicked.connect(self._on_connect_btn_pressed)
+        self._ui.addContactButton.clicked.connect(self._add_contact)
+        self._ui.removeContactButton.clicked.connect(self._remove_contact)
+        self._ui.contactTable.itemChanged.connect(self._edit_contact)
         self._ui.disconnectButton.clicked.connect(self._session_controller.request_disconnect)
         self._ui.enableReceivingButton.clicked.connect(self._session_controller.request_enable_receiving)
         self._ui.disableReceivingButton.clicked.connect(self._session_controller.request_disable_receiving)
@@ -77,11 +80,26 @@ class GUIController:
         self._toggle_connecting_spinner(False)
 
     def _populate_window_widgets(self):
+        # Load host info
         host_info = self._session_controller.get_host_info()
 
         self._ui.ipLabel.setText(f"Your IP: {host_info.ip}")
-        self._ui.ipLine.setPlaceholderText(f"{host_info.ip}:{host_info.port}")
         self._ui.portSpinBox.setValue(host_info.port)
+
+        # Load contacts
+        contacts = self._session_controller.get_contacts()
+        self._ui.contactTable.blockSignals(True) # Block signals so we don't trigger "_edit_contact"
+
+        for contact in contacts:
+            row = self._ui.contactTable.rowCount()
+            self._ui.contactTable.insertRow(row)
+
+            self._ui.contactTable.setItem(row, 0, QTableWidgetItem(contact.get(CONTACT_FIELDS[0], "")))
+            self._ui.contactTable.setItem(row, 1, QTableWidgetItem(contact.get(CONTACT_FIELDS[1], "")))
+            self._ui.contactTable.setItem(row, 2, QTableWidgetItem(str(contact.get(CONTACT_FIELDS[2], ""))))
+            self._ui.contactTable.setItem(row, 3, QTableWidgetItem(contact.get(CONTACT_FIELDS[3], "")))
+
+        self._ui.contactTable.blockSignals(False)
 
     # Used when program is about to exit
     def _exit(self):
@@ -121,16 +139,10 @@ class GUIController:
     def _update_outbound_ui(self, text: str, connected: bool):
         self._ui.outboundConnectionLabel.setText(text)
         self._ui.outboundConnectionLabel.setStyleSheet(GREEN_COLOR_FORMATTED if connected else RED_COLOR_FORMATTED)
-        self._set_ip_line_edit_border_color(GREEN_COLOR if connected else RED_COLOR)
 
     def _update_inbound_ui(self, text: str, connected: bool):
         self._ui.inboundConnectionLabel.setText(text)
         self._ui.inboundConnectionLabel.setStyleSheet(GREEN_COLOR_FORMATTED if connected else RED_COLOR_FORMATTED)
-
-    def _set_ip_line_edit_border_color(self, color: str):
-        style_sheet = ("QLineEdit {{border: 2px solid #ccc; border-radius: 5px; "
-                       "padding: 5px; color: white; border-color: {}}}".format(color))
-        self._ui.ipLine.setStyleSheet(style_sheet)
 
     def _toggle_file_sent_label(self, show: bool):
         if show:
@@ -176,5 +188,41 @@ class GUIController:
         self._ui.chosenFileLabel.setText(f"Chosen file: {file_name}")
 
     def _on_connect_btn_pressed(self):
-        user_input = self._ui.ipLine.text().strip()
-        self._session_controller.request_connect(user_input)
+        selected_row = self._ui.contactTable.currentRow()
+
+        if selected_row == -1:
+            return
+
+        ip = self._ui.contactTable.item(selected_row, 1).text()
+        port = self._ui.contactTable.item(selected_row, 2).text()
+
+        self._session_controller.request_connect(ip, port)
+
+    def _add_contact(self):
+        name, ip, port, fp = "New Contact", "0.0.0.0", 35555, "PASTE_FINGERPRINT"
+
+        self._session_controller.request_add_contact(name, ip, port, fp)
+        self._ui.contactTable.blockSignals(True) # Block signals so we don't trigger "_edit_contact"
+
+        row = self._ui.contactTable.rowCount()
+        self._ui.contactTable.insertRow(row)
+        self._ui.contactTable.setItem(row, 0, QTableWidgetItem(name))
+        self._ui.contactTable.setItem(row, 1, QTableWidgetItem(ip))
+        self._ui.contactTable.setItem(row, 2, QTableWidgetItem(str(port)))
+        self._ui.contactTable.setItem(row, 3, QTableWidgetItem(fp))
+
+        self._ui.contactTable.blockSignals(False)
+
+    def _remove_contact(self):
+        current_row = self._ui.contactTable.currentRow()
+        if current_row > -1: # Ensure something is actually selected
+            self._session_controller.request_remove_contact(current_row)
+            self._ui.contactTable.removeRow(current_row)
+
+    def _edit_contact(self, item: QTableWidgetItem):
+        row = item.row()
+        column = item.column()
+        new_value = item.text()
+
+        field_name = CONTACT_FIELDS[column]
+        self._session_controller.request_edit_contact(row, field_name, new_value)
