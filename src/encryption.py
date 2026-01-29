@@ -24,18 +24,12 @@ def get_cert_and_key() -> Tuple[str, str]:
 
     return cert_path, key_path
 
-def get_ssl_context(client_auth: bool) -> ssl.SSLContext:
+def get_ssl_context(purpose: ssl.Purpose) -> ssl.SSLContext:
     cert_path, key_path = get_cert_and_key()
 
-    if client_auth:
-        context = ssl.create_default_context(ssl.Purpose.CLIENT_AUTH)
-        mode = ssl.CERT_NONE # TODO: Change
-    else:
-        context = ssl.create_default_context(ssl.Purpose.SERVER_AUTH)
-        mode = ssl.CERT_NONE
-
+    context = ssl.create_default_context(purpose)
     context.check_hostname = False # Since we use fingerprints, we can disable this
-    context.verify_mode = mode
+    context.verify_mode = ssl.CERT_NONE
     context.load_cert_chain(certfile=cert_path, keyfile=key_path)
     return context
 
@@ -99,7 +93,3 @@ def get_cert_fingerprint(cert_path: str) -> str:
 
     # Base64 encode it to reduce length
     return base64.b64encode(fingerprint).decode("ascii")
-
-def is_cert_fingerprint_trusted(fingerprint: str) -> bool:
-    # TODO: Implement
-    return True

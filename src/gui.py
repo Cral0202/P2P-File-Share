@@ -7,21 +7,21 @@ from PyQt6.QtWidgets import QFileDialog, QSizePolicy, QApplication, QMainWindow,
 from gui_layout import Ui_MainWindow
 from session_controller import SessionController
 
-GREEN_COLOR = "#4CAF50"
-GREEN_COLOR_FORMATTED = f"color: {GREEN_COLOR}"
-RED_COLOR = "red"
-RED_COLOR_FORMATTED = f"color: {RED_COLOR}"
-CONTACT_FIELDS = ["name", "ip", "port", "fingerprint"]
+GREEN_COLOR: str = "#4CAF50"
+GREEN_COLOR_FORMATTED: str = f"color: {GREEN_COLOR}"
+RED_COLOR: str = "red"
+RED_COLOR_FORMATTED: str = f"color: {RED_COLOR}"
+CONTACT_FIELDS: list = ["name", "ip", "port", "fingerprint"]
 
-class GUIController:
+class GUI:
     def __init__(self):
-        self._window = None
-        self._ui = None
-        self._app = None
-        self._clipboard = None
+        self._window: QMainWindow | None = None
+        self._ui: Ui_MainWindow | None = None
+        self._app: QApplication | None = None
+        self._clipboard: QApplication | None = None
 
-        self._spinner = None
-        self._session_controller = SessionController()
+        self._spinner: QMovie | None = None
+        self._session_controller: SessionController = SessionController()
 
     # Sets up the main window
     def window_setup(self):

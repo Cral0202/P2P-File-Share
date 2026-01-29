@@ -3,8 +3,8 @@ import json
 
 class ContactStorage:
     def __init__(self):
-        self.dir_path = os.path.join(os.path.expanduser("~"), ".p2p_file_share")
-        self.file_path = os.path.join(self.dir_path, "contacts.json")
+        self.dir_path: str = os.path.join(os.path.expanduser("~"), ".p2p_file_share")
+        self.file_path: str = os.path.join(self.dir_path, "contacts.json")
 
         # Ensure directory exists
         if not os.path.exists(self.dir_path):
@@ -14,7 +14,7 @@ class ContactStorage:
         if not os.path.exists(self.file_path):
             self._save_contacts([])
 
-        self.contacts = self._load_contacts()
+        self.contacts: list = self._load_contacts()
 
     def _load_contacts(self) -> list:
         try:

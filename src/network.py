@@ -28,34 +28,34 @@ class Network:
 
         self._subscribers: list[Callable[[NetworkEvent], None]] = []
 
-        self._host_socket = None  # The socket that clients connect to
-        self._host_socket_gateway = None  # The communication object for the host socket
-        self._client_socket = None  # The socket used for connecting to other users
-        self._host_thread = None  # Used for accepting connections
+        self._host_socket: socket.socket | None = None  # The socket that users connect to
+        self._host_socket_gateway: ssl.SSLSocket | None = None
+        self._client_socket: ssl.SSLSocket | None = None  # The socket used for connecting to other users
+        self._host_thread: threading.Thread | None = None  # Used for accepting connections
 
-        self.upnp_enabled = False  # True if UPNP is enabled on host network
-        self._wan_ip_service = None  # The WAN IP service object of the igd (for UPNP)
+        self.upnp_enabled: bool = False
+        self._wan_ip_service: miniupnpc.UPnP | None = None
 
-        self.host_port = 35555  # Port which is opened and used
-        self.host_external_ip = None  # The external ip of the host
-        self.outbound_peer_public_ip = None  # The public ip of the outbound peer
-        self.inbound_peer_public_ip = None  # The public ip of the inbound peer
+        self.host_port: int = 35555
+        self.host_external_ip: str | None = None
+        self.outbound_peer_public_ip: str | None = None
+        self.inbound_peer_public_ip: str | None = None
 
-        self._receiving_enabled = False  # True if receiving is enabled
-        self._should_stop_receiving = False  # True if receiving should be stopped
-        self.outbound_connection = False  # True if an outbound connection exists
-        self._inbound_connection = False  # True if an inbound connection exists
-        self._upnp_ports_open = False  # True if UPNP ports are open
-        self._sending_files = False  # True if files are currently being sent
-        self._receiving_files = False  # True if files are currently being received
-        self._trying_to_connect = False  # True if trying to connect to IP
-        self._program_about_to_exit = False  # True if program is about to exit
+        self._receiving_enabled: bool = False
+        self._should_stop_receiving: bool = False
+        self.outbound_connection: bool = False
+        self._inbound_connection: bool = False
+        self._upnp_ports_open: bool = False
+        self._sending_files: bool = False
+        self._receiving_files: bool = False
+        self._trying_to_connect: bool = False
+        self._program_about_to_exit: bool = False
 
         self.selected_file: TransferFile | None = None
         self.incoming_file: TransferFile | None = None
 
-        self._metadata_event = threading.Event()  # Used to sleep and wake metadata thread
-        self._accept_connections_event = threading.Event()  # Used to sleep and wake accept connections thread
+        self._metadata_event: threading.Event = threading.Event()  # Used to sleep and wake metadata thread
+        self._accept_connections_event: threading.Event = threading.Event()  # Used to sleep and wake accept connections thread
 
     def initialize(self):
         self._wan_ip_service = self._get_wan_ip_service()
@@ -99,8 +99,7 @@ class Network:
 
         self._should_stop_receiving = False
 
-        self._host_thread = threading.Thread(target=self._accept_connections)
-        self._host_thread.daemon = True
+        self._host_thread = threading.Thread(target=self._accept_connections, daemon=True)
         self._host_thread.start()
 
         self._receiving_enabled = True
@@ -150,7 +149,6 @@ class Network:
 
     # Closes the ports on the network
     def _close_ports(self):
-        # Deletes the port mapping
         ok = self._wan_ip_service.deleteportmapping(
             self.host_port,  # external_port
             'TCP',           # protocol
@@ -162,9 +160,8 @@ class Network:
 
         self._upnp_ports_open = False
 
-    # Accept connections from clients
     def _accept_connections(self):
-        context = encryption.get_ssl_context(True)
+        context = encryption.get_ssl_context(ssl.Purpose.CLIENT_AUTH)
 
         self._host_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self._host_socket.bind(("", self.host_port))
@@ -180,24 +177,12 @@ class Network:
 
                 newsocket, address = self._host_socket.accept()
                 self._host_socket_gateway = context.wrap_socket(newsocket, server_side=True)
-
-                # TODO: Actually implement
-                """ # Fingerprint verification
-                client_cert = self._host_socket_gateway.getpeercert(binary_form=True)
-                fingerprint = hashlib.sha256(client_cert).hexdigest().upper()
-
-                if not encryption.is_cert_fingerprint_trusted(fingerprint):
-                    self._host_socket_gateway.close()
-                    continue """
-
                 self.inbound_peer_public_ip = address[0]
 
                 # Start the metadata thread
-                thread = threading.Thread(target=self._receive_file_metadata)
-                thread.daemon = True
+                thread = threading.Thread(target=self._receive_file_metadata, daemon=True)
                 thread.start()
 
-                self._host_socket.close()
                 self._inbound_connection = True
                 self._emit(NetworkEvent("INBOUND_CONNECTION_REQUEST", "SUCCESS"))
 
@@ -211,7 +196,6 @@ class Network:
                 self._inbound_connection = False
                 self._emit(NetworkEvent("INBOUND_CONNECTION_REQUEST", "ERROR"))
 
-    # Breaks the connection to the client
     def break_connection(self):
         if not self.outbound_connection:
             return
@@ -221,15 +205,13 @@ class Network:
         elif self._receiving_files and not self._program_about_to_exit:
             raise RuntimeError("Cannot disconnect when currently receiving files")
 
-        # Close the client socket
         self._client_socket.close()
         self.outbound_connection = False
 
-    # Sends a connection request to specified IP
     def _request_connection(self, ip: str, port: int, expected_fingerprint: str):
         try:
             event_msg = ""
-            context = encryption.get_ssl_context(False)
+            context = encryption.get_ssl_context(ssl.Purpose.SERVER_AUTH)
 
             raw_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
             self._client_socket = context.wrap_socket(raw_socket, server_hostname=encryption.CERT_HOSTNAME)
@@ -257,7 +239,6 @@ class Network:
             self._trying_to_connect = False
             self._emit(NetworkEvent("OUTBOUND_CONNECTION_REQUEST", event_msg))
 
-    # Gets the external IP of the host
     def _get_host_external_ip(self) -> str:
         try:
             if self.upnp_enabled:
@@ -268,7 +249,7 @@ class Network:
                 response = requests.get("https://api64.ipify.org?format=json")
                 ip = response.json()["ip"]
                 return ip
-        except Exception as e:
+        except Exception:
             return "?"
 
     def _send_file(self):
@@ -293,7 +274,6 @@ class Network:
             self._sending_files = False
             self._emit(NetworkEvent("FILE_SEND_FINISHED", event_msg))
 
-    # Sends the metadata of a file
     def _send_file_metadata(self):
         try:
             event_msg = ""
@@ -312,7 +292,6 @@ class Network:
         finally:
             self._emit(NetworkEvent("FILE_METADATA_SEND_FINISHED", event_msg))
 
-    # Sends the data of a file
     def _send_file_data(self):
         try:
             event_msg = ""
@@ -340,7 +319,6 @@ class Network:
         finally:
             self._emit(NetworkEvent("FILE_DATA_SEND_FINISHED", event_msg))
 
-    # Rejects a file
     def reject_file(self) -> bool:
         if not self.incoming_file or self._receiving_files:
             return False
@@ -356,7 +334,6 @@ class Network:
         except Exception:
             raise
 
-    # Receives the metadata of a file
     def _receive_file_metadata(self):
         while self._host_socket_gateway and not self._program_about_to_exit:
             try:
@@ -374,13 +351,12 @@ class Network:
                 self._emit(NetworkEvent("FILE_METADATA_RECEIVE_FINISHED", "SUCCESS"))
                 self._metadata_event.wait()
             except ConnectionError:
-                self._handle_connection_error(e, False)
+                self._handle_connection_error(False)
                 break
-            except Exception as e:
+            except Exception:
                 self._emit(NetworkEvent("FILE_METADATA_RECEIVE_FINISHED", "ERROR"))
                 break
 
-    # Receives the data of a file
     def _receive_file_data(self):
         try:
             event_msg = ""
@@ -405,8 +381,8 @@ class Network:
             self.incoming_file = None
             self._metadata_event.set()
         except ConnectionError:
-                self._handle_connection_error(e, False)
-        except Exception as e:
+                self._handle_connection_error(False)
+        except Exception:
             event_msg = "ERROR"
         finally:
             self._emit(NetworkEvent("FILE_DATA_RECEIVE_FINISHED", event_msg))

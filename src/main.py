@@ -1,5 +1,5 @@
-from gui import GUIController
+from gui import GUI
 
 if __name__ == "__main__":
-    gui_controller = GUIController()
-    gui_controller.window_setup()
+    gui: GUI = GUI()
+    gui.window_setup()

@@ -7,23 +7,23 @@ from contact_storage import ContactStorage
 from models.host_info import HostInfo
 
 class SessionController(QObject):
-    outbound_status_signal = pyqtSignal(str, bool)
-    inbound_status_signal = pyqtSignal(str, bool)
-    receiving_status_signal = pyqtSignal(str, bool)
-    receive_pgrs_bar_signal = pyqtSignal(int)
-    send_pgrs_bar_signal = pyqtSignal(int)
-    download_signal = pyqtSignal(str)
-    file_indicators_signal = pyqtSignal()
-    connecting_spinner_signal = pyqtSignal(bool)
-    file_sent_signal = pyqtSignal(bool)
-    receive_label_signal = pyqtSignal(str, bool)
-    info_signal = pyqtSignal(str, int)
-    selected_file_signal = pyqtSignal(str)
+    outbound_status_signal: pyqtSignal = pyqtSignal(str, bool)
+    inbound_status_signal: pyqtSignal = pyqtSignal(str, bool)
+    receiving_status_signal: pyqtSignal = pyqtSignal(str, bool)
+    receive_pgrs_bar_signal: pyqtSignal = pyqtSignal(int)
+    send_pgrs_bar_signal: pyqtSignal = pyqtSignal(int)
+    download_signal: pyqtSignal = pyqtSignal(str)
+    file_indicators_signal: pyqtSignal = pyqtSignal()
+    connecting_spinner_signal: pyqtSignal = pyqtSignal(bool)
+    file_sent_signal: pyqtSignal = pyqtSignal(bool)
+    receive_label_signal: pyqtSignal = pyqtSignal(str, bool)
+    info_signal: pyqtSignal = pyqtSignal(str, int)
+    selected_file_signal: pyqtSignal = pyqtSignal(str)
 
     def __init__(self):
         super().__init__()
-        self._network = Network()
-        self._contact_storage = ContactStorage()
+        self._network: Network = Network()
+        self._contact_storage: ContactStorage = ContactStorage()
 
     def initialize(self):
         self._network.subscribe(self._on_network_event)
@@ -215,7 +215,6 @@ class SessionController(QObject):
                 self.file_sent_signal.emit(False)
             elif event.message == "INBOUND":
                 self._on_inbound_change(False)
-                self._on_receiving_change(False)
 
         elif event.type == "FILE_SEND_FINISHED":
             self.file_sent_signal.emit(False)
