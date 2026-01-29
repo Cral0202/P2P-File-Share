@@ -1,5 +1,6 @@
 import ipaddress
 import encryption
+import errno
 
 from PyQt6.QtCore import QObject, pyqtSignal
 from network import Network, NetworkEvent
@@ -84,16 +85,23 @@ class SessionController(QObject):
             self.info_signal.emit(str(e), 10000)
 
     def request_enable_receiving(self):
+        error_msg = "Could not enable receiving."
+
         try:
             self._network.enable_receiving()
             self._on_receiving_change(True)
+        except OSError as e:
+            if e.errno == errno.EADDRINUSE:
+                self.info_signal.emit(f"{error_msg} Port already in use.", 10000)
+            else:
+                self.info_signal.emit(error_msg, 10000)
         except Exception as e:
             text = str(e)
 
             if "ConflictInMappingEntry" in text or "refuse" in text.lower():
-                text = "UPnP port mapping failed. Port may already be in use."
+                error_msg = "UPnP port mapping failed. Port may already be in use."
 
-            self.info_signal.emit(text, 10000)
+            self.info_signal.emit(error_msg, 10000)
 
     def request_disable_receiving(self):
         try:

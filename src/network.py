@@ -97,12 +97,15 @@ class Network:
         if self.upnp_enabled and not self._upnp_ports_open:
             self._open_ports()
 
+        self._host_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        self._host_socket.bind(("", self.host_port))
+        self._host_socket.listen(1)
+
         self._should_stop_receiving = False
+        self._receiving_enabled = True
 
         self._host_thread = threading.Thread(target=self._accept_connections, daemon=True)
         self._host_thread.start()
-
-        self._receiving_enabled = True
 
     def disable_receiving(self):
         if not self._receiving_enabled:
@@ -162,10 +165,6 @@ class Network:
 
     def _accept_connections(self):
         context = encryption.get_ssl_context(ssl.Purpose.CLIENT_AUTH)
-
-        self._host_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        self._host_socket.bind(("", self.host_port))
-        self._host_socket.listen(1)
 
         while not self._should_stop_receiving:
             try:
