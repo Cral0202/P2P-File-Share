@@ -1216,6 +1216,7 @@ QProgressBar::chunk {
             <property name="font">
              <font>
               <family>Noto Sans</family>
+              <pointsize>9</pointsize>
               <bold>true</bold>
              </font>
             </property>

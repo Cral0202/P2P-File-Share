@@ -675,6 +675,7 @@ class Ui_MainWindow(object):
         self.outboundConnectionLabel.setSizePolicy(sizePolicy)
         font = QtGui.QFont()
         font.setFamily("Noto Sans")
+        font.setPointSize(9)
         font.setBold(True)
         self.outboundConnectionLabel.setFont(font)
         self.outboundConnectionLabel.setStyleSheet("color: red;")
