@@ -57,7 +57,7 @@
                  <string notr="true">color: rgb(255, 255, 255);</string>
                 </property>
                 <property name="text">
-                 <string>Your IP:</string>
+                 <string>Your IP address:</string>
                 </property>
                </widget>
               </item>
@@ -121,7 +121,7 @@ QPushButton:pressed {
 }</string>
                 </property>
                 <property name="text">
-                 <string>Copy IP + Port</string>
+                 <string>Copy IP</string>
                 </property>
                </widget>
               </item>
@@ -155,7 +155,7 @@ QPushButton:pressed {
 }</string>
                 </property>
                 <property name="text">
-                 <string>Copy fingerprint</string>
+                 <string>Copy Fingerprint</string>
                 </property>
                </widget>
               </item>
@@ -644,7 +644,7 @@ gridline-color: rgb(50, 50, 50);</string>
           <item>
            <layout class="QHBoxLayout" name="horizontalLayout_74">
             <item>
-             <widget class="QLabel" name="chosenFileLabel">
+             <widget class="QLabel" name="selectedFileLabel">
               <property name="sizePolicy">
                <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
                 <horstretch>0</horstretch>
@@ -662,7 +662,7 @@ gridline-color: rgb(50, 50, 50);</string>
                <string notr="true">color: rgb(255, 255, 255);</string>
               </property>
               <property name="text">
-               <string>Chosen file:</string>
+               <string>Selected file:</string>
               </property>
              </widget>
             </item>
@@ -684,7 +684,7 @@ gridline-color: rgb(50, 50, 50);</string>
           <item>
            <layout class="QHBoxLayout" name="horizontalLayout_75">
             <item>
-             <widget class="QPushButton" name="chooseFileButton">
+             <widget class="QPushButton" name="selectFileButton">
               <property name="sizePolicy">
                <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
                 <horstretch>0</horstretch>
@@ -713,7 +713,7 @@ QPushButton:pressed {
 }</string>
               </property>
               <property name="text">
-               <string>Choose File</string>
+               <string>Select File</string>
               </property>
              </widget>
             </item>

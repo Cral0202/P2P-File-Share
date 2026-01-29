@@ -47,9 +47,9 @@ class GUIController:
         self._clipboard = QApplication.clipboard()
 
         self._ui.portSpinBox.valueChanged.connect(self._update_host_port)
-        self._ui.copyIPButton.clicked.connect(self._copy_user_ip_and_port_to_clipboard)
+        self._ui.copyIPButton.clicked.connect(self._copy_ip_to_clipboard)
         self._ui.copyFingerprintButton.clicked.connect(self._copy_cert_fingerprint_to_clipboard)
-        self._ui.chooseFileButton.clicked.connect(self._determine_file_to_transfer)
+        self._ui.selectFileButton.clicked.connect(self._determine_file_to_transfer)
         self._ui.connectButton.clicked.connect(self._on_connect_btn_pressed)
         self._ui.addContactButton.clicked.connect(self._add_contact)
         self._ui.removeContactButton.clicked.connect(self._remove_contact)
@@ -84,7 +84,7 @@ class GUIController:
         # Load host info
         host_info = self._session_controller.get_host_info()
 
-        self._ui.ipLabel.setText(f"Your IP: {host_info.ip}")
+        self._ui.ipLabel.setText(f"Your IP address: {host_info.ip}")
         self._ui.portSpinBox.setValue(host_info.port)
         self._ui.fingerprintLabel.setText(f"Your fingerprint: {host_info.cert_fingerprint}")
 
@@ -173,10 +173,10 @@ class GUIController:
         self._ui.receiverDownloadedFileLabel.setSizePolicy(QSizePolicy.Policy.Ignored, QSizePolicy.Policy.Ignored)
         self._ui.sendProgressBar.setValue(0)
 
-    def _copy_user_ip_and_port_to_clipboard(self):
+    def _copy_ip_to_clipboard(self):
         # TODO: Grab directly from UI instead?
         host_info = self._session_controller.get_host_info()
-        self._clipboard.setText(f"{host_info.ip}:{host_info.port}")
+        self._clipboard.setText(host_info.ip)
 
     def _copy_cert_fingerprint_to_clipboard(self):
         # TODO: Grab directly from UI instead?
@@ -193,7 +193,7 @@ class GUIController:
 
     def _on_file_selected(self, file_name: str):
         self._reset_file_indicators()
-        self._ui.chosenFileLabel.setText(f"Chosen file: {file_name}")
+        self._ui.selectedFileLabel.setText(f"Selected file: {file_name}")
 
     def _on_connect_btn_pressed(self):
         selected_row = self._ui.contactTable.currentRow()
