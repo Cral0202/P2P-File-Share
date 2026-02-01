@@ -381,7 +381,7 @@ class Network:
             self.incoming_file = None
             self._metadata_event.set()
         except ConnectionError:
-                self._handle_connection_error(False)
+            self._handle_connection_error(False)
         except Exception:
             event_msg = "ERROR"
         finally:

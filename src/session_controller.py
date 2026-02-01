@@ -261,10 +261,10 @@ class SessionController(QObject):
             self.receive_pgrs_bar_signal.emit(int(event.message))
 
         elif event.type == "FILE_DATA_RECEIVE_FINISHED":
-            if event.message == "SUCCESS":
-                self._update_receive_label(False)
-            elif event.message == "ERROR":
+            if event.message == "ERROR":
                 self.info_signal.emit("An error occurred while receiving file data.", 10000)
+
+            self._update_receive_label(False)
 
         elif event.type == "OUTBOUND_CONNECTION_REQUEST":
             status = False
