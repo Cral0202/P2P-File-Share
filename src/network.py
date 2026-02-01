@@ -187,6 +187,7 @@ class Network:
 
                 self._accept_connections_event.wait()
             except ConnectionError:
+                self._handle_connection_error(False)
                 break
             except Exception:
                 if self._should_stop_receiving:
@@ -340,7 +341,7 @@ class Network:
                 size_data = self._host_socket_gateway.recv(METADATA_HEADER_SIZE)
 
                 if not size_data:
-                    break
+                    raise ConnectionError
 
                 metadata_size = int.from_bytes(size_data, byteorder='big')
                 metadata_json = self._host_socket_gateway.recv(metadata_size).decode()
