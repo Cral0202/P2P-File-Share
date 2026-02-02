@@ -128,6 +128,10 @@ class SessionController(QObject):
 
     def request_select_file(self, path: str):
         file_name = self._network.set_selected_file(path)
+
+        if file_name == "":
+            return
+
         self.selected_file_signal.emit(file_name)
 
     def request_send_selected_file(self):

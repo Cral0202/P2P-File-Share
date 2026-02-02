@@ -413,6 +413,9 @@ class Network:
         self._emit(NetworkEvent("CONNECTION_LOST", event_msg))
 
     def set_selected_file(self, path: str) -> str:
+        if self._sending_files:
+            return ""
+
         file = TransferFile(
             path = path,
             name = os.path.basename(path),
