@@ -368,7 +368,7 @@ class Network:
                     chunk = self._host_socket_gateway.recv(FILE_CHUNK_SIZE)
 
                     if not chunk:
-                        break
+                        raise ConnectionError
 
                     file.write(chunk)
                     received_data += len(chunk)
@@ -381,6 +381,7 @@ class Network:
             self.incoming_file = None
             self._metadata_event.set()
         except ConnectionError:
+            event_msg = "PEER_DISCONNECTED"
             self._handle_connection_error(False)
         except Exception:
             event_msg = "ERROR"

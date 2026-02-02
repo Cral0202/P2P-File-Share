@@ -63,7 +63,7 @@ class SessionController(QObject):
         self.download_signal.emit(text)
 
     def _update_receive_label(self, reset_pgrs_bar: bool):
-        if reset_pgrs_bar:
+        if reset_pgrs_bar and self._network.incoming_file:
             text = f"Ready to receive: {self._network.incoming_file.name}"
         else:
             text = "Ready to receive:"
@@ -261,10 +261,14 @@ class SessionController(QObject):
             self.receive_pgrs_bar_signal.emit(int(event.message))
 
         elif event.type == "FILE_DATA_RECEIVE_FINISHED":
+            reset_pgrs_bar = True
+
+            if event.message == "SUCCESS":
+                reset_pgrs_bar = False
             if event.message == "ERROR":
                 self.info_signal.emit("An error occurred while receiving file data.", 10000)
 
-            self._update_receive_label(False)
+            self._update_receive_label(reset_pgrs_bar)
 
         elif event.type == "OUTBOUND_CONNECTION_REQUEST":
             status = False
