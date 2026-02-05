@@ -14,7 +14,7 @@ send files without a public IP address.**
   Received files are placed in your "Downloads" folder.
 
 - To connect to someone, first add them as a contact, then select them and press "Connect".
-  You can then select a file and click the "Send" button to send it.
+  You can then select a file and click "Send".
   You will be notified if the recipient rejects the file, or receives it.
 
 - To send folders, package them first (e.g., ZIP), then send them as a regular file.

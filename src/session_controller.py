@@ -20,6 +20,7 @@ class SessionController(QObject):
     receive_label_signal: pyqtSignal = pyqtSignal(str, bool)
     info_signal: pyqtSignal = pyqtSignal(str, int)
     selected_file_signal: pyqtSignal = pyqtSignal(str)
+    incoming_connection_signal: pyqtSignal = pyqtSignal(str)
 
     def __init__(self):
         super().__init__()
@@ -109,6 +110,12 @@ class SessionController(QObject):
             self._on_receiving_change(False)
         except Exception as e:
             self.info_signal.emit(str(e), 10000)
+
+    def request_accept_incoming_connection(self):
+        self._network.accept_incoming_connection()
+
+    def request_decline_incoming_connection(self):
+        self._network.decline_incoming_connection()
 
     def request_accept_incoming_file(self):
         try:
@@ -290,8 +297,13 @@ class SessionController(QObject):
             self.connecting_spinner_signal.emit(False)
 
         elif event.type == "INBOUND_CONNECTION_REQUEST":
-            if event.message == "SUCCESS":
+            if event.message == "ACCEPTED":
                 self._on_inbound_change(True)
+                self.incoming_connection_signal.emit("Incoming connection from:")
+            elif event.message == "INCOMING":
+                self.incoming_connection_signal.emit(f"Incoming connection from: {self._network.inbound_peer_public_ip}")
+            elif event.message == "DECLINED":
+                self.incoming_connection_signal.emit("Incoming connection from:")
             elif event.message == "ERROR":
                 self._on_inbound_change(False)
                 self.info_signal.emit("Inbound connection request failed.", 10000)

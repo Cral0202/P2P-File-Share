@@ -60,6 +60,8 @@ class GUI:
         self._ui.sendButton.clicked.connect(self._session_controller.request_send_selected_file)
         self._ui.receiveButton.clicked.connect(self._session_controller.request_accept_incoming_file)
         self._ui.rejectButton.clicked.connect(self._session_controller.request_reject_incoming_file)
+        self._ui.acceptConnectionButton.clicked.connect(self._session_controller.request_accept_incoming_connection)
+        self._ui.declineConnectionButton.clicked.connect(self._session_controller.request_decline_incoming_connection)
 
         # Signals
         self._session_controller.receive_pgrs_bar_signal.connect(self._update_receive_progress_bar)
@@ -74,6 +76,7 @@ class GUI:
         self._session_controller.file_indicators_signal.connect(self._reset_file_indicators)
         self._session_controller.info_signal.connect(self._show_info_message)
         self._session_controller.selected_file_signal.connect(self._on_file_selected)
+        self._session_controller.incoming_connection_signal.connect(self._on_incoming_connection_change)
 
         # Set up spinner
         self._spinner = self._get_spinner_gif()
@@ -206,6 +209,9 @@ class GUI:
         fingerprint = self._ui.contactTable.item(selected_row, 3).text()
 
         self._session_controller.request_connect(ip, port, fingerprint)
+
+    def _on_incoming_connection_change(self, text):
+        self._ui.incomingConnectionLabel.setText(text)
 
     def _add_contact(self):
         name, ip, port, fp = "New Contact", "0.0.0.0", 35555, "PASTE_FINGERPRINT"

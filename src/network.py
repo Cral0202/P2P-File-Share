@@ -42,9 +42,9 @@ class Network:
         self.inbound_peer_public_ip: str | None = None
 
         self._receiving_enabled: bool = False
-        self._should_stop_receiving: bool = False
         self.outbound_connection: bool = False
         self._inbound_connection: bool = False
+        self._incoming_connnection: bool = False
         self._upnp_ports_open: bool = False
         self._sending_files: bool = False
         self._receiving_files: bool = False
@@ -101,10 +101,9 @@ class Network:
         self._host_socket.bind(("", self.host_port))
         self._host_socket.listen(1)
 
-        self._should_stop_receiving = False
         self._receiving_enabled = True
 
-        self._host_thread = threading.Thread(target=self._accept_connections, daemon=True)
+        self._host_thread = threading.Thread(target=self._receive_connections, daemon=True)
         self._host_thread.start()
 
     def disable_receiving(self):
@@ -116,11 +115,25 @@ class Network:
         if self._receiving_files and not self._program_about_to_exit:
             raise RuntimeError("Cannot disable receiving when currently receiving files")
 
+        # TODO: Commented out block results in a weird state if connected while disabling receiving
+        """ # Kill active inbound connection
+        if self._inbound_connection:
+            try:
+                self._host_socket_gateway.shutdown(socket.SHUT_RDWR)
+            except Exception:
+                pass
+
+            try:
+                self._host_socket_gateway.close()
+            except Exception:
+                pass
+
+            self._inbound_connection = False """
+
         if self._upnp_ports_open:
             self._close_ports()
 
-        self._should_stop_receiving = True
-
+        self._receiving_enabled = False
         self._accept_connections_event.set()
 
         try:
@@ -130,8 +143,6 @@ class Network:
 
         self._host_socket.close()
         self._host_thread.join()
-
-        self._receiving_enabled = False
 
     # Opens ports on the network
     def _open_ports(self):
@@ -163,10 +174,10 @@ class Network:
 
         self._upnp_ports_open = False
 
-    def _accept_connections(self):
+    def _receive_connections(self):
         context = encryption.get_ssl_context(ssl.Purpose.CLIENT_AUTH)
 
-        while not self._should_stop_receiving:
+        while self._receiving_enabled:
             try:
                 if self._inbound_connection:
                     time.sleep(1)
@@ -178,23 +189,60 @@ class Network:
                 self._host_socket_gateway = context.wrap_socket(newsocket, server_side=True)
                 self.inbound_peer_public_ip = address[0]
 
-                # Start the metadata thread
-                thread = threading.Thread(target=self._receive_file_metadata, daemon=True)
-                thread.start()
-
+                self._incoming_connnection = True
                 self._inbound_connection = True
-                self._emit(NetworkEvent("INBOUND_CONNECTION_REQUEST", "SUCCESS"))
-
+                self._emit(NetworkEvent("INBOUND_CONNECTION_REQUEST", "INCOMING"))
                 self._accept_connections_event.wait()
             except ConnectionError:
                 self._handle_connection_error(False)
                 break
             except Exception:
-                if self._should_stop_receiving:
+                if not self._receiving_enabled:
                     break
 
+                self._incoming_connnection = False
                 self._inbound_connection = False
                 self._emit(NetworkEvent("INBOUND_CONNECTION_REQUEST", "ERROR"))
+
+    def accept_incoming_connection(self):
+        if not self._incoming_connnection:
+            return
+
+        try:
+            self._emit(NetworkEvent("INBOUND_CONNECTION_REQUEST", "ACCEPTED"))
+            self._host_socket_gateway.sendall(b"ACCEPTED")
+
+            # Start the metadata thread
+            thread = threading.Thread(target=self._receive_file_metadata, daemon=True)
+            thread.start()
+        except ConnectionError:
+            self._handle_connection_error(False)
+        finally:
+            self._incoming_connnection = False
+
+    def decline_incoming_connection(self):
+        if not self._incoming_connnection:
+            return
+
+        try:
+            self._emit(NetworkEvent("INBOUND_CONNECTION_REQUEST", "DECLINED"))
+            self._host_socket_gateway.sendall(b"DECLINED")
+
+            try:
+                self._host_socket_gateway.shutdown(socket.SHUT_RDWR)
+            except Exception:
+                pass
+
+            try:
+                self._host_socket_gateway.close()
+            except Exception:
+                pass
+        except ConnectionError:
+            self._handle_connection_error(False)
+        finally:
+            self._incoming_connnection = False
+            self._inbound_connection = False
+            self._accept_connections_event.set()
 
     def break_connection(self):
         if not self.outbound_connection:
@@ -228,13 +276,22 @@ class Network:
 
             self.outbound_peer_public_ip = ip
             self.outbound_connection = True
-            event_msg = "SUCCESS"
-        except ConnectionRefusedError:
-            event_msg = "CONNECTION_REFUSED"
-        except ssl.SSLCertVerificationError:
-            event_msg = "INVALID_FINGERPRINT"
-        except Exception:
-            event_msg = "CONNECTION_ERROR"
+
+            response = self._client_socket.recv(1024).decode().strip()
+
+            if response == "ACCEPTED":
+                event_msg = "SUCCESS"
+            else:
+                raise ConnectionRefusedError # Raise since this error can also occur above
+        except Exception as e:
+            self.outbound_connection = False
+
+            if isinstance(e, ssl.SSLCertVerificationError):
+                event_msg = "INVALID_FINGERPRINT"
+            elif isinstance(e, ConnectionRefusedError):
+                event_msg = "CONNECTION_REFUSED"
+            else:
+                event_msg = "CONNECTION_ERROR"
         finally:
             self._trying_to_connect = False
             self._emit(NetworkEvent("OUTBOUND_CONNECTION_REQUEST", event_msg))
@@ -326,7 +383,7 @@ class Network:
         try:
             self.incoming_file = None
             self._metadata_event.set()  # Indicate that new metadata can be received
-            self._host_socket_gateway.sendall("REJECTED".encode())
+            self._host_socket_gateway.sendall(b"REJECTED")
             return True
         except ConnectionError:
             self._handle_connection_error(False)
@@ -335,7 +392,7 @@ class Network:
             raise
 
     def _receive_file_metadata(self):
-        while self._host_socket_gateway and not self._program_about_to_exit:
+        while self._inbound_connection and not self._program_about_to_exit:
             try:
                 self._metadata_event.clear()  # Clear the event since it may have been set
                 size_data = self._host_socket_gateway.recv(METADATA_HEADER_SIZE)
@@ -435,7 +492,7 @@ class Network:
 
         try:
             self._receiving_files = True
-            self._host_socket_gateway.sendall("ACCEPTED".encode())
+            self._host_socket_gateway.sendall(b"ACCEPTED")
 
             thread = threading.Thread(target=self._receive_file_data, daemon=True)
             thread.start()
