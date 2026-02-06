@@ -9,13 +9,13 @@ import ssl
 import encryption
 import hashlib
 import base64
+import struct
 
 from models.transfer_file import TransferFile
 from dataclasses import dataclass, asdict
 from typing import Callable
 
 FILE_CHUNK_SIZE: int = 262144
-METADATA_HEADER_SIZE: int = 4
 
 @dataclass
 class NetworkEvent:
@@ -67,6 +67,31 @@ class Network:
     def _emit(self, event: NetworkEvent):
         for cb in self._subscribers:
             cb(event)
+
+    def _send_msg(self, socket: socket.socket, msg: bytes):
+        # Prefix each message with a 4-byte length
+        msg_header = struct.pack('>I', len(msg))
+        socket.sendall(msg_header + msg)
+
+    def _recv_msg(self, socket: socket.socket) -> bytes:
+        # Read the 4-byte header to find out how long the message is
+        header = self._recv_exact(socket, 4)
+        msg_len = struct.unpack('>I', header)[0]
+
+        return self._recv_exact(socket, msg_len)
+
+    def _recv_exact(self, socket: socket.socket, n_bytes: int) -> bytes:
+        data = b""
+
+        while len(data) < n_bytes:
+            chunk = socket.recv(n_bytes - len(data))
+
+            if not chunk:
+                raise ConnectionError
+
+            data += chunk
+
+        return data
 
     def _get_wan_ip_service(self) -> miniupnpc.UPnP | None:
         try:
@@ -210,7 +235,7 @@ class Network:
 
         try:
             self._emit(NetworkEvent("INBOUND_CONNECTION_REQUEST", "ACCEPTED"))
-            self._host_socket_gateway.sendall(b"ACCEPTED")
+            self._send_msg(self._host_socket_gateway, b"ACCEPTED")
 
             # Start the metadata thread
             thread = threading.Thread(target=self._receive_file_metadata, daemon=True)
@@ -226,7 +251,7 @@ class Network:
 
         try:
             self._emit(NetworkEvent("INBOUND_CONNECTION_REQUEST", "DECLINED"))
-            self._host_socket_gateway.sendall(b"DECLINED")
+            self._send_msg(self._host_socket_gateway, b"DECLINED")
 
             try:
                 self._host_socket_gateway.shutdown(socket.SHUT_RDWR)
@@ -277,7 +302,8 @@ class Network:
             self.outbound_peer_public_ip = ip
             self.outbound_connection = True
 
-            response = self._client_socket.recv(1024).decode().strip()
+            response_bytes = self._recv_msg(self._client_socket)
+            response = response_bytes.decode()
 
             if response == "ACCEPTED":
                 event_msg = "SUCCESS"
@@ -314,7 +340,8 @@ class Network:
             event_msg = ""
 
             self._send_file_metadata()
-            response = self._client_socket.recv(1024).decode().strip()
+            response_bytes = self._recv_msg(self._client_socket)
+            response = response_bytes.decode()
 
             if response == "ACCEPTED":
                 event_msg = "ACCEPTED"
@@ -335,11 +362,7 @@ class Network:
         try:
             event_msg = ""
             metadata_json = json.dumps(asdict(self.selected_file)).encode()
-
-            # Send length first so receiver knows how much to read
-            metadata_size = len(metadata_json).to_bytes(METADATA_HEADER_SIZE, byteorder='big')
-            self._client_socket.sendall(metadata_size)
-            self._client_socket.sendall(metadata_json)
+            self._send_msg(self._client_socket, metadata_json)
 
             event_msg = "ACCEPTED"
         except ConnectionError:
@@ -383,7 +406,7 @@ class Network:
         try:
             self.incoming_file = None
             self._metadata_event.set()  # Indicate that new metadata can be received
-            self._host_socket_gateway.sendall(b"REJECTED")
+            self._send_msg(self._host_socket_gateway, b"REJECTED")
             return True
         except ConnectionError:
             self._handle_connection_error(False)
@@ -395,13 +418,8 @@ class Network:
         while self._inbound_connection and not self._program_about_to_exit:
             try:
                 self._metadata_event.clear()  # Clear the event since it may have been set
-                size_data = self._host_socket_gateway.recv(METADATA_HEADER_SIZE)
 
-                if not size_data:
-                    raise ConnectionError
-
-                metadata_size = int.from_bytes(size_data, byteorder='big')
-                metadata_json = self._host_socket_gateway.recv(metadata_size).decode()
+                metadata_json = self._recv_msg(self._host_socket_gateway).decode()
                 metadata = json.loads(metadata_json)
 
                 self.incoming_file = TransferFile(**metadata)
@@ -492,7 +510,7 @@ class Network:
 
         try:
             self._receiving_files = True
-            self._host_socket_gateway.sendall(b"ACCEPTED")
+            self._send_msg(self._host_socket_gateway, b"ACCEPTED")
 
             thread = threading.Thread(target=self._receive_file_data, daemon=True)
             thread.start()
