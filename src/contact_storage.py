@@ -47,3 +47,10 @@ class ContactStorage:
         if 0 <= index < len(self.contacts):
             self.contacts[index][field] = new_value
             self._save_contacts(self.contacts)
+
+    def check_if_contact_exists(self, fingerprint: str) -> tuple[bool, str]:
+        for contact in self.contacts:
+            if contact.get("fingerprint") == fingerprint:
+                return True, contact.get("name", "Unknown")
+
+        return False, "Unknown"

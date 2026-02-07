@@ -301,7 +301,11 @@ class SessionController(QObject):
                 self._on_inbound_change(True)
                 self.incoming_connection_signal.emit("Incoming connection from:")
             elif event.message == "INCOMING":
-                self.incoming_connection_signal.emit(f"Incoming connection from: {self._network.inbound_peer_fingerprint}")
+                # Check if peer is in our contact list
+                exists, name = self._contact_storage.check_if_contact_exists(self._network.inbound_peer_fingerprint)
+                warning = " (WARNING) " if not exists else ""
+
+                self.incoming_connection_signal.emit(f"Incoming connection from: {name} {warning} ({self._network.inbound_peer_public_ip})")
             elif event.message == "DECLINED":
                 self.incoming_connection_signal.emit("Incoming connection from:")
             elif event.message == "ERROR":

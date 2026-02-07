@@ -3,7 +3,6 @@ import ssl
 import base64
 import json
 
-from typing import Tuple
 from cryptography import x509
 from cryptography.x509 import load_pem_x509_certificate
 from cryptography.x509.oid import NameOID
@@ -14,7 +13,7 @@ from datetime import datetime, timedelta, timezone
 
 CERT_HOSTNAME: str = "p2p-node"
 
-def get_cert_and_key_path() -> Tuple[str, str]:
+def get_cert_and_key_path() -> tuple[str, str]:
     cert_dir = os.path.join(os.path.expanduser("~"), ".p2p_file_share")
     cert_path = os.path.join(cert_dir, "cert.pem")
     key_path = os.path.join(cert_dir, "key.pem")
@@ -122,7 +121,7 @@ def create_identity_proof(challenge: bytes) -> bytes:
 
     return json.dumps(payload).encode()
 
-def verify_identity_proof(proof_bytes: bytes, challenge: bytes) -> Tuple[bool, str]:
+def verify_identity_proof(proof_bytes: bytes, challenge: bytes) -> tuple[bool, str]:
     proof_data = json.loads(proof_bytes.decode())
     cert_bytes = base64.b64decode(proof_data["cert"])
     signature = base64.b64decode(proof_data["signature"])
