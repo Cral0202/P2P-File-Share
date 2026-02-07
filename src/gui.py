@@ -36,14 +36,14 @@ class GUI():
         self._ui = Ui_MainWindow()
         self._ui.setupUi(self._window)
 
-        self._ui.stackedWidget.setCurrentWidget(self._ui.loadingPage)
-        self._window.show()
-
-        # Set up spinner
+        # Set up loading screen spinner
         self._loading_screen_spinner = self._get_spinner_gif()
         self._ui.loadingSpinnerLabel.setMovie(self._loading_screen_spinner)
         self._loading_screen_spinner.setScaledSize(QSize(64, 64))
         self._loading_screen_spinner.start()
+
+        self._ui.stackedWidget.setCurrentWidget(self._ui.loadingPage)
+        self._window.show()
 
         # We need to leave the main thread free, so we load the session controller in another thread
         self._session_controller.initialized_signal.connect(self._load_application_ui)
