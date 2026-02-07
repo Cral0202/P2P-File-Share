@@ -1,8 +1,10 @@
 import os
 import sys
+import threading
 
 from PyQt6.QtGui import QIcon, QMovie
 from PyQt6.QtWidgets import QFileDialog, QSizePolicy, QApplication, QMainWindow, QTableWidgetItem
+from PyQt6.QtCore import QSize
 
 from gui_layout import Ui_MainWindow
 from session_controller import SessionController
@@ -13,14 +15,15 @@ RED_COLOR: str = "red"
 RED_COLOR_FORMATTED: str = f"color: {RED_COLOR}"
 CONTACT_FIELDS: list = ["name", "ip", "port", "fingerprint"]
 
-class GUI:
+class GUI():
     def __init__(self):
         self._window: QMainWindow | None = None
         self._ui: Ui_MainWindow | None = None
         self._app: QApplication | None = None
         self._clipboard: QApplication | None = None
 
-        self._spinner: QMovie | None = None
+        self._loading_screen_spinner: QMovie | None = None
+        self._connecting_spinner: QMovie | None = None
         self._session_controller: SessionController = SessionController()
 
     # Sets up the main window
@@ -33,14 +36,29 @@ class GUI:
         self._ui = Ui_MainWindow()
         self._ui.setupUi(self._window)
 
-        # Widget setup is split into two phases because some UI values depend on the controller being initialized
-        self._setup_window_widgets()
-        self._session_controller.initialize()
-        self._populate_window_widgets()
-
+        self._ui.stackedWidget.setCurrentWidget(self._ui.loadingPage)
         self._window.show()
+
+        # Set up spinner
+        self._loading_screen_spinner = self._get_spinner_gif()
+        self._ui.loadingSpinnerLabel.setMovie(self._loading_screen_spinner)
+        self._loading_screen_spinner.setScaledSize(QSize(64, 64))
+        self._loading_screen_spinner.start()
+
+        # We need to leave the main thread free, so we load the session controller in another thread
+        self._session_controller.initialized_signal.connect(self._load_application_ui)
+        thread = threading.Thread(target=lambda: self._session_controller.initialize())
+        thread.start()
+
         self._app.aboutToQuit.connect(self._exit)
         sys.exit(self._app.exec())
+
+    def _load_application_ui(self):
+        self._setup_window_widgets()
+        self._populate_window_widgets()
+
+        self._ui.stackedWidget.setCurrentWidget(self._ui.mainPage)
+        self._loading_screen_spinner.stop()
 
     # Sets up the widgets for the main window
     def _setup_window_widgets(self):
@@ -78,10 +96,11 @@ class GUI:
         self._session_controller.selected_file_signal.connect(self._on_file_selected)
         self._session_controller.incoming_connection_signal.connect(self._on_incoming_connection_change)
 
-        # Set up spinner
-        self._spinner = self._get_spinner_gif()
-        self._ui.connectingSpinnerLabel.setMovie(self._spinner)
+        # The connecting spinner
+        self._connecting_spinner = self._get_spinner_gif()
+        self._ui.connectingSpinnerLabel.setMovie(self._connecting_spinner)
         self._toggle_connecting_spinner(False)
+        self._connecting_spinner.setScaledSize(QSize(32, 32))
 
     def _populate_window_widgets(self):
         # Load host info
@@ -124,10 +143,10 @@ class GUI:
 
     def _toggle_connecting_spinner(self, enable: bool):
         if enable:
-            self._spinner.start()
+            self._connecting_spinner.start()
             self._ui.connectingSpinnerLabel.setSizePolicy(QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Fixed)
         else:
-            self._spinner.stop()
+            self._connecting_spinner.stop()
             self._ui.connectingSpinnerLabel.setSizePolicy(QSizePolicy.Policy.Ignored, QSizePolicy.Policy.Ignored)
 
     def _show_info_message(self, message: str, duration: int):

@@ -201,6 +201,19 @@ class Network:
 
         self._upnp_ports_open = False
 
+    def _get_host_external_ip(self) -> str:
+        try:
+            if self.upnp_enabled:
+                ip = self._wan_ip_service.externalipaddress()
+                return ip
+            else:
+                # Use a public API to get the external IP address
+                response = requests.get("https://api64.ipify.org?format=json")
+                ip = response.json()["ip"]
+                return ip
+        except Exception:
+            return "?"
+
     def _receive_connections(self):
         context = encryption.get_ssl_context(ssl.Purpose.CLIENT_AUTH)
 
@@ -332,19 +345,6 @@ class Network:
         finally:
             self._trying_to_connect = False
             self._emit(NetworkEvent("OUTBOUND_CONNECTION_REQUEST", event_msg))
-
-    def _get_host_external_ip(self) -> str:
-        try:
-            if self.upnp_enabled:
-                ip = self._wan_ip_service.externalipaddress()
-                return ip
-            else:
-                # Use a public API to get the external IP address
-                response = requests.get("https://api64.ipify.org?format=json")
-                ip = response.json()["ip"]
-                return ip
-        except Exception:
-            return "?"
 
     def _send_file(self):
         try:

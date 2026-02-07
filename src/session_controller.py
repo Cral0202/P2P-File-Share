@@ -8,6 +8,7 @@ from contact_storage import ContactStorage
 from models.host_info import HostInfo
 
 class SessionController(QObject):
+    initialized_signal: pyqtSignal = pyqtSignal()
     outbound_status_signal: pyqtSignal = pyqtSignal(str, bool)
     inbound_status_signal: pyqtSignal = pyqtSignal(str, bool)
     receiving_status_signal: pyqtSignal = pyqtSignal(str, bool)
@@ -30,6 +31,7 @@ class SessionController(QObject):
     def initialize(self):
         self._network.subscribe(self._on_network_event)
         self._network.initialize()
+        self.initialized_signal.emit()
 
     def _on_outbound_change(self, connected: bool):
         if connected:
