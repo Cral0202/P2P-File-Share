@@ -3,7 +3,7 @@ send files without a public IP address.**
 
 ---
 
-- All files are sent encrypted over a TLS connection. Note that certificate verification for inbound connections is not implemented.
+- All data is sent encrypted over a TLS connection.
 
 - Ports need to be opened on your network to allow file receiving.
   If UPnP is enabled on your network, the program will automatically open and close the ports of your choosing.

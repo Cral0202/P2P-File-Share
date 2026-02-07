@@ -1,9 +1,11 @@
 import os
 import ssl
 import base64
-from typing import Tuple
+import json
 
+from typing import Tuple
 from cryptography import x509
+from cryptography.x509 import load_pem_x509_certificate
 from cryptography.x509.oid import NameOID
 from cryptography.hazmat.primitives import hashes, serialization
 from cryptography.hazmat.primitives.asymmetric import ec
@@ -12,7 +14,7 @@ from datetime import datetime, timedelta, timezone
 
 CERT_HOSTNAME: str = "p2p-node"
 
-def get_cert_and_key() -> Tuple[str, str]:
+def get_cert_and_key_path() -> Tuple[str, str]:
     cert_dir = os.path.join(os.path.expanduser("~"), ".p2p_file_share")
     cert_path = os.path.join(cert_dir, "cert.pem")
     key_path = os.path.join(cert_dir, "key.pem")
@@ -25,7 +27,7 @@ def get_cert_and_key() -> Tuple[str, str]:
     return cert_path, key_path
 
 def get_ssl_context(purpose: ssl.Purpose) -> ssl.SSLContext:
-    cert_path, key_path = get_cert_and_key()
+    cert_path, key_path = get_cert_and_key_path()
 
     context = ssl.create_default_context(purpose)
     context.check_hostname = False # Since we use fingerprints, we can disable this
@@ -93,3 +95,50 @@ def get_cert_fingerprint(cert_path: str) -> str:
 
     # Base64 encode it to reduce length
     return base64.b64encode(fingerprint).decode("ascii")
+
+def create_identity_proof(challenge: bytes) -> bytes:
+    cert_path, key_path = get_cert_and_key_path()
+
+    # Sign the challenge
+    with open(key_path, "rb") as key_file:
+        private_key = serialization.load_pem_private_key(
+            key_file.read(),
+            password=None
+        )
+
+    signature = private_key.sign(
+        challenge,
+        ec.ECDSA(hashes.SHA256())
+    )
+
+    # Read the certificate
+    with open(cert_path, "rb") as cert_file:
+        cert_bytes = cert_file.read()
+
+    payload = {
+        "cert": base64.b64encode(cert_bytes).decode(),
+        "signature": base64.b64encode(signature).decode()
+    }
+
+    return json.dumps(payload).encode()
+
+def verify_identity_proof(proof_bytes: bytes, challenge: bytes) -> Tuple[bool, str]:
+    proof_data = json.loads(proof_bytes.decode())
+    cert_bytes = base64.b64decode(proof_data["cert"])
+    signature = base64.b64decode(proof_data["signature"])
+
+    peer_cert = load_pem_x509_certificate(cert_bytes)
+
+    # Verify signature
+    try:
+        peer_cert.public_key().verify(
+            signature,
+            challenge,
+            ec.ECDSA(hashes.SHA256())
+        )
+    except Exception:
+        return False, ""
+
+    # Return fingerprint
+    raw_fp = peer_cert.fingerprint(hashes.SHA256())
+    return True, base64.b64encode(raw_fp).decode()

@@ -10,6 +10,7 @@ import encryption
 import hashlib
 import base64
 import struct
+import secrets
 
 from models.transfer_file import TransferFile
 from dataclasses import dataclass, asdict
@@ -40,6 +41,7 @@ class Network:
         self.host_external_ip: str | None = None
         self.outbound_peer_public_ip: str | None = None
         self.inbound_peer_public_ip: str | None = None
+        self.inbound_peer_fingerprint: str | None = None
 
         self._receiving_enabled: bool = False
         self.outbound_connection: bool = False
@@ -214,6 +216,20 @@ class Network:
                 self._host_socket_gateway = context.wrap_socket(newsocket, server_side=True)
                 self.inbound_peer_public_ip = address[0]
 
+                # We verify manually because if we use "ssl.CERT_REQUIRED" or "ssl.CERT_OPTIONAL",
+                # we get CA errors. And if we use "ssl.NONE", the client won't send over their certificate.
+
+                challenge = secrets.token_bytes(32)
+                self._send_msg(self._host_socket_gateway, challenge)
+                proof_bytes = self._recv_msg(self._host_socket_gateway)
+                valid, fingerprint = encryption.verify_identity_proof(proof_bytes, challenge)
+
+                if valid:
+                    self.inbound_peer_fingerprint = fingerprint
+                else:
+                    self._close_socket(self._host_socket_gateway)
+                    continue
+
                 self._incoming_connnection = True
                 self._inbound_connection = True
                 self._emit(NetworkEvent("INBOUND_CONNECTION_REQUEST", "INCOMING"))
@@ -252,19 +268,10 @@ class Network:
         try:
             self._emit(NetworkEvent("INBOUND_CONNECTION_REQUEST", "DECLINED"))
             self._send_msg(self._host_socket_gateway, b"DECLINED")
-
-            try:
-                self._host_socket_gateway.shutdown(socket.SHUT_RDWR)
-            except Exception:
-                pass
-
-            try:
-                self._host_socket_gateway.close()
-            except Exception:
-                pass
         except ConnectionError:
             self._handle_connection_error(False)
         finally:
+            self._close_socket(self._host_socket_gateway)
             self._incoming_connnection = False
             self._inbound_connection = False
             self._accept_connections_event.set()
@@ -278,7 +285,7 @@ class Network:
         elif self._receiving_files and not self._program_about_to_exit:
             raise RuntimeError("Cannot disconnect when currently receiving files")
 
-        self._client_socket.close()
+        self._close_socket(self._client_socket)
         self.outbound_connection = False
 
     def _request_connection(self, ip: str, port: int, expected_fingerprint: str):
@@ -296,14 +303,18 @@ class Network:
             base64_server_fingerprint = base64.b64encode(server_fingerprint).decode("ascii")
 
             if base64_server_fingerprint != expected_fingerprint:
-                self._client_socket.close()
+                self._close_socket(self._client_socket)
                 raise ssl.SSLCertVerificationError("Fingerprint mismatch")
+
+            # Send over proof
+            challenge = self._recv_msg(self._client_socket)
+            proof_payload = encryption.create_identity_proof(challenge)
+            self._send_msg(self._client_socket, proof_payload)
 
             self.outbound_peer_public_ip = ip
             self.outbound_connection = True
 
-            response_bytes = self._recv_msg(self._client_socket)
-            response = response_bytes.decode()
+            response = self._recv_msg(self._client_socket).decode()
 
             if response == "ACCEPTED":
                 event_msg = "SUCCESS"
@@ -340,8 +351,7 @@ class Network:
             event_msg = ""
 
             self._send_file_metadata()
-            response_bytes = self._recv_msg(self._client_socket)
-            response = response_bytes.decode()
+            response = self._recv_msg(self._client_socket).decode()
 
             if response == "ACCEPTED":
                 event_msg = "ACCEPTED"
@@ -499,6 +509,17 @@ class Network:
 
         self.selected_file = file
         return file.name
+
+    def _close_socket(self, sock: socket.socket):
+        try:
+            sock.shutdown(socket.SHUT_RDWR)
+        except Exception:
+            pass
+
+        try:
+            sock.close()
+        except Exception:
+            pass
 
     ###################
     # Thread starters #

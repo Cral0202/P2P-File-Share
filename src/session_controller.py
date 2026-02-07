@@ -206,7 +206,7 @@ class SessionController(QObject):
     ###########
 
     def get_host_info(self) -> HostInfo:
-        cert_path, _ = encryption.get_cert_and_key()
+        cert_path, _ = encryption.get_cert_and_key_path()
 
         return HostInfo(
             ip=self._network.host_external_ip,
@@ -301,7 +301,7 @@ class SessionController(QObject):
                 self._on_inbound_change(True)
                 self.incoming_connection_signal.emit("Incoming connection from:")
             elif event.message == "INCOMING":
-                self.incoming_connection_signal.emit(f"Incoming connection from: {self._network.inbound_peer_public_ip}")
+                self.incoming_connection_signal.emit(f"Incoming connection from: {self._network.inbound_peer_fingerprint}")
             elif event.message == "DECLINED":
                 self.incoming_connection_signal.emit("Incoming connection from:")
             elif event.message == "ERROR":
