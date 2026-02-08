@@ -29,7 +29,7 @@ class GUI():
     # Sets up the main window
     def window_setup(self):
         self._app = QApplication(sys.argv)
-        self._app.setWindowIcon(QIcon(self._get_program_icon()))
+        self._app.setWindowIcon(QIcon(self._resource_path("assets/icon.ico")))
 
         self._window = QMainWindow()
 
@@ -37,7 +37,7 @@ class GUI():
         self._ui.setupUi(self._window)
 
         # Set up loading screen spinner
-        self._loading_screen_spinner = self._get_spinner_gif()
+        self._loading_screen_spinner = QMovie(self._resource_path("assets/spinner.gif"))
         self._ui.loadingSpinnerLabel.setMovie(self._loading_screen_spinner)
         self._loading_screen_spinner.setScaledSize(QSize(64, 64))
 
@@ -96,15 +96,15 @@ class GUI():
         self._session_controller.incoming_connection_signal.connect(self._on_incoming_connection_change)
 
         # The connecting spinner
-        self._connecting_spinner = self._get_spinner_gif()
+        self._connecting_spinner = QMovie(self._resource_path("assets/spinner.gif"))
         self._ui.connectingSpinnerLabel.setMovie(self._connecting_spinner)
         self._toggle_connecting_spinner(False)
         self._connecting_spinner.setScaledSize(QSize(32, 32))
 
         # Sidebar
         items = [
-            ("Receiving", self._get_receive_icon()),
-            ("Sending", self._get_send_icon()),
+            ("Receiving", self._resource_path("assets/sidebar/receive.png")),
+            ("Sending", self._resource_path("assets/sidebar/send.png")),
         ]
 
         for text, icon_path in items:
@@ -160,29 +160,15 @@ class GUI():
     def _exit(self):
         self._session_controller.request_exit()
 
-    # Gets the program icon (done this way because of pyinstaller)
-    def _get_program_icon(self):
-        root = os.path.dirname(__file__)
-        program_icon = os.path.join(root, "../assets/icon.ico")
-        return program_icon
+    def _resource_path(self, relative_path: str) -> str:
+        try:
+            # PyInstaller
+            base_path = sys._MEIPASS
+        except AttributeError:
+            # Normal
+            base_path = os.path.abspath(".")
 
-    # Gets the spinner gif (done this way because of pyinstaller)
-    def _get_spinner_gif(self):
-        root = os.path.dirname(__file__)
-        spinner_gif = os.path.join(root, "../assets/spinner.gif")
-        return QMovie(spinner_gif)
-
-    # Gets the receive icon (done this way because of pyinstaller)
-    def _get_receive_icon(self):
-        root = os.path.dirname(__file__)
-        receive_icon = os.path.join(root, "../assets/sidebar/receive.png")
-        return receive_icon
-
-    # Gets the send icon (done this way because of pyinstaller)
-    def _get_send_icon(self):
-        root = os.path.dirname(__file__)
-        send_icon = os.path.join(root, "../assets/sidebar/send.png")
-        return send_icon
+        return os.path.join(base_path, relative_path)
 
     def _toggle_connecting_spinner(self, enable: bool):
         if enable:

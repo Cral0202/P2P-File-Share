@@ -26,5 +26,5 @@ If you want to build an executable: `pyinstaller main.spec`
 
 ### **Program images:**
 
-![Receive image](assets/receive_demo_image.png)
-![Send image](assets/send_demo_image.png)
+![Receive image](assets/demo_images/receive_demo_image.png)
+![Send image](assets/demo_images/send_demo_image.png)
