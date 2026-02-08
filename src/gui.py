@@ -120,8 +120,7 @@ class GUI():
         # Load host info
         host_info = self._session_controller.get_host_info()
 
-        # self._ui.ipLabel.setText(f"Your IP address: {host_info.ip}")
-        self._ui.ipLabel.setText(f"Your IP address: 123.123.123.123")
+        self._ui.ipLabel.setText(f"Your IP address: {host_info.ip}")
         self._ui.portSpinBox.setValue(host_info.port)
         self._ui.fingerprintLabel.setText(f"Your fingerprint: {host_info.cert_fingerprint}")
 
