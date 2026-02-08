@@ -267,8 +267,7 @@ class Network:
             self._send_msg(self._host_socket_gateway, b"ACCEPTED")
 
             # Start the metadata thread
-            thread = threading.Thread(target=self._receive_file_metadata, daemon=True)
-            thread.start()
+            threading.Thread(target=self._receive_file_metadata, daemon=True).start()
         except ConnectionError:
             self._handle_connection_error(False)
         finally:
@@ -533,8 +532,7 @@ class Network:
             self._receiving_files = True
             self._send_msg(self._host_socket_gateway, b"ACCEPTED")
 
-            thread = threading.Thread(target=self._receive_file_data, daemon=True)
-            thread.start()
+            threading.Thread(target=self._receive_file_data, daemon=True).start()
         except ConnectionError:
             self._handle_connection_error(False)
         except Exception:
@@ -551,8 +549,7 @@ class Network:
             return "ALREADY_CONNECTED"
 
         self._trying_to_connect = True
-        thread = threading.Thread(target=self._request_connection, args=(ip, port, expected_fingerprint), daemon=True)
-        thread.start()
+        threading.Thread(target=self._request_connection, args=(ip, port, expected_fingerprint), daemon=True).start()
         return "STARTED"
 
     def start_send_file_thread(self) -> bool:
@@ -561,6 +558,5 @@ class Network:
 
         self._sending_files = True
 
-        thread = threading.Thread(target=self._send_file, daemon=True)
-        thread.start()
+        threading.Thread(target=self._send_file, daemon=True).start()
         return True

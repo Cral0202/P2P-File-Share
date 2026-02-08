@@ -3,7 +3,7 @@ import sys
 import threading
 
 from PyQt6.QtGui import QIcon, QMovie
-from PyQt6.QtWidgets import QFileDialog, QSizePolicy, QApplication, QMainWindow, QTableWidgetItem
+from PyQt6.QtWidgets import QFileDialog, QSizePolicy, QApplication, QMainWindow, QTableWidgetItem, QListWidgetItem
 from PyQt6.QtCore import QSize
 
 from gui_layout import Ui_MainWindow
@@ -40,15 +40,14 @@ class GUI():
         self._loading_screen_spinner = self._get_spinner_gif()
         self._ui.loadingSpinnerLabel.setMovie(self._loading_screen_spinner)
         self._loading_screen_spinner.setScaledSize(QSize(64, 64))
-        self._loading_screen_spinner.start()
 
+        self._toggle_loading_screen_widgets(False)
         self._ui.stackedWidget.setCurrentWidget(self._ui.loadingPage)
         self._window.show()
 
         # We need to leave the main thread free, so we load the session controller in another thread
         self._session_controller.initialized_signal.connect(self._load_application_ui)
-        thread = threading.Thread(target=lambda: self._session_controller.initialize())
-        thread.start()
+        threading.Thread(target=lambda: self._session_controller.initialize()).start()
 
         self._app.aboutToQuit.connect(self._exit)
         sys.exit(self._app.exec())
@@ -57,8 +56,8 @@ class GUI():
         self._setup_window_widgets()
         self._populate_window_widgets()
 
-        self._ui.stackedWidget.setCurrentWidget(self._ui.mainPage)
-        self._loading_screen_spinner.stop()
+        self._ui.stackedWidget.setCurrentWidget(self._ui.receivePage)
+        self._toggle_loading_screen_widgets(True)
 
     # Sets up the widgets for the main window
     def _setup_window_widgets(self):
@@ -102,11 +101,27 @@ class GUI():
         self._toggle_connecting_spinner(False)
         self._connecting_spinner.setScaledSize(QSize(32, 32))
 
+        # Sidebar
+        items = [
+            ("Receiving", self._get_receive_icon()),
+            ("Sending", self._get_send_icon()),
+        ]
+
+        for text, icon_path in items:
+            item = QListWidgetItem(QIcon(icon_path), "")
+            item.setToolTip(text)
+            self._ui.sidebar.addItem(item)
+
+        self._ui.sidebar.currentRowChanged.connect(
+            self._ui.stackedWidget.setCurrentIndex
+        )
+
     def _populate_window_widgets(self):
         # Load host info
         host_info = self._session_controller.get_host_info()
 
-        self._ui.ipLabel.setText(f"Your IP address: {host_info.ip}")
+        # self._ui.ipLabel.setText(f"Your IP address: {host_info.ip}")
+        self._ui.ipLabel.setText(f"Your IP address: 123.123.123.123")
         self._ui.portSpinBox.setValue(host_info.port)
         self._ui.fingerprintLabel.setText(f"Your fingerprint: {host_info.cert_fingerprint}")
 
@@ -125,6 +140,23 @@ class GUI():
 
         self._ui.contactTable.blockSignals(False)
 
+    def _toggle_loading_screen_widgets(self, show: bool):
+        # TODO: Should add a widget instead and just show/hide it, but for some reason the widget breaks
+        if show:
+            self._loading_screen_spinner.stop()
+            self._ui.sidebar.show()
+            self._ui.bottomLine.show()
+            self._ui.inboundConnectionLabel.show()
+            self._ui.outboundConnectionLabel.show()
+            self._ui.receivingLabel.show()
+        else:
+            self._loading_screen_spinner.start()
+            self._ui.sidebar.hide()
+            self._ui.bottomLine.hide()
+            self._ui.inboundConnectionLabel.hide()
+            self._ui.outboundConnectionLabel.hide()
+            self._ui.receivingLabel.hide()
+
     # Used when program is about to exit
     def _exit(self):
         self._session_controller.request_exit()
@@ -140,6 +172,18 @@ class GUI():
         root = os.path.dirname(__file__)
         spinner_gif = os.path.join(root, "../assets/spinner.gif")
         return QMovie(spinner_gif)
+
+    # Gets the receive icon (done this way because of pyinstaller)
+    def _get_receive_icon(self):
+        root = os.path.dirname(__file__)
+        receive_icon = os.path.join(root, "../assets/sidebar/receive.png")
+        return receive_icon
+
+    # Gets the send icon (done this way because of pyinstaller)
+    def _get_send_icon(self):
+        root = os.path.dirname(__file__)
+        send_icon = os.path.join(root, "../assets/sidebar/send.png")
+        return send_icon
 
     def _toggle_connecting_spinner(self, enable: bool):
         if enable:

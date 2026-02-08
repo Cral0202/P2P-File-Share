@@ -24,6 +24,7 @@ send files without a public IP address.**
 
 If you want to build an executable: `pyinstaller main.spec`
 
-### **Image of program:**
+### **Program images:**
 
-![Image of program](assets/demo_image.png)
+![Receive image](assets/receive_demo_image.png)
+![Send image](assets/send_demo_image.png)
