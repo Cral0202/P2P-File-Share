@@ -31,11 +31,14 @@
      <layout class="QVBoxLayout" name="verticalLayout_23">
       <item>
        <layout class="QHBoxLayout" name="horizontalLayout_4">
+        <property name="topMargin">
+         <number>6</number>
+        </property>
         <item>
          <widget class="QListWidget" name="sidebar">
           <property name="maximumSize">
            <size>
-            <width>45</width>
+            <width>52</width>
             <height>16777215</height>
            </size>
           </property>
@@ -44,6 +47,10 @@
 	outline: 0;
 	border: 2px solid rgb(50, 50, 50);
 	border-radius: 5px;
+}
+
+QListWidget::item {
+        padding: 5px;
 }</string>
           </property>
           <property name="selectionMode">
@@ -58,11 +65,14 @@
           <property name="movement">
            <enum>QListView::Movement::Static</enum>
           </property>
+          <property name="flow">
+           <enum>QListView::Flow::TopToBottom</enum>
+          </property>
           <property name="resizeMode">
            <enum>QListView::ResizeMode::Adjust</enum>
           </property>
           <property name="spacing">
-           <number>12</number>
+           <number>0</number>
           </property>
           <property name="viewMode">
            <enum>QListView::ViewMode::IconMode</enum>
@@ -82,6 +92,9 @@
           </property>
           <widget class="QWidget" name="receivePage">
            <layout class="QVBoxLayout" name="verticalLayout">
+            <property name="topMargin">
+             <number>0</number>
+            </property>
             <item>
              <layout class="QHBoxLayout" name="horizontalLayout_18">
               <item>
@@ -827,6 +840,9 @@ QProgressBar::chunk {
           </widget>
           <widget class="QWidget" name="sendPage">
            <layout class="QVBoxLayout" name="verticalLayout_29">
+            <property name="topMargin">
+             <number>0</number>
+            </property>
             <item>
              <layout class="QVBoxLayout" name="verticalLayout_24">
               <item>
@@ -1396,6 +1412,9 @@ QProgressBar::chunk {
           </widget>
           <widget class="QWidget" name="loadingPage">
            <layout class="QVBoxLayout" name="verticalLayout_4">
+            <property name="topMargin">
+             <number>0</number>
+            </property>
             <item>
              <spacer name="verticalSpacer_20">
               <property name="orientation">

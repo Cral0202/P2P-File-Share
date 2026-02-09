@@ -219,10 +219,6 @@ class Network:
 
         while self._receiving_enabled:
             try:
-                if self._inbound_connection:
-                    time.sleep(1)
-                    continue
-
                 self._accept_connections_event.clear()  # Clear the event since it may have been set
 
                 newsocket, address = self._host_socket.accept()

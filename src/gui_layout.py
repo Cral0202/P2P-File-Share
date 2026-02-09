@@ -27,17 +27,23 @@ class Ui_MainWindow(object):
         self.verticalLayout_23 = QtWidgets.QVBoxLayout()
         self.verticalLayout_23.setObjectName("verticalLayout_23")
         self.horizontalLayout_4 = QtWidgets.QHBoxLayout()
+        self.horizontalLayout_4.setContentsMargins(-1, 6, -1, -1)
         self.horizontalLayout_4.setObjectName("horizontalLayout_4")
         self.sidebar = QtWidgets.QListWidget(parent=self.centralwidget)
-        self.sidebar.setMaximumSize(QtCore.QSize(45, 16777215))
+        self.sidebar.setMaximumSize(QtCore.QSize(52, 16777215))
         self.sidebar.setStyleSheet("QListWidget {\n"
 "    outline: 0;\n"
 "    border: 2px solid rgb(50, 50, 50);\n"
 "    border-radius: 5px;\n"
+"}\n"
+"\n"
+"QListWidget::item {\n"
+"        padding: 5px;\n"
 "}")
         self.sidebar.setSelectionMode(QtWidgets.QAbstractItemView.SelectionMode.NoSelection)
         self.sidebar.setIconSize(QtCore.QSize(32, 32))
         self.sidebar.setMovement(QtWidgets.QListView.Movement.Static)
+        self.sidebar.setFlow(QtWidgets.QListView.Flow.TopToBottom)
         self.sidebar.setResizeMode(QtWidgets.QListView.ResizeMode.Adjust)
         self.sidebar.setViewMode(QtWidgets.QListView.ViewMode.IconMode)
         self.sidebar.setItemAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
@@ -48,6 +54,7 @@ class Ui_MainWindow(object):
         self.receivePage = QtWidgets.QWidget()
         self.receivePage.setObjectName("receivePage")
         self.verticalLayout = QtWidgets.QVBoxLayout(self.receivePage)
+        self.verticalLayout.setContentsMargins(-1, 0, -1, -1)
         self.verticalLayout.setObjectName("verticalLayout")
         self.horizontalLayout_18 = QtWidgets.QHBoxLayout()
         self.horizontalLayout_18.setObjectName("horizontalLayout_18")
@@ -450,6 +457,7 @@ class Ui_MainWindow(object):
         self.sendPage = QtWidgets.QWidget()
         self.sendPage.setObjectName("sendPage")
         self.verticalLayout_29 = QtWidgets.QVBoxLayout(self.sendPage)
+        self.verticalLayout_29.setContentsMargins(-1, 0, -1, -1)
         self.verticalLayout_29.setObjectName("verticalLayout_29")
         self.verticalLayout_24 = QtWidgets.QVBoxLayout()
         self.verticalLayout_24.setObjectName("verticalLayout_24")
@@ -764,6 +772,7 @@ class Ui_MainWindow(object):
         self.loadingPage = QtWidgets.QWidget()
         self.loadingPage.setObjectName("loadingPage")
         self.verticalLayout_4 = QtWidgets.QVBoxLayout(self.loadingPage)
+        self.verticalLayout_4.setContentsMargins(-1, 0, -1, -1)
         self.verticalLayout_4.setObjectName("verticalLayout_4")
         spacerItem21 = QtWidgets.QSpacerItem(20, 40, QtWidgets.QSizePolicy.Policy.Minimum, QtWidgets.QSizePolicy.Policy.Expanding)
         self.verticalLayout_4.addItem(spacerItem21)
