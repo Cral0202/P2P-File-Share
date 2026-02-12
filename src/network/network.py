@@ -41,8 +41,8 @@ class Network:
         self._inbound_handler: ConnectionHandler | None = None
         self._outbound_handler: ConnectionHandler | None = None
 
-        self._inbound_state = InboundState.IDLE
-        self._outbound_state = OutboundState.IDLE
+        self._inbound_state: InboundState = InboundState.IDLE
+        self._outbound_state: OutboundState = OutboundState.IDLE
 
         self._subscribers: list[Callable[[NetworkEvent], None]] = []
 
@@ -60,7 +60,6 @@ class Network:
 
         self._receiving_enabled: bool = False
         self._upnp_ports_open: bool = False
-        self._program_about_to_exit: bool = False
 
         self.selected_file: TransferFile | None = None
         self.incoming_file: TransferFile | None = None
@@ -506,6 +505,5 @@ class Network:
     ###############
 
     def exit(self):
-        self._program_about_to_exit = True
         self.disable_receiving()
         self.break_connection()
