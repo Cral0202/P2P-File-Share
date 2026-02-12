@@ -6,8 +6,8 @@ from PyQt6.QtGui import QIcon, QMovie
 from PyQt6.QtWidgets import QFileDialog, QSizePolicy, QApplication, QMainWindow, QTableWidgetItem, QListWidgetItem
 from PyQt6.QtCore import QSize
 
-from gui_layout import Ui_MainWindow
-from session_controller import SessionController
+from .gui_layout import Ui_MainWindow
+from controller.session_controller import SessionController
 
 GREEN_COLOR: str = "#4CAF50"
 GREEN_COLOR_FORMATTED: str = f"color: {GREEN_COLOR}"

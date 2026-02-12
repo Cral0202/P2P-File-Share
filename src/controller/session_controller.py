@@ -1,11 +1,12 @@
 import ipaddress
-import encryption
 import errno
+import crypto.encryption as encryption
 
 from PyQt6.QtCore import QObject, pyqtSignal
-from network import Network, NetworkEvent
-from contact_storage import ContactStorage
-from models.host_info import HostInfo
+from storage.contact_storage import ContactStorage
+from data_models.host_info import HostInfo
+
+from network.network import Network, NetworkEvent
 
 class SessionController(QObject):
     initialized_signal: pyqtSignal = pyqtSignal()
@@ -81,11 +82,10 @@ class SessionController(QObject):
         self._network.host_port = port
 
     def request_disconnect(self):
-        try:
-            self._network.break_connection()
+        attempted = self._network.break_connection()
+
+        if attempted:
             self._on_outbound_change(False)
-        except Exception as e:
-            self.info_signal.emit(str(e), 10000)
 
     def request_enable_receiving(self):
         error_msg = "Could not enable receiving."
@@ -107,11 +107,10 @@ class SessionController(QObject):
             self.info_signal.emit(error_msg, 10000)
 
     def request_disable_receiving(self):
-        try:
-            self._network.disable_receiving()
+        attempted = self._network.disable_receiving()
+
+        if attempted:
             self._on_receiving_change(False)
-        except Exception as e:
-            self.info_signal.emit(str(e), 10000)
 
     def request_accept_incoming_connection(self):
         self._network.accept_incoming_connection()
@@ -120,20 +119,13 @@ class SessionController(QObject):
         self._network.decline_incoming_connection()
 
     def request_accept_incoming_file(self):
-        try:
-            self._network.start_receive_file_thread()
-        except Exception as e:
-            self.info_signal.emit(str(e), 10000)
+        self._network.decide_on_file(True)
 
     def request_reject_incoming_file(self):
-        try:
-            attempted = self._network.reject_file()
+        attempted = self._network.decide_on_file(False)
 
-            if attempted:
-                self._update_receive_label(False)
-        except Exception as e:
-            self._update_receive_label(False) # Still emit because the attempt happened
-            self.info_signal.emit(str(e), 10000)
+        if attempted:
+            self._update_receive_label(False)
 
     def request_select_file(self, path: str):
         file_name = self._network.set_selected_file(path)
@@ -144,10 +136,11 @@ class SessionController(QObject):
         self.selected_file_signal.emit(file_name)
 
     def request_send_selected_file(self):
-        attempted = self._network.start_send_file_thread()
+        attempted = self._network.send_file_metadata()
 
         if attempted:
             self.file_indicators_signal.emit()
+            self.file_sent_signal.emit(True)
 
     def request_connect(self, ip: str, port_str: str, expected_fingerprint: str):
         # Validate Port
@@ -234,65 +227,42 @@ class SessionController(QObject):
             if event.message == "OUTBOUND":
                 self._on_outbound_change(False)
                 self.file_sent_signal.emit(False)
+                self.connecting_spinner_signal.emit(False)
+                self.send_pgrs_bar_signal.emit(0)
             elif event.message == "INBOUND":
                 self._on_inbound_change(False)
-
-        elif event.type == "FILE_SEND_FINISHED":
-            self.file_sent_signal.emit(False)
-
-            if event.message == "REJECTED":
-                self._on_downloaded_change(False, self._network.selected_file.name)
-            elif event.message == "ERROR":
-                self.info_signal.emit("An error occurred while sending file.", 10000)
-
-        elif event.type == "FILE_METADATA_SEND_FINISHED":
-            status = False
-
-            if event.message == "ACCEPTED":
-                status = True
-            elif event.message == "ERROR":
-                self.info_signal.emit("An error occurred while sending file metadata.", 10000)
-
-            self.file_sent_signal.emit(status)
-
-        elif event.type == "FILE_DATA_SEND_PROGRESS":
-            self.send_pgrs_bar_signal.emit(int(event.message))
-
-        elif event.type == "FILE_DATA_SEND_FINISHED":
-            if event.message == "SUCCESS":
-                self._on_downloaded_change(True, self._network.selected_file.name)
-            elif event.message == "ERROR":
-                self.info_signal.emit("An error occurred while sending file data.", 10000)
-
-        elif event.type == "FILE_METADATA_RECEIVE_FINISHED":
-            if event.message == "SUCCESS":
                 self._update_receive_label(True)
-            elif event.message == "ERROR":
-                self.info_signal.emit("An error occurred while receiving file metadata.", 10000)
+                self.incoming_connection_signal.emit("Incoming connection from:")
 
-        elif event.type == "FILE_DATA_RECEIVE_PROGRESS":
-            self.receive_pgrs_bar_signal.emit(int(event.message))
+        elif event.type == "FILE_SEND":
+            if event.message == "FINISHED":
+                self._on_downloaded_change(True, self._network.selected_file.name)
+            elif event.message == "FILE_DECISION":
+                self.file_sent_signal.emit(False)
 
-        elif event.type == "FILE_DATA_RECEIVE_FINISHED":
-            reset_pgrs_bar = True
+                if event.details == "REJECTED":
+                    self._on_downloaded_change(False, self._network.selected_file.name)
+            elif event.message == "DATA_PROGRESS":
+                self.send_pgrs_bar_signal.emit(int(event.details))
 
-            if event.message == "SUCCESS":
-                reset_pgrs_bar = False
-            if event.message == "ERROR":
-                self.info_signal.emit("An error occurred while receiving file data.", 10000)
-
-            self._update_receive_label(reset_pgrs_bar)
+        elif event.type == "FILE_RECEIVE":
+            if event.message == "METADATA_RECEIVED":
+                self._update_receive_label(True)
+            elif event.message == "FINISHED":
+                self._update_receive_label(False)
+            elif event.message == "DATA_PROGRESS":
+                self.receive_pgrs_bar_signal.emit(int(event.details))
 
         elif event.type == "OUTBOUND_CONNECTION_REQUEST":
             status = False
 
-            if event.message == "SUCCESS":
+            if event.message == "ACCEPTED":
                 status = True
-            elif event.message == "CONNECTION_REFUSED":
+            elif event.message == "REFUSED":
                 self.info_signal.emit("Connection was refused.", 10000)
             elif event.message == "INVALID_FINGERPRINT":
                 self.info_signal.emit("Connection blocked due to fingerprint mismatch.", 10000)
-            elif event.message == "CONNECTION_ERROR":
+            elif event.message == "ERROR":
                 self.info_signal.emit("Could not connect.", 10000)
 
             self._on_outbound_change(status)
