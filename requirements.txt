@@ -4,7 +4,6 @@ cffi==2.0.0
 charset-normalizer==3.4.4
 cryptography==46.0.5
 idna==3.11
-miniupnpc==2.3.3
 packaging==26.0
 pycparser==3.0
 pyinstaller==6.18.0

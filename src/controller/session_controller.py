@@ -98,12 +98,7 @@ class SessionController(QObject):
                 self.info_signal.emit(f"{error_msg} Port already in use.", 10000)
             else:
                 self.info_signal.emit(error_msg, 10000)
-        except Exception as e:
-            text = str(e)
-
-            if "ConflictInMappingEntry" in text or "refuse" in text.lower():
-                error_msg = "UPnP port mapping failed. Port may already be in use."
-
+        except Exception:
             self.info_signal.emit(error_msg, 10000)
 
     def request_disable_receiving(self):
@@ -207,7 +202,6 @@ class SessionController(QObject):
             ip=self._network.host_external_ip,
             port=self._network.host_port,
             cert_fingerprint=encryption.get_cert_fingerprint(cert_path),
-            upnp_enabled=self._network.upnp_enabled,
         )
 
     def get_contacts(self) -> list:
@@ -218,10 +212,7 @@ class SessionController(QObject):
     ###########
 
     def _on_network_event(self, event: NetworkEvent):
-        if event.type == "UPNP_UNAVAILABLE":
-            self.info_signal.emit("UPNP is not enabled on network. Manual port mapping must be done for receiving to work.", 10000)
-
-        elif event.type == "CONNECTION_LOST":
+        if event.type == "CONNECTION_LOST":
             self.info_signal.emit("An existing connection was terminated.", 10000)
 
             if event.message == "OUTBOUND":

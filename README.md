@@ -5,10 +5,8 @@ send files without a public IP address.**
 
 - All data is sent encrypted over a TLS connection.
 
-- Ports need to be opened on your network to allow file receiving.
-  If UPnP is enabled on your network, the program will automatically open and close the ports of your choosing.
-  Otherwise, you will have to manually open ports if you want to receive files.
-  No ports need to be opened in order to send files.
+- To allow file receiving, open a port on your network.
+  No ports need to be opened to send files.
 
 - To connect to someone, add them as a contact and make sure they’ve added you as well.
   Then you can select them and press "Connect".

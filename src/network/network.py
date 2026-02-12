@@ -2,7 +2,6 @@ import os
 import socket
 import threading
 import requests
-import miniupnpc
 import ssl
 import hashlib
 import base64
@@ -49,9 +48,6 @@ class Network:
         self._accept_socket: socket.socket | None = None  # Used to listen for incoming connections
         self._accept_thread: threading.Thread | None = None  # Used for accepting connections
 
-        self.upnp_enabled: bool = False
-        self._wan_ip_service: miniupnpc.UPnP | None = None
-
         self.host_port: int = 35555
         self.host_external_ip: str | None = None
         self.outbound_peer_public_ip: str | None = None
@@ -59,7 +55,6 @@ class Network:
         self.inbound_peer_fingerprint: str | None = None
 
         self._receiving_enabled: bool = False
-        self._upnp_ports_open: bool = False
 
         self.selected_file: TransferFile | None = None
         self.incoming_file: TransferFile | None = None
@@ -68,7 +63,6 @@ class Network:
         self._last_file_data_progress_percentage: int = 0
 
     def initialize(self):
-        self._wan_ip_service = self._get_wan_ip_service()
         self.host_external_ip = self._get_host_external_ip()
 
     def handle_incoming_message(self, conn: ConnectionHandler, msg_type: str, data: str, raw_payload: bytes):
@@ -132,34 +126,9 @@ class Network:
     # RECEIVING STUFF #
     ###################
 
-    def _get_wan_ip_service(self) -> miniupnpc.UPnP | None:
-        try:
-            u = miniupnpc.UPnP()
-            num_devs = u.discover()
-
-            if num_devs == 0:
-                raise RuntimeError("No UPnP devices discovered on the network")
-
-            u.selectigd()
-
-            ext_ip = u.externalipaddress()
-
-            if not ext_ip:
-                raise RuntimeError("Failed to get external IP from IGD")
-
-            self.upnp_enabled = True
-            return u
-        except Exception as e:
-            self.upnp_enabled = False
-            self._emit(NetworkEvent("UPNP_UNAVAILABLE", str(e)))
-            return None
-
     def enable_receiving(self):
         if self._receiving_enabled:
             return
-
-        if self.upnp_enabled and not self._upnp_ports_open:
-            self._open_ports()
 
         self._accept_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self._accept_socket.bind(("", self.host_port))
@@ -175,9 +144,6 @@ class Network:
         if not self._receiving_enabled:
             return False
 
-        if self._upnp_ports_open:
-            self._close_ports()
-
         self._receiving_enabled = False
 
         try:
@@ -189,46 +155,12 @@ class Network:
         self._accept_thread.join()
         return True
 
-    # Opens ports on the network
-    def _open_ports(self):
-        ok = self._wan_ip_service.addportmapping(
-            self.host_port,                             # external_port
-            'TCP',                                      # protocol
-            socket.gethostbyname(socket.gethostname()), # internal_client
-            self.host_port,                             # internal_port
-            'File Share',                               # description
-            '',                                         # remote_host
-            86400                                       # lease_duration
-        )
-
-        if not ok:
-            raise RuntimeError("UPnP port mapping failed.")
-
-        self._upnp_ports_open = True
-
-    # Closes the ports on the network
-    def _close_ports(self):
-        ok = self._wan_ip_service.deleteportmapping(
-            self.host_port,  # external_port
-            'TCP',           # protocol
-            ''               # remote_host
-        )
-
-        if not ok:
-            raise RuntimeError("UPnP port unmapping failed. Ports are not closed.")
-
-        self._upnp_ports_open = False
-
     def _get_host_external_ip(self) -> str:
         try:
-            if self.upnp_enabled:
-                ip = self._wan_ip_service.externalipaddress()
-                return ip
-            else:
-                # Use a public API to get the external IP address
-                response = requests.get("https://api64.ipify.org?format=json")
-                ip = response.json()["ip"]
-                return ip
+            # Use a public API to get the external IP address
+            response = requests.get("https://api64.ipify.org?format=json")
+            ip = response.json()["ip"]
+            return ip
         except Exception:
             return "?"
 
