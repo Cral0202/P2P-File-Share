@@ -1,0 +1,84 @@
+name: Build and Publish P2P File Share
+
+on:
+    push:
+        branches:
+            - main
+
+permissions:
+    contents: write
+
+jobs:
+    build:
+        runs-on: ${{ matrix.os }}
+
+        strategy:
+            matrix:
+                os: [windows-latest, macos-latest, ubuntu-latest]
+
+        steps:
+            - name: Checkout repository
+              uses: actions/checkout@v3
+
+            - name: Set up Python
+              uses: actions/setup-python@v4
+              with:
+                  python-version: "3.14"
+
+            - name: Install dependencies
+              run: |
+                  python -m pip install --upgrade pip
+                  pip install -r requirements.txt
+
+            - name: Build with PyInstaller
+              run: pyinstaller main.spec
+
+            - name: Prepare artifact (Windows)
+              if: runner.os == 'Windows'
+              run: |
+                  mkdir release
+                  copy "dist\P2P-File-Share.exe" "release\P2P-File-Share-windows-x64.exe"
+
+            - name: Prepare artifact (macOS)
+              if: runner.os == 'macOS'
+              run: |
+                  mkdir release
+                  cp -r "dist/P2P-File-Share.app" "release/P2P-File-Share-macos-x64.app"
+
+            - name: Prepare artifact (Linux)
+              if: runner.os == 'Linux'
+              run: |
+                  mkdir release
+                  cp "dist/P2P-File-Share" "release/P2P-File-Share-linux-x64"
+
+            - name: Upload build artifact
+              uses: actions/upload-artifact@v3
+              with:
+                  name: build-${{ runner.os }}
+                  path: release/
+
+    publish:
+        needs: build
+        runs-on: ubuntu-latest
+
+        steps:
+            - name: Download all artifacts
+              uses: actions/download-artifact@v3
+              with:
+                  path: release
+
+            - name: Delete old release (if exists)
+              uses: dev-drprasad/delete-tag-and-release@v1.0
+              with:
+                  tag_name: latest
+              env:
+                  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+            - name: Create new release
+              uses: softprops/action-gh-release@v1
+              with:
+                  tag_name: latest
+                  name: Latest Build
+                  files: release/**/*
+              env:
+                  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

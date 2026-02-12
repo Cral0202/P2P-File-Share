@@ -21,7 +21,7 @@ exe = EXE(
     a.binaries,
     a.datas,
     [],
-    name='P2P File Share',
+    name='P2P-File-Share',
     debug=False,
     bootloader_ignore_signals=False,
     strip=False,
