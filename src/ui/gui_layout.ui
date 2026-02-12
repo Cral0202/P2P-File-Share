@@ -1505,7 +1505,7 @@ QProgressBar::chunk {
            </font>
           </property>
           <property name="styleSheet">
-           <string notr="true">color: red;</string>
+           <string notr="true">color: #E53935;</string>
           </property>
           <property name="text">
            <string>Receiving disabled</string>
@@ -1521,7 +1521,7 @@ QProgressBar::chunk {
            </font>
           </property>
           <property name="styleSheet">
-           <string notr="true">color: red;</string>
+           <string notr="true">color: #E53935;</string>
           </property>
           <property name="text">
            <string>No inbound connection</string>
@@ -1537,7 +1537,7 @@ QProgressBar::chunk {
            </font>
           </property>
           <property name="styleSheet">
-           <string notr="true">color: red;</string>
+           <string notr="true">color: #E53935;</string>
           </property>
           <property name="text">
            <string>No outbound connection</string>

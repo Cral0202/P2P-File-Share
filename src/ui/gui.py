@@ -9,9 +9,9 @@ from PyQt6.QtCore import QSize
 from .gui_layout import Ui_MainWindow
 from controller.session_controller import SessionController
 
-GREEN_COLOR: str = "#4CAF50"
+GREEN_COLOR: str = "#27AE60"
 GREEN_COLOR_FORMATTED: str = f"color: {GREEN_COLOR}"
-RED_COLOR: str = "red"
+RED_COLOR: str = "#E53935"
 RED_COLOR_FORMATTED: str = f"color: {RED_COLOR}"
 CONTACT_FIELDS: list = ["name", "ip", "port", "fingerprint"]
 
