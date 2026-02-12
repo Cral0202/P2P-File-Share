@@ -14,6 +14,7 @@ from data_models.transfer_file import TransferFile
 from dataclasses import dataclass, asdict
 from typing import Callable, Any
 from io import BufferedWriter
+from enum import Enum, auto
 
 from .connection_handler import ConnectionHandler
 
@@ -25,10 +26,23 @@ class NetworkEvent:
     message: str | None = None
     details: str | None = None
 
+class InboundState(Enum):
+    IDLE = auto()
+    METADATA_RECEIVED = auto()
+    RECEIVING_FILE = auto()
+
+class OutboundState(Enum):
+    IDLE = auto()
+    CONNECTING = auto()
+    SENDING_FILE = auto()
+
 class Network:
     def __init__(self):
         self._inbound_handler: ConnectionHandler | None = None
         self._outbound_handler: ConnectionHandler | None = None
+
+        self._inbound_state = InboundState.IDLE
+        self._outbound_state = OutboundState.IDLE
 
         self._subscribers: list[Callable[[NetworkEvent], None]] = []
 
@@ -46,9 +60,6 @@ class Network:
 
         self._receiving_enabled: bool = False
         self._upnp_ports_open: bool = False
-        self._sending_files: bool = False
-        self._receiving_files: bool = False
-        self._trying_to_connect: bool = False
         self._program_about_to_exit: bool = False
 
         self.selected_file: TransferFile | None = None
@@ -314,7 +325,7 @@ class Network:
         except Exception:
             self._emit(NetworkEvent("OUTBOUND_CONNECTION_REQUEST", "ERROR"))
         finally:
-            self._trying_to_connect = False
+            self._outbound_state = OutboundState.IDLE
 
     def _handle_connection_response(self, data: str):
         if data == "ACCEPTED":
@@ -325,16 +336,16 @@ class Network:
             self._emit(NetworkEvent("OUTBOUND_CONNECTION_REQUEST", "REFUSED"))
 
     def start_request_connection_thread(self, ip: str, port: int, expected_fingerprint: str) -> str:
-        if self._trying_to_connect:
+        if self._outbound_state == OutboundState.CONNECTING:
             return "ALREADY_CONNECTING"
-        elif self._sending_files:
+        elif self._outbound_state == OutboundState.SENDING_FILE:
             return "SENDING_FILES"
-        elif self._receiving_files:
+        elif self._inbound_state == InboundState.RECEIVING_FILE:
             return "RECEIVING_FILES"
         elif self._outbound_handler:
             return "ALREADY_CONNECTED"
 
-        self._trying_to_connect = True
+        self._outbound_state = OutboundState.CONNECTING
         threading.Thread(target=self._request_connection, args=(ip, port, expected_fingerprint), daemon=True).start()
         return "STARTED"
 
@@ -364,17 +375,17 @@ class Network:
 
         if is_outbound:
             self._outbound_handler = None
-            self._sending_files = False
+            self._outbound_state = OutboundState.IDLE
             event_msg = "OUTBOUND"
         else:
             self.incoming_file = None
-            self._receiving_files = False
             self._inbound_handler = None
 
             if self._incoming_file_handle is not None:
                 self._incoming_file_handle.close()
                 self._incoming_file_handle = None
 
+            self._inbound_state = InboundState.IDLE
             event_msg = "INBOUND"
 
         self._emit(NetworkEvent("CONNECTION_LOST", event_msg))
@@ -395,26 +406,34 @@ class Network:
     ##############
 
     def _on_file_metadata(self, metadata: dict[str, Any]):
+        if self._inbound_state != InboundState.IDLE:
+            return
+
         self.incoming_file = TransferFile(**metadata)
+        self._inbound_state = InboundState.METADATA_RECEIVED
         self._emit(NetworkEvent("FILE_RECEIVE", "METADATA_RECEIVED"))
 
     def decide_on_file(self, accept: bool) -> bool:
-        if not self.incoming_file or self._receiving_files:
+        if self._inbound_state != InboundState.METADATA_RECEIVED:
             return False
 
         if accept:
-            self._receiving_files = True
             self._received_file_data = 0
             self._last_file_data_progress_percentage = 0
             self._incoming_file_handle = open(os.path.join(os.path.expanduser("~"), "Downloads", self.incoming_file.name), "wb")
+            self._inbound_state = InboundState.RECEIVING_FILE
             self._inbound_handler.send("FILE_DECISION", "ACCEPTED")
         else:
             self.incoming_file = None
+            self._inbound_state = InboundState.IDLE
             self._inbound_handler.send("FILE_DECISION", "REJECTED")
 
         return True
 
     def _on_file_chunk(self, chunk: bytes):
+        if self._inbound_state != InboundState.RECEIVING_FILE:
+            return
+
         self._incoming_file_handle.write(chunk)
         self._received_file_data += len(chunk)
 
@@ -429,24 +448,24 @@ class Network:
             # Whole file is downloaded
             self._incoming_file_handle.close()
             self.incoming_file = None
-            self._receiving_files = False
+            self._inbound_state = InboundState.IDLE
             self._emit(NetworkEvent("FILE_RECEIVE", "FINISHED"))
 
     def send_file_metadata(self):
-        if self._sending_files or not self._outbound_handler or not self.selected_file:
+        if self._outbound_state != OutboundState.IDLE or not self._outbound_handler or not self.selected_file:
             return False
 
         meta = asdict(self.selected_file)
 
         self._outbound_handler.send("FILE_METADATA", meta)
-        self._sending_files = True
+        self._outbound_state = OutboundState.SENDING_FILE
         return True
 
     def _on_file_decision(self, data: str):
         if data == "ACCEPTED":
             threading.Thread(target=self._send_file_chunks, daemon=True).start()
         else:
-            self._sending_files = False
+            self._outbound_state = OutboundState.IDLE
 
         self._emit(NetworkEvent("FILE_SEND", "FILE_DECISION", data))
 
@@ -466,11 +485,11 @@ class Network:
                     self._emit(NetworkEvent("FILE_SEND", "DATA_PROGRESS", str(progress_percentage)))
                     last_percentage = progress_percentage
 
-        self._sending_files = False
+        self._outbound_state = OutboundState.IDLE
         self._emit(NetworkEvent("FILE_SEND", "FINISHED"))
 
     def set_selected_file(self, path: str) -> str:
-        if self._sending_files:
+        if self._outbound_state != OutboundState.IDLE:
             return ""
 
         file = TransferFile(
