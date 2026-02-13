@@ -64,28 +64,18 @@ jobs:
         runs-on: ubuntu-latest
 
         steps:
-            - name: Checkout repository
-              uses: actions/checkout@v6
-
             - name: Download all artifacts
               uses: actions/download-artifact@v7
               with:
                   path: release
 
-            - name: Move latest tag
-              run: |
-                  git tag -f latest
-                  git push origin latest --force
-
             - name: Create or update release
               uses: softprops/action-gh-release@v2
               with:
-                  tag_name: latest
-                  name: Latest Build
+                  tag_name: build-${{ github.run_number }}
+                  name: Build ${{ github.run_number }}
                   body: "Built from the latest commit on the main branch."
                   files: release/**/*
                   draft: false
                   prerelease: false
                   make_latest: true
-                  overwrite_files: true
-                  token: ${{ secrets.GITHUB_TOKEN }}
