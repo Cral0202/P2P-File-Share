@@ -1,9 +1,6 @@
 name: Build and Publish P2P File Share
 
 on:
-    push:
-        branches:
-            - master
     workflow_dispatch:
 
 permissions:
