@@ -29,7 +29,7 @@ class GUI():
     # Sets up the main window
     def window_setup(self):
         self._app = QApplication(sys.argv)
-        self._app.setWindowIcon(QIcon(self._resource_path("assets/icon.ico")))
+        self._app.setWindowIcon(QIcon(self._resource_path("assets/icon/icon.ico")))
 
         self._window = QMainWindow()
 

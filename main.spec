@@ -1,6 +1,5 @@
 # -*- mode: python ; coding: utf-8 -*-
 
-
 a = Analysis(
     ['src/main.py'],
     pathex=[],
@@ -34,5 +33,12 @@ exe = EXE(
     target_arch=None,
     codesign_identity=None,
     entitlements_file=None,
-    icon=['assets/icon.ico'],
+    icon=['assets/icon/icon.ico'],
+)
+
+app = BUNDLE(
+    exe,
+    name='P2P-File-Share.app',
+    icon='assets/icon/icon.icns',
+    bundle_identifier=None,
 )
