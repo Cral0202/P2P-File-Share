@@ -140,7 +140,6 @@ class Network:
         self._accept_thread.start()
 
     def disable_receiving(self) -> bool:
-        # TODO: Should break connection properly
         if not self._receiving_enabled:
             return False
 
@@ -153,6 +152,10 @@ class Network:
 
         self._accept_socket.close()
         self._accept_thread.join()
+
+        if self._inbound_handler:
+            self._inbound_handler.stop()
+
         return True
 
     def _get_host_external_ip(self) -> str:
