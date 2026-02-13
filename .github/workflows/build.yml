@@ -44,7 +44,8 @@ jobs:
               if: runner.os == 'macOS'
               run: |
                   mkdir release
-                  cp -r "dist/P2P-File-Share.app" "release/P2P-File-Share-macos-x64.app"
+                  cd dist
+                  zip -r ../release/P2P-File-Share-macos-x64.zip "P2P-File-Share.app"
 
             - name: Prepare artifact (Linux)
               if: runner.os == 'Linux'
