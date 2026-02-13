@@ -1,4 +1,3 @@
-import os
 import ssl
 import base64
 import json
@@ -10,17 +9,18 @@ from cryptography.hazmat.primitives import hashes, serialization
 from cryptography.hazmat.primitives.asymmetric import ec
 from cryptography.hazmat.backends import default_backend
 from datetime import datetime, timedelta, timezone
+from pathlib import Path
+
+from constants import BASE_DIR
 
 CERT_HOSTNAME: str = "p2p-node"
 
 def get_cert_and_key_path() -> tuple[str, str]:
-    cert_dir = os.path.join(os.path.expanduser("~"), ".p2p_file_share")
-    cert_path = os.path.join(cert_dir, "cert.pem")
-    key_path = os.path.join(cert_dir, "key.pem")
+    cert_path = BASE_DIR / "cert.pem"
+    key_path = BASE_DIR / "key.pem"
 
     # Generate new ones if needed
-    if not is_cert_valid(cert_path) or not os.path.exists(key_path):
-        os.makedirs(cert_dir, exist_ok=True)
+    if not is_cert_valid(cert_path) or not key_path.exists():
         generate_cert_and_key(cert_path, key_path)
 
     return cert_path, key_path

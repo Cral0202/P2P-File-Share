@@ -1,4 +1,3 @@
-import os
 import socket
 import threading
 import requests
@@ -14,6 +13,7 @@ from dataclasses import dataclass, asdict
 from typing import Callable, Any
 from io import BufferedWriter
 from enum import Enum, auto
+from pathlib import Path
 
 from .connection_handler import ConnectionHandler
 
@@ -351,7 +351,11 @@ class Network:
         if accept:
             self._received_file_data = 0
             self._last_file_data_progress_percentage = 0
-            self._incoming_file_handle = open(os.path.join(os.path.expanduser("~"), "Downloads", self.incoming_file.name), "wb")
+
+            downloads = Path.home() / "Downloads"
+            file_path = downloads / self.incoming_file.name
+            self._incoming_file_handle = file_path.open("wb")
+
             self._inbound_state = InboundState.RECEIVING_FILE
             self._inbound_handler.send("FILE_DECISION", "ACCEPTED")
         else:
@@ -423,10 +427,12 @@ class Network:
         if self._outbound_state != OutboundState.IDLE:
             return ""
 
+        p = Path(path)
+
         file = TransferFile(
             path = path,
-            name = os.path.basename(path),
-            size = os.path.getsize(path),
+            name=p.name,
+            size=p.stat().st_size,
         )
 
         self.selected_file = file

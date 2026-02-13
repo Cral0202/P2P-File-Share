@@ -1,10 +1,10 @@
-import os
 import sys
 import threading
 
 from PyQt6.QtGui import QIcon, QMovie
 from PyQt6.QtWidgets import QFileDialog, QSizePolicy, QApplication, QMainWindow, QTableWidgetItem, QListWidgetItem
 from PyQt6.QtCore import QSize
+from pathlib import Path
 
 from .gui_layout import Ui_MainWindow
 from controller.session_controller import SessionController
@@ -163,12 +163,12 @@ class GUI():
     def _resource_path(self, relative_path: str) -> str:
         try:
             # PyInstaller
-            base_path = sys._MEIPASS
+            base_path = Path(sys._MEIPASS)
         except AttributeError:
             # Normal
-            base_path = os.path.abspath(".")
+            base_path = Path.cwd()
 
-        return os.path.join(base_path, relative_path)
+        return str(base_path / relative_path)
 
     def _toggle_connecting_spinner(self, enable: bool):
         if enable:
@@ -236,7 +236,7 @@ class GUI():
 
     def _determine_file_to_transfer(self):
         file_path, _ = QFileDialog.getOpenFileName(
-            self._window, "Choose file", os.getcwd()
+            self._window, "Choose file", str(Path.cwd())
         )
 
         if file_path:

@@ -1,17 +1,15 @@
-import os
 import json
+
+from pathlib import Path
+
+from constants import BASE_DIR
 
 class ContactStorage:
     def __init__(self):
-        self.dir_path: str = os.path.join(os.path.expanduser("~"), ".p2p_file_share")
-        self.file_path: str = os.path.join(self.dir_path, "contacts.json")
-
-        # Ensure directory exists
-        if not os.path.exists(self.dir_path):
-            os.makedirs(self.dir_path)
+        self.file_path: Path = Path(BASE_DIR) / "contacts.json"
 
         # Ensure file exists
-        if not os.path.exists(self.file_path):
+        if not self.file_path.exists():
             self._save_contacts([])
 
         self.contacts: list = self._load_contacts()
