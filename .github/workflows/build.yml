@@ -74,7 +74,7 @@ jobs:
               with:
                   tag_name: latest
                   name: Latest Build
-                  body: ""
+                  body: "Built from the latest commit on the main branch."
                   files: release/**/*
                   draft: false
                   prerelease: false
