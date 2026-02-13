@@ -3,7 +3,7 @@ name: Build and Publish P2P File Share
 on:
     push:
         branches:
-            - main
+            - master
     workflow_dispatch:
 
 permissions:
@@ -74,7 +74,7 @@ jobs:
               with:
                   tag_name: build-${{ github.run_number }}
                   name: Build ${{ github.run_number }}
-                  body: "Built from the latest commit on the main branch."
+                  body: "Built from the latest commit on the master branch."
                   files: release/**/*
                   draft: false
                   prerelease: false
