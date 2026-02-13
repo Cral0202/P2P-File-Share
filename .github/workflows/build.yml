@@ -45,7 +45,7 @@ jobs:
               run: |
                   mkdir release
                   cd dist
-                  zip -r ../release/P2P-File-Share-macos-x64.zip "P2P-File-Share.app"
+                  zip -r ../release/P2P-File-Share-macos-arm64.zip "P2P-File-Share.app"
 
             - name: Prepare artifact (Linux)
               if: runner.os == 'Linux'
@@ -64,10 +64,18 @@ jobs:
         runs-on: ubuntu-latest
 
         steps:
+            - name: Checkout repository
+              uses: actions/checkout@v6
+
             - name: Download all artifacts
               uses: actions/download-artifact@v7
               with:
                   path: release
+
+            - name: Move latest tag
+              run: |
+                  git tag -f latest
+                  git push origin latest --force
 
             - name: Create or update release
               uses: softprops/action-gh-release@v2
