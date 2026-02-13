@@ -19,10 +19,10 @@ jobs:
 
         steps:
             - name: Checkout repository
-              uses: actions/checkout@v3
+              uses: actions/checkout@v6
 
             - name: Set up Python
-              uses: actions/setup-python@v4
+              uses: actions/setup-python@v6
               with:
                   python-version: "3.14"
 
@@ -54,7 +54,7 @@ jobs:
                   cp "dist/P2P-File-Share" "release/P2P-File-Share-linux-x64"
 
             - name: Upload build artifact
-              uses: actions/upload-artifact@v4
+              uses: actions/upload-artifact@v6
               with:
                   name: build-${{ runner.os }}
                   path: release/
@@ -65,12 +65,12 @@ jobs:
 
         steps:
             - name: Download all artifacts
-              uses: actions/download-artifact@v4
+              uses: actions/download-artifact@v7
               with:
                   path: release
 
             - name: Create or update release
-              uses: softprops/action-gh-release@v1
+              uses: softprops/action-gh-release@v2
               with:
                   tag_name: latest
                   name: Latest Build
