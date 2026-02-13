@@ -69,18 +69,15 @@ jobs:
               with:
                   path: release
 
-            - name: Delete old release (if exists)
-              uses: dev-drprasad/delete-tag-and-release@v1.0
-              with:
-                  tag_name: latest
-              env:
-                  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-            - name: Create new release
+            - name: Create or update release
               uses: softprops/action-gh-release@v1
               with:
                   tag_name: latest
                   name: Latest Build
+                  body: ""
                   files: release/**/*
-              env:
-                  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+                  draft: false
+                  prerelease: false
+                  make_latest: true
+                  overwrite_files: true
+                  token: ${{ secrets.GITHUB_TOKEN }}
