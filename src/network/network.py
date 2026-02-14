@@ -17,7 +17,8 @@ from pathlib import Path
 
 from .connection_handler import ConnectionHandler
 
-FILE_CHUNK_SIZE: int = 262144
+FILE_CHUNK_SIZE = 256 * 1024 # 256 KiB
+MAX_MESSAGE_SIZE = 10 * 1024 * 1024  # 10 MiB
 
 @dataclass
 class NetworkEvent:
@@ -106,6 +107,9 @@ class Network:
         # Read the 4-byte header to find out how long the message is
         header = self._recv_exact(socket, 4)
         msg_len = struct.unpack('>I', header)[0]
+
+        if msg_len > MAX_MESSAGE_SIZE:
+            raise ValueError(f"Message length {msg_len} exceeds limit of {MAX_MESSAGE_SIZE}")
 
         return self._recv_exact(socket, msg_len)
 
