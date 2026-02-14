@@ -225,14 +225,16 @@ class GUI():
         self._ui.sendProgressBar.setValue(0)
 
     def _copy_ip_to_clipboard(self):
-        # TODO: Grab directly from UI instead?
-        host_info = self._session_controller.get_host_info()
-        self._clipboard.setText(host_info.ip)
+        # Grab directly from UI since it's faster than calling "get_host_info"
+        text = self._ui.ipLabel.text()
+        ip = text.split(": ", 1)[1]
+        self._clipboard.setText(ip)
 
     def _copy_cert_fingerprint_to_clipboard(self):
-        # TODO: Grab directly from UI instead?
-        host_info = self._session_controller.get_host_info()
-        self._clipboard.setText(host_info.cert_fingerprint)
+        # Grab directly from UI since it's faster than calling "get_host_info"
+        text = self._ui.fingerprintLabel.text()
+        fingerprint = text.split(": ", 1)[1]
+        self._clipboard.setText(fingerprint)
 
     def _determine_file_to_transfer(self):
         file_path, _ = QFileDialog.getOpenFileName(
