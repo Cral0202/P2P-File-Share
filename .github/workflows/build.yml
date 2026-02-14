@@ -10,6 +10,9 @@ jobs:
     build:
         runs-on: ${{ matrix.os }}
 
+        outputs:
+            program_version: ${{ steps.get_program_version.outputs.VERSION }}
+
         strategy:
             matrix:
                 os: [windows-latest, macos-latest, ubuntu-latest]
@@ -17,6 +20,15 @@ jobs:
         steps:
             - name: Checkout repository
               uses: actions/checkout@v6
+
+            - name: Extract program version
+              id: get_program_version
+              shell: bash
+              run: |
+                  # Extract the version from constants.py
+                  V_LINE=$(grep "PROGRAM_VERSION =" src/constants.py | head -1)
+                  VERSION=$(echo $V_LINE | cut -d'"' -f2)
+                  echo "VERSION=$VERSION" >> $GITHUB_OUTPUT
 
             - name: Set up Python
               uses: actions/setup-python@v6
@@ -69,10 +81,8 @@ jobs:
             - name: Create or update release
               uses: softprops/action-gh-release@v2
               with:
-                  tag_name: build-${{ github.run_number }}
-                  name: Build ${{ github.run_number }}
-                  body: "Release build."
+                  tag_name: v${{ needs.build.outputs.program_version }}
+                  name: v${{ needs.build.outputs.program_version }}
+                  body: "Release build"
                   files: release/**/*
-                  draft: false
-                  prerelease: false
                   make_latest: true
