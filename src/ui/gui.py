@@ -3,7 +3,7 @@ import threading
 
 from PyQt6.QtGui import QIcon, QMovie
 from PyQt6.QtWidgets import QFileDialog, QSizePolicy, QApplication, QMainWindow, QTableWidgetItem, QListWidgetItem
-from PyQt6.QtCore import QSize
+from PyQt6.QtCore import QSize, QTimer
 from pathlib import Path
 
 from .gui_layout import Ui_MainWindow
@@ -41,7 +41,7 @@ class GUI():
         self._ui.loadingSpinnerLabel.setMovie(self._loading_screen_spinner)
         self._loading_screen_spinner.setScaledSize(QSize(64, 64))
 
-        self._toggle_loading_screen_widgets(False)
+        self._toggle_loading_screen_widgets(True)
         self._ui.stackedWidget.setCurrentWidget(self._ui.loadingPage)
         self._window.show()
 
@@ -57,7 +57,8 @@ class GUI():
         self._populate_window_widgets()
 
         self._ui.stackedWidget.setCurrentWidget(self._ui.receivePage)
-        self._toggle_loading_screen_widgets(True)
+        self._toggle_loading_screen_widgets(False)
+        self._session_controller.request_check_program_version()
 
     # Sets up the widgets for the main window
     def _setup_window_widgets(self):
@@ -142,19 +143,19 @@ class GUI():
     def _toggle_loading_screen_widgets(self, show: bool):
         # TODO: Should add a widget instead and just show/hide it, but for some reason the widget breaks
         if show:
-            self._loading_screen_spinner.stop()
-            self._ui.sidebar.show()
-            self._ui.bottomLine.show()
-            self._ui.inboundConnectionLabel.show()
-            self._ui.outboundConnectionLabel.show()
-            self._ui.receivingLabel.show()
-        else:
             self._loading_screen_spinner.start()
             self._ui.sidebar.hide()
             self._ui.bottomLine.hide()
             self._ui.inboundConnectionLabel.hide()
             self._ui.outboundConnectionLabel.hide()
             self._ui.receivingLabel.hide()
+        else:
+            self._loading_screen_spinner.stop()
+            self._ui.sidebar.show()
+            self._ui.bottomLine.show()
+            self._ui.inboundConnectionLabel.show()
+            self._ui.outboundConnectionLabel.show()
+            self._ui.receivingLabel.show()
 
     # Used when program is about to exit
     def _exit(self):
@@ -179,7 +180,8 @@ class GUI():
             self._ui.connectingSpinnerLabel.setSizePolicy(QSizePolicy.Policy.Ignored, QSizePolicy.Policy.Ignored)
 
     def _show_info_message(self, message: str, duration: int):
-        self._ui.statusbar.showMessage(message, duration)
+        self._ui.statusLabel.setText(message)
+        QTimer.singleShot(duration, lambda: self._ui.statusLabel.clear()) # Clear after duration
 
     def _update_host_port(self):
         port = self._ui.portSpinBox.value()

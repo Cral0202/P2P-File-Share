@@ -7,6 +7,8 @@ from storage.contact_storage import ContactStorage
 from data_models.host_info import HostInfo
 
 from network.network import Network, NetworkEvent
+from updates.updates import program_version_up_to_date
+from constants import GITHUB_LATEST_RELEASE_URL
 
 class SessionController(QObject):
     initialized_signal: pyqtSignal = pyqtSignal()
@@ -29,9 +31,13 @@ class SessionController(QObject):
         self._network: Network = Network()
         self._contact_storage: ContactStorage = ContactStorage()
 
+        self._is_up_to_date: bool = True # We keep this here so we can run the check during init (loading screen)
+
     def initialize(self):
         self._network.subscribe(self._on_network_event)
         self._network.initialize()
+        self._is_up_to_date = program_version_up_to_date()
+
         self.initialized_signal.emit()
 
     def _on_outbound_change(self, connected: bool):
@@ -188,6 +194,11 @@ class SessionController(QObject):
                 return
 
         self._contact_storage.edit_contact(index, field, new_value)
+
+    def request_check_program_version(self):
+        if not self._is_up_to_date:
+            link = f"<a href='{GITHUB_LATEST_RELEASE_URL}'>Download</a>"
+            self.info_signal.emit(f"New version available! {link}", 50000)
 
     def request_exit(self):
         self._network.exit()
