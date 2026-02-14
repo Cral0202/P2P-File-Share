@@ -71,7 +71,7 @@ jobs:
               with:
                   tag_name: build-${{ github.run_number }}
                   name: Build ${{ github.run_number }}
-                  body: "Built from the latest commit on the master branch."
+                  body: "Release build."
                   files: release/**/*
                   draft: false
                   prerelease: false

@@ -68,7 +68,8 @@ class SessionController(QObject):
 
     def _update_receive_label(self, reset_pgrs_bar: bool):
         if reset_pgrs_bar and self._network.incoming_file:
-            text = f"Ready to receive: {self._network.incoming_file.name}"
+            formatted_size = self._format_size(self._network.incoming_file.size)
+            text = f"Ready to receive: {self._network.incoming_file.name} ({formatted_size})"
         else:
             text = "Ready to receive:"
 
@@ -274,3 +275,18 @@ class SessionController(QObject):
             elif event.message == "ERROR":
                 self._on_inbound_change(False)
                 self.info_signal.emit("Inbound connection request failed.", 10000)
+
+    def _format_size(self, size_bytes: int) -> str:
+        if size_bytes == 0:
+            return "0 B"
+
+        units = ("B", "KB", "MB", "GB", "TB")
+
+        # While the size is large enough to move to the next unit
+        i = 0
+        while size_bytes >= 1000 and i < len(units) - 1:
+            size_bytes /= 1000
+            i += 1
+
+        formatted_num = f"{size_bytes:.2f}".rstrip('0').rstrip('.')
+        return f"{formatted_num} {units[i]}"

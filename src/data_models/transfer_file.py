@@ -4,4 +4,4 @@ from dataclasses import dataclass
 class TransferFile:
     path: str
     name: str
-    size: int
+    size: int # Bytes
