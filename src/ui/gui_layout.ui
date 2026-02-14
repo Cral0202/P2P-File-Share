@@ -20,12 +20,33 @@
    <string>P2P File Share</string>
   </property>
   <property name="styleSheet">
-   <string notr="true">background-color: rgb(34,35,37)</string>
+   <string notr="true">background-color: rgb(34,35,37);</string>
   </property>
   <property name="unifiedTitleAndToolBarOnMac">
    <bool>false</bool>
   </property>
   <widget class="QWidget" name="centralwidget">
+   <property name="styleSheet">
+    <string notr="true">QPushButton {
+    background-color: rgba(169, 169, 169, 0.25);
+    border-radius: 7px;
+    color: white;
+	padding: 5px 15px;
+}
+
+QPushButton:hover {
+    background-color: rgba(169, 169, 169, 0.4);
+}
+
+QPushButton:pressed {
+    background-color: rgba(169, 169, 169, 0.5);
+}
+
+/* This targets horizontal lines */
+QFrame[frameShape=&quot;4&quot;] { 
+    background-color: rgb(70, 70, 70);
+}</string>
+   </property>
    <layout class="QHBoxLayout" name="horizontalLayout_23">
     <item>
      <layout class="QVBoxLayout" name="verticalLayout_23">
@@ -45,7 +66,7 @@
           <property name="styleSheet">
            <string notr="true">QListWidget {
 	outline: 0;
-	border: 2px solid rgb(50, 50, 50);
+	border: 2px solid rgb(70, 70, 70);
 	border-radius: 5px;
 }
 
@@ -160,20 +181,7 @@ QListWidget::item {
                      </sizepolicy>
                     </property>
                     <property name="styleSheet">
-                     <string notr="true">QPushButton {
-    background-color: rgba(169, 169, 169, 0.2); 
-    border-radius: 7px;
-    color: white;
-	padding: 5px 15px;
-}
-
-QPushButton:hover {
-    background-color: rgba(169, 169, 169, 0.7); 
-}
-
-QPushButton:pressed {
-    background-color: rgba(105, 105, 105, 0.9); 
-}</string>
+                     <string notr="true"/>
                     </property>
                     <property name="text">
                      <string>Copy IP</string>
@@ -189,20 +197,7 @@ QPushButton:pressed {
                      </sizepolicy>
                     </property>
                     <property name="styleSheet">
-                     <string notr="true">QPushButton {
-    background-color: rgba(169, 169, 169, 0.2); 
-    border-radius: 7px;
-    color: white;
-	padding: 5px 15px;
-}
-
-QPushButton:hover {
-    background-color: rgba(169, 169, 169, 0.7); 
-}
-
-QPushButton:pressed {
-    background-color: rgba(105, 105, 105, 0.9); 
-}</string>
+                     <string notr="true"/>
                     </property>
                     <property name="text">
                      <string>Copy Fingerprint</string>
@@ -231,7 +226,7 @@ QPushButton:pressed {
             <item>
              <widget class="Line" name="line_3">
               <property name="styleSheet">
-               <string notr="true">background-color: rgb(50, 50, 50);</string>
+               <string notr="true"/>
               </property>
               <property name="orientation">
                <enum>Qt::Orientation::Horizontal</enum>
@@ -334,7 +329,7 @@ QPushButton:pressed {
                   </property>
                   <property name="styleSheet">
                    <string notr="true">QSpinBox {
-    background-color: rgba(169, 169, 169, 0.2);
+    background-color: rgba(169, 169, 169, 0.25);
     border: 1px solid #4d4d4d;
     border-radius: 7px;
 	padding-left: 2px;
@@ -356,20 +351,7 @@ QPushButton:pressed {
                    </sizepolicy>
                   </property>
                   <property name="styleSheet">
-                   <string notr="true">QPushButton {
-    background-color: rgba(169, 169, 169, 0.2); 
-    border-radius: 7px;
-    color: white;
-	padding: 5px 15px;
-}
-
-QPushButton:hover {
-    background-color: rgba(169, 169, 169, 0.7); 
-}
-
-QPushButton:pressed {
-    background-color: rgba(105, 105, 105, 0.9); 
-}</string>
+                   <string notr="true"/>
                   </property>
                   <property name="text">
                    <string>Enable Receiving</string>
@@ -385,20 +367,7 @@ QPushButton:pressed {
                    </sizepolicy>
                   </property>
                   <property name="styleSheet">
-                   <string notr="true">QPushButton {
-    background-color: rgba(169, 169, 169, 0.2); 
-    border-radius: 7px;
-    color: white;
-	padding: 5px 15px;
-}
-
-QPushButton:hover {
-    background-color: rgba(169, 169, 169, 0.7); 
-}
-
-QPushButton:pressed {
-    background-color: rgba(105, 105, 105, 0.9); 
-}</string>
+                   <string notr="true"/>
                   </property>
                   <property name="text">
                    <string>Disable Receiving</string>
@@ -438,7 +407,7 @@ QPushButton:pressed {
             <item>
              <widget class="Line" name="line_4">
               <property name="styleSheet">
-               <string notr="true">background-color: rgb(50, 50, 50);</string>
+               <string notr="true"/>
               </property>
               <property name="orientation">
                <enum>Qt::Orientation::Horizontal</enum>
@@ -532,20 +501,7 @@ QPushButton:pressed {
                    </sizepolicy>
                   </property>
                   <property name="styleSheet">
-                   <string notr="true">QPushButton {
-    background-color: rgba(169, 169, 169, 0.2); 
-    border-radius: 7px;
-    color: white;
-	padding: 5px 15px;
-}
-
-QPushButton:hover {
-    background-color: rgba(169, 169, 169, 0.7); 
-}
-
-QPushButton:pressed {
-    background-color: rgba(105, 105, 105, 0.9); 
-}</string>
+                   <string notr="true"/>
                   </property>
                   <property name="text">
                    <string>Accept</string>
@@ -561,20 +517,7 @@ QPushButton:pressed {
                    </sizepolicy>
                   </property>
                   <property name="styleSheet">
-                   <string notr="true">QPushButton {
-    background-color: rgba(169, 169, 169, 0.2); 
-    border-radius: 7px;
-    color: white;
-	padding: 5px 15px;
-}
-
-QPushButton:hover {
-    background-color: rgba(169, 169, 169, 0.7); 
-}
-
-QPushButton:pressed {
-    background-color: rgba(105, 105, 105, 0.9); 
-}</string>
+                   <string notr="true"/>
                   </property>
                   <property name="text">
                    <string>Decline</string>
@@ -614,7 +557,7 @@ QPushButton:pressed {
             <item>
              <widget class="Line" name="line_5">
               <property name="styleSheet">
-               <string notr="true">background-color: rgb(50, 50, 50);</string>
+               <string notr="true"/>
               </property>
               <property name="orientation">
                <enum>Qt::Orientation::Horizontal</enum>
@@ -708,20 +651,7 @@ QPushButton:pressed {
                    </sizepolicy>
                   </property>
                   <property name="styleSheet">
-                   <string notr="true">QPushButton {
-    background-color: rgba(169, 169, 169, 0.2); 
-    border-radius: 7px;
-    color: white;
-	padding: 5px 15px;
-}
-
-QPushButton:hover {
-    background-color: rgba(169, 169, 169, 0.7); 
-}
-
-QPushButton:pressed {
-    background-color: rgba(105, 105, 105, 0.9); 
-}</string>
+                   <string notr="true"/>
                   </property>
                   <property name="text">
                    <string>Receive</string>
@@ -737,20 +667,7 @@ QPushButton:pressed {
                    </sizepolicy>
                   </property>
                   <property name="styleSheet">
-                   <string notr="true">QPushButton {
-    background-color: rgba(169, 169, 169, 0.2); 
-    border-radius: 7px;
-    color: white;
-	padding: 5px 15px;
-}
-
-QPushButton:hover {
-    background-color: rgba(169, 169, 169, 0.7); 
-}
-
-QPushButton:pressed {
-    background-color: rgba(105, 105, 105, 0.9); 
-}</string>
+                   <string notr="true"/>
                   </property>
                   <property name="text">
                    <string>Reject</string>
@@ -791,7 +708,7 @@ QPushButton:pressed {
                   <property name="styleSheet">
                    <string notr="true">QProgressBar {
     border-radius: 5px;
-    background-color: rgba(169, 169, 169, 0.2);
+    background-color: rgba(169, 169, 169, 0.25);
 	text-align: center;
 	color: white
 }
@@ -903,20 +820,7 @@ QProgressBar::chunk {
                    </font>
                   </property>
                   <property name="styleSheet">
-                   <string notr="true">QPushButton {
-    background-color: rgba(169, 169, 169, 0.2);
-    border-radius: 7px;
-    color: white;
-	padding: 5px 15px;
-}
-
-QPushButton:hover {
-    background-color: rgba(169, 169, 169, 0.7);
-}
-
-QPushButton:pressed {
-    background-color: rgba(105, 105, 105, 0.9);
-}</string>
+                   <string notr="true"/>
                   </property>
                   <property name="text">
                    <string>Connect</string>
@@ -937,20 +841,7 @@ QPushButton:pressed {
                    </font>
                   </property>
                   <property name="styleSheet">
-                   <string notr="true">QPushButton {
-    background-color: rgba(169, 169, 169, 0.2);
-    border-radius: 7px;
-    color: white;
-	padding: 5px 15px;
-}
-
-QPushButton:hover {
-    background-color: rgba(169, 169, 169, 0.7);
-}
-
-QPushButton:pressed {
-    background-color: rgba(105, 105, 105, 0.9);
-}</string>
+                   <string notr="true"/>
                   </property>
                   <property name="text">
                    <string>Disconnect</string>
@@ -960,20 +851,7 @@ QPushButton:pressed {
                 <item>
                  <widget class="QPushButton" name="addContactButton">
                   <property name="styleSheet">
-                   <string notr="true">QPushButton {
-    background-color: rgba(169, 169, 169, 0.2);
-    border-radius: 7px;
-    color: white;
-	padding: 5px 15px;
-}
-
-QPushButton:hover {
-    background-color: rgba(169, 169, 169, 0.7);
-}
-
-QPushButton:pressed {
-    background-color: rgba(105, 105, 105, 0.9);
-}</string>
+                   <string notr="true"/>
                   </property>
                   <property name="text">
                    <string>Add Contact</string>
@@ -983,20 +861,7 @@ QPushButton:pressed {
                 <item>
                  <widget class="QPushButton" name="removeContactButton">
                   <property name="styleSheet">
-                   <string notr="true">QPushButton {
-    background-color: rgba(169, 169, 169, 0.2);
-    border-radius: 7px;
-    color: white;
-	padding: 5px 15px;
-}
-
-QPushButton:hover {
-    background-color: rgba(169, 169, 169, 0.7);
-}
-
-QPushButton:pressed {
-    background-color: rgba(105, 105, 105, 0.9);
-}</string>
+                   <string notr="true"/>
                   </property>
                   <property name="text">
                    <string>Remove Contact</string>
@@ -1037,8 +902,11 @@ QPushButton:pressed {
               <item>
                <widget class="QTableWidget" name="contactTable">
                 <property name="styleSheet">
-                 <string notr="true">color: white;
-gridline-color: rgb(50, 50, 50);</string>
+                 <string notr="true">QTableWidget {
+    color: white;
+    gridline-color: rgb(70, 70, 70);
+    border: 1px solid rgb(70, 70, 70);
+}</string>
                 </property>
                 <property name="selectionMode">
                  <enum>QAbstractItemView::SelectionMode::SingleSelection</enum>
@@ -1094,7 +962,7 @@ gridline-color: rgb(50, 50, 50);</string>
             <item>
              <widget class="Line" name="line_11">
               <property name="styleSheet">
-               <string notr="true">background-color: rgb(50, 50, 50);</string>
+               <string notr="true"/>
               </property>
               <property name="lineWidth">
                <number>1</number>
@@ -1198,20 +1066,7 @@ gridline-color: rgb(50, 50, 50);</string>
                    </font>
                   </property>
                   <property name="styleSheet">
-                   <string notr="true">QPushButton {
-    background-color: rgba(169, 169, 169, 0.2);
-    border-radius: 7px;
-    color: white;
-	padding: 5px 15px;
-}
-
-QPushButton:hover {
-    background-color: rgba(169, 169, 169, 0.7);
-}
-
-QPushButton:pressed {
-    background-color: rgba(105, 105, 105, 0.9);
-}</string>
+                   <string notr="true"/>
                   </property>
                   <property name="text">
                    <string>Select File</string>
@@ -1232,20 +1087,7 @@ QPushButton:pressed {
                    </font>
                   </property>
                   <property name="styleSheet">
-                   <string notr="true">QPushButton {
-    background-color: rgba(169, 169, 169, 0.2);
-    border-radius: 7px;
-    color: white;
-	padding: 5px 15px;
-}
-
-QPushButton:hover {
-    background-color: rgba(169, 169, 169, 0.7);
-}
-
-QPushButton:pressed {
-    background-color: rgba(105, 105, 105, 0.9);
-}</string>
+                   <string notr="true"/>
                   </property>
                   <property name="text">
                    <string>Send</string>
@@ -1326,7 +1168,7 @@ QPushButton:pressed {
                   <property name="styleSheet">
                    <string notr="true">QProgressBar {
     border-radius: 5px;
-    background-color: rgba(169, 169, 169, 0.2);
+    background-color: rgba(169, 169, 169, 0.25);
 	text-align: center;
 	color: white
 }
@@ -1489,7 +1331,7 @@ QProgressBar::chunk {
         <item>
          <widget class="Line" name="bottomLine">
           <property name="styleSheet">
-           <string notr="true">background-color: rgb(50, 50, 50);</string>
+           <string notr="true"/>
           </property>
           <property name="orientation">
            <enum>Qt::Orientation::Horizontal</enum>

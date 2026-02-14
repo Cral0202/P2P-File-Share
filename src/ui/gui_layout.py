@@ -18,9 +18,28 @@ class Ui_MainWindow(object):
         sizePolicy.setVerticalStretch(0)
         sizePolicy.setHeightForWidth(MainWindow.sizePolicy().hasHeightForWidth())
         MainWindow.setSizePolicy(sizePolicy)
-        MainWindow.setStyleSheet("background-color: rgb(34,35,37)")
+        MainWindow.setStyleSheet("background-color: rgb(34,35,37);")
         MainWindow.setUnifiedTitleAndToolBarOnMac(False)
         self.centralwidget = QtWidgets.QWidget(parent=MainWindow)
+        self.centralwidget.setStyleSheet("QPushButton {\n"
+"    background-color: rgba(169, 169, 169, 0.25);\n"
+"    border-radius: 7px;\n"
+"    color: white;\n"
+"    padding: 5px 15px;\n"
+"}\n"
+"\n"
+"QPushButton:hover {\n"
+"    background-color: rgba(169, 169, 169, 0.4);\n"
+"}\n"
+"\n"
+"QPushButton:pressed {\n"
+"    background-color: rgba(169, 169, 169, 0.5);\n"
+"}\n"
+"\n"
+"/* This targets horizontal lines */\n"
+"QFrame[frameShape=\"4\"] { \n"
+"    background-color: rgb(70, 70, 70);\n"
+"}")
         self.centralwidget.setObjectName("centralwidget")
         self.horizontalLayout_23 = QtWidgets.QHBoxLayout(self.centralwidget)
         self.horizontalLayout_23.setObjectName("horizontalLayout_23")
@@ -33,7 +52,7 @@ class Ui_MainWindow(object):
         self.sidebar.setMaximumSize(QtCore.QSize(52, 16777215))
         self.sidebar.setStyleSheet("QListWidget {\n"
 "    outline: 0;\n"
-"    border: 2px solid rgb(50, 50, 50);\n"
+"    border: 2px solid rgb(70, 70, 70);\n"
 "    border-radius: 5px;\n"
 "}\n"
 "\n"
@@ -98,20 +117,7 @@ class Ui_MainWindow(object):
         sizePolicy.setVerticalStretch(0)
         sizePolicy.setHeightForWidth(self.copyIPButton.sizePolicy().hasHeightForWidth())
         self.copyIPButton.setSizePolicy(sizePolicy)
-        self.copyIPButton.setStyleSheet("QPushButton {\n"
-"    background-color: rgba(169, 169, 169, 0.2); \n"
-"    border-radius: 7px;\n"
-"    color: white;\n"
-"    padding: 5px 15px;\n"
-"}\n"
-"\n"
-"QPushButton:hover {\n"
-"    background-color: rgba(169, 169, 169, 0.7); \n"
-"}\n"
-"\n"
-"QPushButton:pressed {\n"
-"    background-color: rgba(105, 105, 105, 0.9); \n"
-"}")
+        self.copyIPButton.setStyleSheet("")
         self.copyIPButton.setObjectName("copyIPButton")
         self.horizontalLayout_24.addWidget(self.copyIPButton)
         self.copyFingerprintButton = QtWidgets.QPushButton(parent=self.receivePage)
@@ -120,20 +126,7 @@ class Ui_MainWindow(object):
         sizePolicy.setVerticalStretch(0)
         sizePolicy.setHeightForWidth(self.copyFingerprintButton.sizePolicy().hasHeightForWidth())
         self.copyFingerprintButton.setSizePolicy(sizePolicy)
-        self.copyFingerprintButton.setStyleSheet("QPushButton {\n"
-"    background-color: rgba(169, 169, 169, 0.2); \n"
-"    border-radius: 7px;\n"
-"    color: white;\n"
-"    padding: 5px 15px;\n"
-"}\n"
-"\n"
-"QPushButton:hover {\n"
-"    background-color: rgba(169, 169, 169, 0.7); \n"
-"}\n"
-"\n"
-"QPushButton:pressed {\n"
-"    background-color: rgba(105, 105, 105, 0.9); \n"
-"}")
+        self.copyFingerprintButton.setStyleSheet("")
         self.copyFingerprintButton.setObjectName("copyFingerprintButton")
         self.horizontalLayout_24.addWidget(self.copyFingerprintButton)
         spacerItem = QtWidgets.QSpacerItem(40, 20, QtWidgets.QSizePolicy.Policy.Expanding, QtWidgets.QSizePolicy.Policy.Minimum)
@@ -142,7 +135,7 @@ class Ui_MainWindow(object):
         self.horizontalLayout_18.addLayout(self.verticalLayout_13)
         self.verticalLayout.addLayout(self.horizontalLayout_18)
         self.line_3 = QtWidgets.QFrame(parent=self.receivePage)
-        self.line_3.setStyleSheet("background-color: rgb(50, 50, 50);")
+        self.line_3.setStyleSheet("")
         self.line_3.setFrameShape(QtWidgets.QFrame.Shape.HLine)
         self.line_3.setFrameShadow(QtWidgets.QFrame.Shadow.Sunken)
         self.line_3.setObjectName("line_3")
@@ -187,7 +180,7 @@ class Ui_MainWindow(object):
         self.portSpinBox.setMinimumSize(QtCore.QSize(98, 0))
         self.portSpinBox.setMaximumSize(QtCore.QSize(16777215, 28))
         self.portSpinBox.setStyleSheet("QSpinBox {\n"
-"    background-color: rgba(169, 169, 169, 0.2);\n"
+"    background-color: rgba(169, 169, 169, 0.25);\n"
 "    border: 1px solid #4d4d4d;\n"
 "    border-radius: 7px;\n"
 "    padding-left: 2px;\n"
@@ -203,20 +196,7 @@ class Ui_MainWindow(object):
         sizePolicy.setVerticalStretch(0)
         sizePolicy.setHeightForWidth(self.enableReceivingButton.sizePolicy().hasHeightForWidth())
         self.enableReceivingButton.setSizePolicy(sizePolicy)
-        self.enableReceivingButton.setStyleSheet("QPushButton {\n"
-"    background-color: rgba(169, 169, 169, 0.2); \n"
-"    border-radius: 7px;\n"
-"    color: white;\n"
-"    padding: 5px 15px;\n"
-"}\n"
-"\n"
-"QPushButton:hover {\n"
-"    background-color: rgba(169, 169, 169, 0.7); \n"
-"}\n"
-"\n"
-"QPushButton:pressed {\n"
-"    background-color: rgba(105, 105, 105, 0.9); \n"
-"}")
+        self.enableReceivingButton.setStyleSheet("")
         self.enableReceivingButton.setObjectName("enableReceivingButton")
         self.horizontalLayout_42.addWidget(self.enableReceivingButton)
         self.disableReceivingButton = QtWidgets.QPushButton(parent=self.receivePage)
@@ -225,20 +205,7 @@ class Ui_MainWindow(object):
         sizePolicy.setVerticalStretch(0)
         sizePolicy.setHeightForWidth(self.disableReceivingButton.sizePolicy().hasHeightForWidth())
         self.disableReceivingButton.setSizePolicy(sizePolicy)
-        self.disableReceivingButton.setStyleSheet("QPushButton {\n"
-"    background-color: rgba(169, 169, 169, 0.2); \n"
-"    border-radius: 7px;\n"
-"    color: white;\n"
-"    padding: 5px 15px;\n"
-"}\n"
-"\n"
-"QPushButton:hover {\n"
-"    background-color: rgba(169, 169, 169, 0.7); \n"
-"}\n"
-"\n"
-"QPushButton:pressed {\n"
-"    background-color: rgba(105, 105, 105, 0.9); \n"
-"}")
+        self.disableReceivingButton.setStyleSheet("")
         self.disableReceivingButton.setObjectName("disableReceivingButton")
         self.horizontalLayout_42.addWidget(self.disableReceivingButton)
         spacerItem3 = QtWidgets.QSpacerItem(40, 20, QtWidgets.QSizePolicy.Policy.Expanding, QtWidgets.QSizePolicy.Policy.Minimum)
@@ -248,7 +215,7 @@ class Ui_MainWindow(object):
         spacerItem4 = QtWidgets.QSpacerItem(20, 40, QtWidgets.QSizePolicy.Policy.Minimum, QtWidgets.QSizePolicy.Policy.Expanding)
         self.verticalLayout.addItem(spacerItem4)
         self.line_4 = QtWidgets.QFrame(parent=self.receivePage)
-        self.line_4.setStyleSheet("background-color: rgb(50, 50, 50);")
+        self.line_4.setStyleSheet("")
         self.line_4.setFrameShape(QtWidgets.QFrame.Shape.HLine)
         self.line_4.setFrameShadow(QtWidgets.QFrame.Shadow.Sunken)
         self.line_4.setObjectName("line_4")
@@ -293,20 +260,7 @@ class Ui_MainWindow(object):
         sizePolicy.setVerticalStretch(0)
         sizePolicy.setHeightForWidth(self.acceptConnectionButton.sizePolicy().hasHeightForWidth())
         self.acceptConnectionButton.setSizePolicy(sizePolicy)
-        self.acceptConnectionButton.setStyleSheet("QPushButton {\n"
-"    background-color: rgba(169, 169, 169, 0.2); \n"
-"    border-radius: 7px;\n"
-"    color: white;\n"
-"    padding: 5px 15px;\n"
-"}\n"
-"\n"
-"QPushButton:hover {\n"
-"    background-color: rgba(169, 169, 169, 0.7); \n"
-"}\n"
-"\n"
-"QPushButton:pressed {\n"
-"    background-color: rgba(105, 105, 105, 0.9); \n"
-"}")
+        self.acceptConnectionButton.setStyleSheet("")
         self.acceptConnectionButton.setObjectName("acceptConnectionButton")
         self.horizontalLayout_44.addWidget(self.acceptConnectionButton)
         self.declineConnectionButton = QtWidgets.QPushButton(parent=self.receivePage)
@@ -315,20 +269,7 @@ class Ui_MainWindow(object):
         sizePolicy.setVerticalStretch(0)
         sizePolicy.setHeightForWidth(self.declineConnectionButton.sizePolicy().hasHeightForWidth())
         self.declineConnectionButton.setSizePolicy(sizePolicy)
-        self.declineConnectionButton.setStyleSheet("QPushButton {\n"
-"    background-color: rgba(169, 169, 169, 0.2); \n"
-"    border-radius: 7px;\n"
-"    color: white;\n"
-"    padding: 5px 15px;\n"
-"}\n"
-"\n"
-"QPushButton:hover {\n"
-"    background-color: rgba(169, 169, 169, 0.7); \n"
-"}\n"
-"\n"
-"QPushButton:pressed {\n"
-"    background-color: rgba(105, 105, 105, 0.9); \n"
-"}")
+        self.declineConnectionButton.setStyleSheet("")
         self.declineConnectionButton.setObjectName("declineConnectionButton")
         self.horizontalLayout_44.addWidget(self.declineConnectionButton)
         spacerItem7 = QtWidgets.QSpacerItem(40, 20, QtWidgets.QSizePolicy.Policy.Expanding, QtWidgets.QSizePolicy.Policy.Minimum)
@@ -338,7 +279,7 @@ class Ui_MainWindow(object):
         spacerItem8 = QtWidgets.QSpacerItem(20, 40, QtWidgets.QSizePolicy.Policy.Minimum, QtWidgets.QSizePolicy.Policy.Expanding)
         self.verticalLayout.addItem(spacerItem8)
         self.line_5 = QtWidgets.QFrame(parent=self.receivePage)
-        self.line_5.setStyleSheet("background-color: rgb(50, 50, 50);")
+        self.line_5.setStyleSheet("")
         self.line_5.setFrameShape(QtWidgets.QFrame.Shape.HLine)
         self.line_5.setFrameShadow(QtWidgets.QFrame.Shadow.Sunken)
         self.line_5.setObjectName("line_5")
@@ -383,20 +324,7 @@ class Ui_MainWindow(object):
         sizePolicy.setVerticalStretch(0)
         sizePolicy.setHeightForWidth(self.receiveButton.sizePolicy().hasHeightForWidth())
         self.receiveButton.setSizePolicy(sizePolicy)
-        self.receiveButton.setStyleSheet("QPushButton {\n"
-"    background-color: rgba(169, 169, 169, 0.2); \n"
-"    border-radius: 7px;\n"
-"    color: white;\n"
-"    padding: 5px 15px;\n"
-"}\n"
-"\n"
-"QPushButton:hover {\n"
-"    background-color: rgba(169, 169, 169, 0.7); \n"
-"}\n"
-"\n"
-"QPushButton:pressed {\n"
-"    background-color: rgba(105, 105, 105, 0.9); \n"
-"}")
+        self.receiveButton.setStyleSheet("")
         self.receiveButton.setObjectName("receiveButton")
         self.horizontalLayout_46.addWidget(self.receiveButton)
         self.rejectButton = QtWidgets.QPushButton(parent=self.receivePage)
@@ -405,20 +333,7 @@ class Ui_MainWindow(object):
         sizePolicy.setVerticalStretch(0)
         sizePolicy.setHeightForWidth(self.rejectButton.sizePolicy().hasHeightForWidth())
         self.rejectButton.setSizePolicy(sizePolicy)
-        self.rejectButton.setStyleSheet("QPushButton {\n"
-"    background-color: rgba(169, 169, 169, 0.2); \n"
-"    border-radius: 7px;\n"
-"    color: white;\n"
-"    padding: 5px 15px;\n"
-"}\n"
-"\n"
-"QPushButton:hover {\n"
-"    background-color: rgba(169, 169, 169, 0.7); \n"
-"}\n"
-"\n"
-"QPushButton:pressed {\n"
-"    background-color: rgba(105, 105, 105, 0.9); \n"
-"}")
+        self.rejectButton.setStyleSheet("")
         self.rejectButton.setObjectName("rejectButton")
         self.horizontalLayout_46.addWidget(self.rejectButton)
         spacerItem11 = QtWidgets.QSpacerItem(40, 20, QtWidgets.QSizePolicy.Policy.Expanding, QtWidgets.QSizePolicy.Policy.Minimum)
@@ -435,7 +350,7 @@ class Ui_MainWindow(object):
         self.receiveProgressBar.setMinimumSize(QtCore.QSize(190, 0))
         self.receiveProgressBar.setStyleSheet("QProgressBar {\n"
 "    border-radius: 5px;\n"
-"    background-color: rgba(169, 169, 169, 0.2);\n"
+"    background-color: rgba(169, 169, 169, 0.25);\n"
 "    text-align: center;\n"
 "    color: white\n"
 "}\n"
@@ -490,20 +405,7 @@ class Ui_MainWindow(object):
         font = QtGui.QFont()
         font.setFamily("Noto Sans")
         self.connectButton.setFont(font)
-        self.connectButton.setStyleSheet("QPushButton {\n"
-"    background-color: rgba(169, 169, 169, 0.2);\n"
-"    border-radius: 7px;\n"
-"    color: white;\n"
-"    padding: 5px 15px;\n"
-"}\n"
-"\n"
-"QPushButton:hover {\n"
-"    background-color: rgba(169, 169, 169, 0.7);\n"
-"}\n"
-"\n"
-"QPushButton:pressed {\n"
-"    background-color: rgba(105, 105, 105, 0.9);\n"
-"}")
+        self.connectButton.setStyleSheet("")
         self.connectButton.setObjectName("connectButton")
         self.horizontalLayout_66.addWidget(self.connectButton)
         self.disconnectButton = QtWidgets.QPushButton(parent=self.sendPage)
@@ -515,54 +417,15 @@ class Ui_MainWindow(object):
         font = QtGui.QFont()
         font.setFamily("Noto Sans")
         self.disconnectButton.setFont(font)
-        self.disconnectButton.setStyleSheet("QPushButton {\n"
-"    background-color: rgba(169, 169, 169, 0.2);\n"
-"    border-radius: 7px;\n"
-"    color: white;\n"
-"    padding: 5px 15px;\n"
-"}\n"
-"\n"
-"QPushButton:hover {\n"
-"    background-color: rgba(169, 169, 169, 0.7);\n"
-"}\n"
-"\n"
-"QPushButton:pressed {\n"
-"    background-color: rgba(105, 105, 105, 0.9);\n"
-"}")
+        self.disconnectButton.setStyleSheet("")
         self.disconnectButton.setObjectName("disconnectButton")
         self.horizontalLayout_66.addWidget(self.disconnectButton)
         self.addContactButton = QtWidgets.QPushButton(parent=self.sendPage)
-        self.addContactButton.setStyleSheet("QPushButton {\n"
-"    background-color: rgba(169, 169, 169, 0.2);\n"
-"    border-radius: 7px;\n"
-"    color: white;\n"
-"    padding: 5px 15px;\n"
-"}\n"
-"\n"
-"QPushButton:hover {\n"
-"    background-color: rgba(169, 169, 169, 0.7);\n"
-"}\n"
-"\n"
-"QPushButton:pressed {\n"
-"    background-color: rgba(105, 105, 105, 0.9);\n"
-"}")
+        self.addContactButton.setStyleSheet("")
         self.addContactButton.setObjectName("addContactButton")
         self.horizontalLayout_66.addWidget(self.addContactButton)
         self.removeContactButton = QtWidgets.QPushButton(parent=self.sendPage)
-        self.removeContactButton.setStyleSheet("QPushButton {\n"
-"    background-color: rgba(169, 169, 169, 0.2);\n"
-"    border-radius: 7px;\n"
-"    color: white;\n"
-"    padding: 5px 15px;\n"
-"}\n"
-"\n"
-"QPushButton:hover {\n"
-"    background-color: rgba(169, 169, 169, 0.7);\n"
-"}\n"
-"\n"
-"QPushButton:pressed {\n"
-"    background-color: rgba(105, 105, 105, 0.9);\n"
-"}")
+        self.removeContactButton.setStyleSheet("")
         self.removeContactButton.setObjectName("removeContactButton")
         self.horizontalLayout_66.addWidget(self.removeContactButton)
         self.connectingSpinnerLabel = QtWidgets.QLabel(parent=self.sendPage)
@@ -579,8 +442,11 @@ class Ui_MainWindow(object):
         self.horizontalLayout_66.addItem(spacerItem15)
         self.verticalLayout_24.addLayout(self.horizontalLayout_66)
         self.contactTable = QtWidgets.QTableWidget(parent=self.sendPage)
-        self.contactTable.setStyleSheet("color: white;\n"
-"gridline-color: rgb(50, 50, 50);")
+        self.contactTable.setStyleSheet("QTableWidget {\n"
+"    color: white;\n"
+"    gridline-color: rgb(70, 70, 70);\n"
+"    border: 1px solid rgb(70, 70, 70);\n"
+"}")
         self.contactTable.setSelectionMode(QtWidgets.QAbstractItemView.SelectionMode.SingleSelection)
         self.contactTable.setSelectionBehavior(QtWidgets.QAbstractItemView.SelectionBehavior.SelectRows)
         self.contactTable.setObjectName("contactTable")
@@ -604,7 +470,7 @@ class Ui_MainWindow(object):
         self.verticalLayout_24.addWidget(self.contactTable)
         self.verticalLayout_29.addLayout(self.verticalLayout_24)
         self.line_11 = QtWidgets.QFrame(parent=self.sendPage)
-        self.line_11.setStyleSheet("background-color: rgb(50, 50, 50);")
+        self.line_11.setStyleSheet("")
         self.line_11.setLineWidth(1)
         self.line_11.setFrameShape(QtWidgets.QFrame.Shape.HLine)
         self.line_11.setFrameShadow(QtWidgets.QFrame.Shadow.Sunken)
@@ -655,20 +521,7 @@ class Ui_MainWindow(object):
         font = QtGui.QFont()
         font.setFamily("Noto Sans")
         self.selectFileButton.setFont(font)
-        self.selectFileButton.setStyleSheet("QPushButton {\n"
-"    background-color: rgba(169, 169, 169, 0.2);\n"
-"    border-radius: 7px;\n"
-"    color: white;\n"
-"    padding: 5px 15px;\n"
-"}\n"
-"\n"
-"QPushButton:hover {\n"
-"    background-color: rgba(169, 169, 169, 0.7);\n"
-"}\n"
-"\n"
-"QPushButton:pressed {\n"
-"    background-color: rgba(105, 105, 105, 0.9);\n"
-"}")
+        self.selectFileButton.setStyleSheet("")
         self.selectFileButton.setObjectName("selectFileButton")
         self.horizontalLayout_75.addWidget(self.selectFileButton)
         self.sendButton = QtWidgets.QPushButton(parent=self.sendPage)
@@ -680,20 +533,7 @@ class Ui_MainWindow(object):
         font = QtGui.QFont()
         font.setFamily("Noto Sans")
         self.sendButton.setFont(font)
-        self.sendButton.setStyleSheet("QPushButton {\n"
-"    background-color: rgba(169, 169, 169, 0.2);\n"
-"    border-radius: 7px;\n"
-"    color: white;\n"
-"    padding: 5px 15px;\n"
-"}\n"
-"\n"
-"QPushButton:hover {\n"
-"    background-color: rgba(169, 169, 169, 0.7);\n"
-"}\n"
-"\n"
-"QPushButton:pressed {\n"
-"    background-color: rgba(105, 105, 105, 0.9);\n"
-"}")
+        self.sendButton.setStyleSheet("")
         self.sendButton.setObjectName("sendButton")
         self.horizontalLayout_75.addWidget(self.sendButton)
         self.fileSentLabel = QtWidgets.QLabel(parent=self.sendPage)
@@ -730,7 +570,7 @@ class Ui_MainWindow(object):
         self.sendProgressBar.setFont(font)
         self.sendProgressBar.setStyleSheet("QProgressBar {\n"
 "    border-radius: 5px;\n"
-"    background-color: rgba(169, 169, 169, 0.2);\n"
+"    background-color: rgba(169, 169, 169, 0.25);\n"
 "    text-align: center;\n"
 "    color: white\n"
 "}\n"
@@ -795,7 +635,7 @@ class Ui_MainWindow(object):
         self.bottomLayout = QtWidgets.QVBoxLayout()
         self.bottomLayout.setObjectName("bottomLayout")
         self.bottomLine = QtWidgets.QFrame(parent=self.centralwidget)
-        self.bottomLine.setStyleSheet("background-color: rgb(50, 50, 50);")
+        self.bottomLine.setStyleSheet("")
         self.bottomLine.setFrameShape(QtWidgets.QFrame.Shape.HLine)
         self.bottomLine.setFrameShadow(QtWidgets.QFrame.Shadow.Sunken)
         self.bottomLine.setObjectName("bottomLine")
