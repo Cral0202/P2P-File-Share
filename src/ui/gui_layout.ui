@@ -27,7 +27,11 @@
   </property>
   <widget class="QWidget" name="centralwidget">
    <property name="styleSheet">
-    <string notr="true">QPushButton {
+    <string notr="true">QLabel {
+	color: white;
+}
+
+QPushButton {
     background-color: rgba(169, 169, 169, 0.25);
     border-radius: 7px;
     color: white;
@@ -136,7 +140,7 @@ QListWidget::item {
                      </font>
                     </property>
                     <property name="styleSheet">
-                     <string notr="true">color: rgb(255, 255, 255);</string>
+                     <string notr="true"/>
                     </property>
                     <property name="text">
                      <string>Your IP address:</string>
@@ -161,7 +165,7 @@ QListWidget::item {
                      </font>
                     </property>
                     <property name="styleSheet">
-                     <string notr="true">color: rgb(255, 255, 255);</string>
+                     <string notr="true"/>
                     </property>
                     <property name="text">
                      <string>Your fingerprint:</string>
@@ -259,7 +263,7 @@ QListWidget::item {
                    </font>
                   </property>
                   <property name="styleSheet">
-                   <string notr="true">color: rgb(255, 255, 255);</string>
+                   <string notr="true"/>
                   </property>
                   <property name="text">
                    <string>Toggle Receiving</string>
@@ -300,7 +304,7 @@ QListWidget::item {
                    </font>
                   </property>
                   <property name="styleSheet">
-                   <string notr="true">color: rgb(255, 255, 255);</string>
+                   <string notr="true"/>
                   </property>
                   <property name="text">
                    <string>Port:</string>
@@ -440,7 +444,7 @@ QListWidget::item {
                    </font>
                   </property>
                   <property name="styleSheet">
-                   <string notr="true">color: rgb(255, 255, 255);</string>
+                   <string notr="true"/>
                   </property>
                   <property name="text">
                    <string>Incoming Connections</string>
@@ -481,7 +485,7 @@ QListWidget::item {
                    </font>
                   </property>
                   <property name="styleSheet">
-                   <string notr="true">color: rgb(255, 255, 255);</string>
+                   <string notr="true"/>
                   </property>
                   <property name="text">
                    <string>Incoming connection from:</string>
@@ -590,7 +594,7 @@ QListWidget::item {
                    </font>
                   </property>
                   <property name="styleSheet">
-                   <string notr="true">color: rgb(255, 255, 255);</string>
+                   <string notr="true"/>
                   </property>
                   <property name="text">
                    <string>Receive Files</string>
@@ -631,7 +635,7 @@ QListWidget::item {
                    </font>
                   </property>
                   <property name="styleSheet">
-                   <string notr="true">color: rgb(255, 255, 255);</string>
+                   <string notr="true"/>
                   </property>
                   <property name="text">
                    <string>Ready to receive:</string>
@@ -779,7 +783,7 @@ QProgressBar::chunk {
                    </font>
                   </property>
                   <property name="styleSheet">
-                   <string notr="true">color: rgb(255, 255, 255);</string>
+                   <string notr="true"/>
                   </property>
                   <property name="text">
                    <string>Contacts</string>
@@ -985,7 +989,7 @@ QProgressBar::chunk {
                    </font>
                   </property>
                   <property name="styleSheet">
-                   <string notr="true">color: rgb(255, 255, 255);</string>
+                   <string notr="true"/>
                   </property>
                   <property name="text">
                    <string>Send Files</string>
@@ -1028,7 +1032,7 @@ QProgressBar::chunk {
                    </font>
                   </property>
                   <property name="styleSheet">
-                   <string notr="true">color: rgb(255, 255, 255);</string>
+                   <string notr="true"/>
                   </property>
                   <property name="text">
                    <string>Selected file:</string>
@@ -1226,7 +1230,7 @@ QProgressBar::chunk {
                    </font>
                   </property>
                   <property name="styleSheet">
-                   <string notr="true">color: rgb(255, 255, 255);</string>
+                   <string notr="true"/>
                   </property>
                   <property name="text">
                    <string>The sent file has not yet been downloaded by the receiver</string>
@@ -1371,20 +1375,51 @@ QProgressBar::chunk {
          </widget>
         </item>
         <item>
-         <widget class="QLabel" name="outboundConnectionLabel">
-          <property name="font">
-           <font>
-            <pointsize>9</pointsize>
-            <bold>true</bold>
-           </font>
-          </property>
-          <property name="styleSheet">
-           <string notr="true">color: #E53935;</string>
-          </property>
-          <property name="text">
-           <string>No outbound connection</string>
-          </property>
-         </widget>
+         <layout class="QHBoxLayout" name="horizontalLayout">
+          <item>
+           <widget class="QLabel" name="outboundConnectionLabel">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+            <property name="font">
+             <font>
+              <pointsize>9</pointsize>
+              <bold>true</bold>
+             </font>
+            </property>
+            <property name="styleSheet">
+             <string notr="true">color: #E53935;</string>
+            </property>
+            <property name="text">
+             <string>No outbound connection</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QLabel" name="versionLabel">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+            <property name="font">
+             <font>
+              <pointsize>9</pointsize>
+             </font>
+            </property>
+            <property name="styleSheet">
+             <string notr="true"/>
+            </property>
+            <property name="text">
+             <string/>
+            </property>
+           </widget>
+          </item>
+         </layout>
         </item>
        </layout>
       </item>

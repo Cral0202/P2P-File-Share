@@ -8,6 +8,7 @@ from pathlib import Path
 
 from .gui_layout import Ui_MainWindow
 from controller.session_controller import SessionController
+from constants import PROGRAM_VERSION
 
 GREEN_COLOR: str = "#27AE60"
 GREEN_COLOR_FORMATTED: str = f"color: {GREEN_COLOR}"
@@ -118,6 +119,8 @@ class GUI():
         )
 
     def _populate_window_widgets(self):
+        self._ui.versionLabel.setText(f"v{PROGRAM_VERSION}")
+
         # Load host info
         host_info = self._session_controller.get_host_info()
 
