@@ -52,6 +52,7 @@ class Network:
         self.host_port: int = 35555
         self.host_external_ip: str | None = None
         self.outbound_peer_public_ip: str | None = None
+        self.outbound_peer_fingerprint: str | None = None
         self.inbound_peer_public_ip: str | None = None
         self.inbound_peer_fingerprint: str | None = None
 
@@ -256,6 +257,7 @@ class Network:
             self.send_msg(ssl_socket, proof_payload)
 
             self.outbound_peer_public_ip = ip
+            self.outbound_peer_fingerprint = base64_server_fingerprint
             self._attach_connection(ssl_socket, is_outbound=True)
             self._outbound_handler.accepted_conn = True
         except ssl.SSLCertVerificationError:

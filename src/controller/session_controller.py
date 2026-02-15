@@ -42,7 +42,8 @@ class SessionController(QObject):
 
     def _on_outbound_change(self, connected: bool):
         if connected:
-            text = f"Outbound connection to: {self._network.outbound_peer_public_ip}"
+            _, name = self._contact_storage.check_if_contact_exists(self._network.outbound_peer_fingerprint)
+            text = f"Outbound connection to: {name} ({self._network.outbound_peer_public_ip})"
         else:
             text = "No outbound connection"
 
@@ -50,7 +51,8 @@ class SessionController(QObject):
 
     def _on_inbound_change(self, connected: bool):
         if connected:
-            text = f"Inbound connection from: {self._network.inbound_peer_public_ip}"
+            _, name = self._contact_storage.check_if_contact_exists(self._network.inbound_peer_fingerprint)
+            text = f"Inbound connection from: {name} ({self._network.inbound_peer_public_ip})"
         else:
             text = "No inbound connection"
 
@@ -278,9 +280,9 @@ class SessionController(QObject):
             elif event.message == "INCOMING":
                 # Check if peer is in our contact list
                 exists, name = self._contact_storage.check_if_contact_exists(self._network.inbound_peer_fingerprint)
-                warning = " (WARNING) " if not exists else ""
+                warning = " (WARNING)" if not exists else ""
 
-                self.incoming_connection_signal.emit(f"Incoming connection from: {name} {warning} ({self._network.inbound_peer_public_ip})")
+                self.incoming_connection_signal.emit(f"Incoming connection from: {name}{warning} ({self._network.inbound_peer_public_ip})")
             elif event.message == "DECLINED":
                 self.incoming_connection_signal.emit("Incoming connection from:")
             elif event.message == "ERROR":
