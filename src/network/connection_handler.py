@@ -42,6 +42,12 @@ class ConnectionHandler(threading.Thread):
         while self.running:
             try:
                 msg = self.send_queue.get()
+
+                # Flush and stop message
+                if msg is None:
+                    self.stop()
+                    break
+
                 self.network.send_msg(self.sock, msg)
             except Exception:
                 self.stop()
@@ -67,3 +73,6 @@ class ConnectionHandler(threading.Thread):
         self.running = False
         self.network._close_socket(self.sock)
         self.network._handle_connection_error(self.is_outbound)
+
+    def flush_and_stop(self):
+        self.send_queue.put(None)

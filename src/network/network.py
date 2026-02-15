@@ -228,11 +228,10 @@ class Network:
         if self._inbound_handler.accepted_conn:
             return
 
-        # Handler stops itself when the peer client disconnects
-        # TODO: Malicious peer could simply not disconnect and keep the connection open
         self._inbound_handler.send("CONNECTION_RESPONSE", "DECLINED")
-        self._emit(NetworkEvent("INBOUND_CONNECTION_REQUEST", "DECLINED"))
+        self._inbound_handler.flush_and_stop() # Ensures message gets sent to peer before we break connection
         self._inbound_handler = None
+        self._emit(NetworkEvent("INBOUND_CONNECTION_REQUEST", "DECLINED"))
 
     def _request_connection(self, ip: str, port: int, expected_fingerprint: str):
         try:
