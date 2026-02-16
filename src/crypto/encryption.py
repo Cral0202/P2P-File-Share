@@ -9,7 +9,6 @@ from cryptography.hazmat.primitives import hashes, serialization
 from cryptography.hazmat.primitives.asymmetric import ec
 from cryptography.hazmat.backends import default_backend
 from datetime import datetime, timedelta, timezone
-from pathlib import Path
 
 from constants import BASE_DIR
 
@@ -122,22 +121,22 @@ def create_identity_proof(challenge: bytes) -> bytes:
     return json.dumps(payload).encode()
 
 def verify_identity_proof(proof_bytes: bytes, challenge: bytes) -> tuple[bool, str]:
-    proof_data = json.loads(proof_bytes.decode())
-    cert_bytes = base64.b64decode(proof_data["cert"])
-    signature = base64.b64decode(proof_data["signature"])
-
-    peer_cert = load_pem_x509_certificate(cert_bytes)
-
-    # Verify signature
     try:
+        proof_data = json.loads(proof_bytes.decode())
+        cert_bytes = base64.b64decode(proof_data["cert"])
+        signature = base64.b64decode(proof_data["signature"])
+
+        peer_cert = load_pem_x509_certificate(cert_bytes)
+
+        # Verify signature
         peer_cert.public_key().verify(
             signature,
             challenge,
             ec.ECDSA(hashes.SHA256())
         )
-    except Exception:
-        return False, ""
 
-    # Return fingerprint
-    raw_fp = peer_cert.fingerprint(hashes.SHA256())
-    return True, base64.b64encode(raw_fp).decode()
+        # Return fingerprint
+        raw_fp = peer_cert.fingerprint(hashes.SHA256())
+        return True, base64.b64encode(raw_fp).decode()
+    except Exception:
+            return False, ""
